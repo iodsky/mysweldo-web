@@ -1,0 +1,17 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+build
+
+# Coverage
+coverage
+
+# Lock files
+package-lock.json
+
+# Env files
+.env
+.env.local
+.env.*.local
