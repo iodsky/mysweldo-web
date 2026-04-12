@@ -63,7 +63,7 @@ function Login() {
     <>
       <Container className="h-screen">
         <Center className="h-full">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-md" withBorder={true}>
             <form
               onSubmit={form.onSubmit((values) => {
                 handleLogin(values.email, values.password);
