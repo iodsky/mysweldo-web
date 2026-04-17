@@ -8,6 +8,7 @@ import { Notifications } from "@mantine/notifications";
 import "./index.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/core/styles.css";
+import { AuthProvider } from "./context/AuthProvider";
 
 const queryClient = new QueryClient();
 
@@ -15,8 +16,10 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <MantineProvider>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={AppRoutes} />
-        <Notifications />
+        <AuthProvider>
+          <RouterProvider router={AppRoutes} />
+          <Notifications />
+        </AuthProvider>
       </QueryClientProvider>
     </MantineProvider>
   </StrictMode>,

@@ -1,17 +1,69 @@
+import axios from "axios";
 import client from "./client";
-import type { ApiResponse, LoginResponse } from "./types";
-
-export type Role = "EMPLOYEE" | "ADMIN";
+import type {
+  AccessType,
+  ApiError,
+  ApiResponse,
+  AuthSession,
+  AuthenticatedUser,
+  AccessToken,
+} from "../types";
 
 type LoginCredentials = {
   email: string;
   password: string;
-  role: Role;
+  accessType: AccessType;
 };
 
 export const login = async (
   credentials: LoginCredentials,
-): Promise<ApiResponse<LoginResponse>> => {
-  const response = await client.post("/auth/login", credentials);
-  return response.data;
+): Promise<ApiResponse<AuthSession>> => {
+  try {
+    const response = await client.post("/auth/login", credentials);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const apiError = error.response?.data as ApiError;
+      throw apiError;
+    }
+    throw error;
+  }
+};
+
+export const logout = async (): Promise<void> => {
+  try {
+    await client.post("/auth/logout");
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const apiError = error.response?.data as ApiError;
+      throw apiError;
+    }
+    throw error;
+  }
+};
+
+export const refresh = async (): Promise<AccessToken> => {
+  try {
+    const response = await client.post("/auth/refresh");
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const apiError = error.response?.data as ApiError;
+      throw apiError;
+    }
+    throw error;
+  }
+};
+
+export const me = async (): Promise<AuthenticatedUser> => {
+  try {
+    const response = await client.get("/auth/me");
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const apiError = error.response?.data as ApiError;
+      throw apiError;
+    }
+    throw error;
+  }
 };

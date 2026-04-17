@@ -14,14 +14,17 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useMutation } from "@tanstack/react-query";
-import { login, type Role } from "../../../api/auth";
+import { login } from "../../../api/auth";
 import { notifications } from "@mantine/notifications";
-import type { AxiosError } from "axios";
-import type { ApiError } from "../../../api/types";
+import type { AccessType, ApiError } from "../../../types";
 import { useState } from "react";
+import { useAuth } from "../../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [role, setRole] = useState<Role>("EMPLOYEE");
+  const { setAuth } = useAuth();
+  const navigate = useNavigate();
+  const [accessType, setAccessType] = useState<AccessType>("EMPLOYEE");
 
   const form = useForm({
     mode: "uncontrolled",
@@ -36,23 +39,25 @@ function Login() {
   });
 
   const handleLogin = (email: string, password: string) => {
-    loginFn({ email, password, role });
+    loginFn({ email, password, accessType });
   };
 
   const { mutate: loginFn, isPending } = useMutation({
     mutationFn: login,
-    onSuccess: () => {
+    onSuccess: (response) => {
+      setAuth(response.data);
       notifications.show({
         title: "Success",
         message: "Authentication success!",
         color: "green",
         withBorder: true,
       });
+      navigate("/employee/profile");
     },
-    onError: (error: AxiosError<ApiError>) => {
+    onError: (error: ApiError) => {
       notifications.show({
         title: "Error",
-        message: error.response?.data.message ?? "Authentication failed",
+        message: error.message ?? "Authentication failed",
         color: "red",
         withBorder: true,
       });
@@ -75,8 +80,8 @@ function Login() {
                 </Center>
 
                 <SegmentedControl
-                  value={role}
-                  onChange={(value) => setRole(value as Role)}
+                  value={accessType}
+                  onChange={(value) => setAccessType(value as AccessType)}
                   data={[
                     { label: "Employee", value: "EMPLOYEE" },
                     { label: "Admin", value: "ADMIN" },
