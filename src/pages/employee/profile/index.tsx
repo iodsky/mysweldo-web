@@ -7,31 +7,20 @@ import {
   Stack,
   Loader,
   Center,
-  Button,
   Grid,
   Divider,
 } from "@mantine/core";
 import { VscServerProcess } from "react-icons/vsc";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "../../../hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 import { getEmployeeProfile } from "../../../api/employee";
-import { useNavigate } from "react-router-dom";
 
-function EmployeeProfile() {
-  const { clearAuth } = useAuth();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
+function Profile() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["employee"],
     queryFn: getEmployeeProfile,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours - rarely updated
+    gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days - keep in cache long term
   });
-
-  const handleLogout = () => {
-    queryClient.removeQueries({ queryKey: ["employee"] });
-    clearAuth();
-    navigate("/login");
-  };
 
   if (isLoading) {
     return (
@@ -70,15 +59,6 @@ function EmployeeProfile() {
 
   return (
     <Container py="xl">
-      <Group justify="space-between" mb="lg">
-        <Text size="xl" fw={700}>
-          Employee Profile
-        </Text>
-        <Button onClick={handleLogout} color="red" variant="light">
-          Logout
-        </Button>
-      </Group>
-
       <Paper withBorder p="lg" radius="md">
         {/* Header Section */}
         <Group justify="space-between" mb="lg">
@@ -269,4 +249,4 @@ function EmployeeProfile() {
   );
 }
 
-export default EmployeeProfile;
+export default Profile;
