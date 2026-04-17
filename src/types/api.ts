@@ -18,10 +18,6 @@ export type PaginatedApiResponse<T> = ApiResponse<T> & {
   meta: PaginationMeta;
 };
 
-export type LoginResponse = {
-  token: string;
-};
-
 type ValidationError = {
   field: string;
   message: string;
