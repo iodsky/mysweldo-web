@@ -6,8 +6,9 @@ import { AppRoutes } from "./routes/AppRoutes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Notifications } from "@mantine/notifications";
 import "./index.css";
-import "@mantine/notifications/styles.css";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+import "@mantine/dates/styles.css";
 import { AuthProvider } from "./context/AuthProvider";
 
 const queryClient = new QueryClient();

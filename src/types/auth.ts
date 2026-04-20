@@ -9,7 +9,7 @@ export type Role =
 export type User = {
   id: string;
   email: string;
-  employeeId: string;
+  employeeId: number;
   role: Role;
   createdAt: string;
   updatedAt?: string;

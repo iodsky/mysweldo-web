@@ -12,3 +12,5 @@ export type {
 } from "./auth";
 
 export type { Employee, EmployeeBenefit } from "./employee";
+
+export type { Attendance } from "./attendance";
