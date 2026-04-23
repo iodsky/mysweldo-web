@@ -1,4 +1,4 @@
-import { AppShell } from "@mantine/core";
+import { AppShell, Container } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 
@@ -9,7 +9,9 @@ function Layout() {
         <Navbar />
       </AppShell.Navbar>
       <AppShell.Main>
-        <Outlet />
+        <Container fluid>
+          <Outlet />
+        </Container>
       </AppShell.Main>
     </AppShell>
   );

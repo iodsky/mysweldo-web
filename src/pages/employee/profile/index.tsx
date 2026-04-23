@@ -1,5 +1,4 @@
 import {
-  Container,
   Paper,
   Text,
   Group,
@@ -24,11 +23,9 @@ function Profile() {
 
   if (isLoading) {
     return (
-      <Container>
-        <Center className="h-screen">
-          <Loader size="xl" />
-        </Center>
-      </Container>
+      <Center className="h-screen">
+        <Loader size="xl" />
+      </Center>
     );
   }
 
@@ -49,203 +46,199 @@ function Profile() {
 
   if (!employee) {
     return (
-      <Container>
-        <Center className="h-screen">
-          <Text>No employee data found</Text>
-        </Center>
-      </Container>
+      <Center className="h-screen">
+        <Text>No employee data found</Text>
+      </Center>
     );
   }
 
   return (
-    <Container py="xl">
-      <Paper withBorder p="lg" radius="md">
-        {/* Header Section */}
-        <Group justify="space-between" mb="lg">
-          <div>
-            <Text size="lg" fw={700}>
-              {employee.firstName} {employee.lastName}
-            </Text>
-            <Group gap="xs" mt="xs">
-              <Badge>{employee.position}</Badge>
-              <Badge variant="light">{employee.department}</Badge>
-              <Badge color={employee.status === "ACTIVE" ? "green" : "gray"}>
-                {employee.status}
-              </Badge>
-            </Group>
-          </div>
-        </Group>
+    <Paper withBorder p="lg" radius="md">
+      {/* Header Section */}
+      <Group justify="space-between" mb="lg">
+        <div>
+          <Text size="lg" fw={700}>
+            {employee.firstName} {employee.lastName}
+          </Text>
+          <Group gap="xs" mt="xs">
+            <Badge>{employee.position}</Badge>
+            <Badge variant="light">{employee.department}</Badge>
+            <Badge color={employee.status === "ACTIVE" ? "green" : "gray"}>
+              {employee.status}
+            </Badge>
+          </Group>
+        </div>
+      </Group>
 
-        <Divider my="md" />
+      <Divider my="md" />
 
-        <Stack gap="md">
-          {/* Personal Information */}
-          <div>
-            <Text size="sm" fw={700} mb="xs">
-              Personal Information
-            </Text>
-            <Grid>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    Birthday
-                  </Text>
-                  <Text>{employee.birthday}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    Phone Number
-                  </Text>
-                  <Text>{employee.phoneNumber}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    Address
-                  </Text>
-                  <Text>{employee.address}</Text>
-                </div>
-              </Grid.Col>
-            </Grid>
-          </div>
-
-          <Divider />
-
-          {/* Employment Information */}
-          <div>
-            <Text size="sm" fw={700} mb="xs">
-              Employment Information
-            </Text>
-            <Grid>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    Position
-                  </Text>
-                  <Text>{employee.position}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    Department
-                  </Text>
-                  <Text>{employee.department}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    Supervisor
-                  </Text>
-                  <Text>{employee.supervisor}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    Employment Type
-                  </Text>
-                  <Text>{employee.type}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    Start Shift
-                  </Text>
-                  <Text>{employee.startShift}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    End Shift
-                  </Text>
-                  <Text>{employee.endShift}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    Basic Salary
-                  </Text>
-                  <Text>{employee.basicSalary}</Text>
-                </div>
-              </Grid.Col>
-            </Grid>
-          </div>
-
-          <Divider />
-
-          {/* Government IDs */}
-          <div>
-            <Text size="sm" fw={700} mb="xs">
-              Government IDs
-            </Text>
-            <Grid>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    SSS Number
-                  </Text>
-                  <Text>{employee.sssNumber}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    TIN Number
-                  </Text>
-                  <Text>{employee.tinNumber}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    PhilHealth Number
-                  </Text>
-                  <Text>{employee.philhealthNumber}</Text>
-                </div>
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <div>
-                  <Text size="xs" c="dimmed">
-                    PAG-IBIG Number
-                  </Text>
-                  <Text>{employee.pagIbigNumber}</Text>
-                </div>
-              </Grid.Col>
-            </Grid>
-          </div>
-
-          {/* Benefits */}
-          {employee.benefits && employee.benefits.length > 0 && (
-            <>
-              <Divider />
+      <Stack gap="md">
+        {/* Personal Information */}
+        <div>
+          <Text size="sm" fw={700} mb="xs">
+            Personal Information
+          </Text>
+          <Grid>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <div>
-                <Text size="sm" fw={700} mb="xs">
-                  Benefits
+                <Text size="xs" c="dimmed">
+                  Birthday
                 </Text>
-                <Grid>
-                  {employee.benefits.map((benefit) => (
-                    <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <Text size="xs" tt="capitalize" c="dimmed">
-                        {benefit.benefit}
-                      </Text>
-                      <Text>{benefit.amount}</Text>
-                    </Grid.Col>
-                  ))}
-                </Grid>
+                <Text>{employee.birthday}</Text>
               </div>
-            </>
-          )}
-        </Stack>
-      </Paper>
-    </Container>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  Phone Number
+                </Text>
+                <Text>{employee.phoneNumber}</Text>
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  Address
+                </Text>
+                <Text>{employee.address}</Text>
+              </div>
+            </Grid.Col>
+          </Grid>
+        </div>
+
+        <Divider />
+
+        {/* Employment Information */}
+        <div>
+          <Text size="sm" fw={700} mb="xs">
+            Employment Information
+          </Text>
+          <Grid>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  Position
+                </Text>
+                <Text>{employee.position}</Text>
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  Department
+                </Text>
+                <Text>{employee.department}</Text>
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  Supervisor
+                </Text>
+                <Text>{employee.supervisor}</Text>
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  Employment Type
+                </Text>
+                <Text>{employee.type}</Text>
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  Start Shift
+                </Text>
+                <Text>{employee.startShift}</Text>
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  End Shift
+                </Text>
+                <Text>{employee.endShift}</Text>
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  Basic Salary
+                </Text>
+                <Text>{employee.basicSalary}</Text>
+              </div>
+            </Grid.Col>
+          </Grid>
+        </div>
+
+        <Divider />
+
+        {/* Government IDs */}
+        <div>
+          <Text size="sm" fw={700} mb="xs">
+            Government IDs
+          </Text>
+          <Grid>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  SSS Number
+                </Text>
+                <Text>{employee.sssNumber}</Text>
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  TIN Number
+                </Text>
+                <Text>{employee.tinNumber}</Text>
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  PhilHealth Number
+                </Text>
+                <Text>{employee.philhealthNumber}</Text>
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <div>
+                <Text size="xs" c="dimmed">
+                  PAG-IBIG Number
+                </Text>
+                <Text>{employee.pagIbigNumber}</Text>
+              </div>
+            </Grid.Col>
+          </Grid>
+        </div>
+
+        {/* Benefits */}
+        {employee.benefits && employee.benefits.length > 0 && (
+          <>
+            <Divider />
+            <div>
+              <Text size="sm" fw={700} mb="xs">
+                Benefits
+              </Text>
+              <Grid>
+                {employee.benefits.map((benefit) => (
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Text size="xs" tt="capitalize" c="dimmed">
+                      {benefit.benefit}
+                    </Text>
+                    <Text>{benefit.amount}</Text>
+                  </Grid.Col>
+                ))}
+              </Grid>
+            </div>
+          </>
+        )}
+      </Stack>
+    </Paper>
   );
 }
 
