@@ -1,8 +1,15 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import type { AccessType, AuthSession, User } from "../types";
+import type {
+  AccessToken,
+  AccessType,
+  ApiResponse,
+  AuthSession,
+  User,
+} from "../types";
 import { AuthContext } from "./AuthContext";
 import { me } from "../api/auth";
+import client from "../api/client";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -26,14 +33,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const initializeAuth = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+      let accessToken = localStorage.getItem("token");
 
-      setToken(token);
+      if (!accessToken) {
+        const refreshResponse =
+          await client.post<ApiResponse<AccessToken>>("/auth/refresh");
+        accessToken = refreshResponse.data.data.token ?? null;
 
-      const currentAuth = await me();
-      setUser(currentAuth.user);
-      setAccessType(currentAuth.accessType);
+        if (accessToken) {
+          localStorage.setItem("token", accessToken);
+          setToken(accessToken);
+        }
+      } else {
+        setToken(accessToken);
+      }
+
+      if (!accessToken) {
+        clearAuth();
+        return;
+      }
+
+      const { data } = await me();
+      setUser(data.user);
+      setAccessType(data.accessType);
     } catch (error) {
       console.error("Auth initialization failed:", error);
       clearAuth();

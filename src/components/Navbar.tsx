@@ -6,8 +6,10 @@ import { MdTimer } from "react-icons/md";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { IconType } from "react-icons/lib";
+import { logout } from "../api/auth";
+import { notifications } from "@mantine/notifications";
 
 interface NavLinkItem {
   label: string;
@@ -21,11 +23,20 @@ function Navbar() {
   const { clearAuth } = useAuth();
   const location = useLocation();
 
-  const handleLogout = () => {
-    queryClient.removeQueries({ queryKey: ["employee"] });
-    clearAuth();
-    navigate("/login");
-  };
+  const { mutate: logutFn } = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ["employee"] });
+      clearAuth();
+      navigate("/login");
+      notifications.show({
+        title: "Success",
+        message: "Logout success!",
+        color: "green",
+        withBorder: true,
+      });
+    },
+  });
 
   const employeeLinks: NavLinkItem[] = [
     { label: "Profile", path: "/employee/profile", icon: FaUser },
@@ -64,7 +75,7 @@ function Navbar() {
 
       <NavLink
         label="Logout"
-        onClick={handleLogout}
+        onClick={() => logutFn()}
         leftSection={<RiLogoutBoxFill />}
       />
     </Stack>

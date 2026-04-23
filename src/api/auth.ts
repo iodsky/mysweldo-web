@@ -6,7 +6,6 @@ import type {
   ApiResponse,
   AuthSession,
   AuthenticatedUser,
-  AccessToken,
 } from "../types";
 
 type LoginCredentials = {
@@ -42,20 +41,7 @@ export const logout = async (): Promise<void> => {
   }
 };
 
-export const refresh = async (): Promise<AccessToken> => {
-  try {
-    const response = await client.post("/auth/refresh");
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const apiError = error.response?.data as ApiError;
-      throw apiError;
-    }
-    throw error;
-  }
-};
-
-export const me = async (): Promise<AuthenticatedUser> => {
+export const me = async (): Promise<ApiResponse<AuthenticatedUser>> => {
   try {
     const response = await client.get("/auth/me");
     return response.data;

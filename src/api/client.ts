@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { AccessToken, ApiResponse } from "../types";
 
 const client = axios.create({
   baseURL: "/api",
@@ -26,18 +27,23 @@ client.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     // Prevent infinite refresh loops - don't retry refresh endpoint itself
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes("/auth/refresh")) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/refresh")
+    ) {
       originalRequest._retry = true; // Mark the request as retried to avoid infinite loops.
       try {
         // The refreshToken is sent automatically as an httpOnly cookie.
-        const response = await client.post("/auth/refresh");
-        const { token } = response.data;
-        localStorage.setItem("token", token);
+        const { data } =
+          await client.post<ApiResponse<AccessToken>>("/auth/refresh");
+        const accessToken = data.data.token;
+        localStorage.setItem("token", accessToken);
+        originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
         return client(originalRequest); // Retry the original request with the new access token.
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);
         localStorage.removeItem("token");
-        window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }
