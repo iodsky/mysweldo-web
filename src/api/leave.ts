@@ -42,7 +42,7 @@ export const getOwnLeaveRequests = async (
   }
 };
 
-export type CreateLeaveRequest = {
+export type LeaveRequestDto = {
   startDate: string;
   endDate: string;
   leaveType: LeaveType;
@@ -50,10 +50,41 @@ export type CreateLeaveRequest = {
 };
 
 export const createLeaveRequest = async (
-  request: CreateLeaveRequest,
+  request: LeaveRequestDto,
 ): Promise<ApiResponse<LeaveRequest>> => {
   try {
     const response = await client.post("/leave-requests", request);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const apiError = error.response?.data as ApiError;
+      throw apiError;
+    }
+    throw error;
+  }
+};
+
+export const updateLeaveRequest = async (
+  id: string,
+  request: LeaveRequestDto,
+): Promise<ApiResponse<LeaveRequest>> => {
+  try {
+    const response = await client.put(`/leave-requests/${id}`, request);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const apiError = error.response?.data as ApiError;
+      throw apiError;
+    }
+    throw error;
+  }
+};
+
+export const deleteLeaveRequest = async (
+  id: string,
+): Promise<ApiResponse<void>> => {
+  try {
+    const response = await client.delete(`/leave-requests/${id}`);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

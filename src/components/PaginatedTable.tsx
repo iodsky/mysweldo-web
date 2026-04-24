@@ -7,12 +7,23 @@ import {
   Group,
   Button,
   Stack,
+  Menu,
 } from "@mantine/core";
+import { BsThreeDotsVertical } from "react-icons/bs";
+
+export interface ActionItem<T = Record<string, unknown>> {
+  label: string;
+  icon: React.ReactNode;
+  color?: string;
+  onClick: (row: T) => void;
+}
 
 interface Column<T = Record<string, unknown>> {
   key: string;
   label: string;
   render?: (value: unknown, row: T) => React.ReactNode;
+  isAction?: boolean;
+  actions?: ActionItem<T>[];
 }
 
 interface PaginationMeta {
@@ -97,9 +108,37 @@ export function PaginatedTable<
                 <Table.Tr key={String(row.id)}>
                   {columns.map((column) => (
                     <Table.Td key={`${String(row.id)}-${column.key}`}>
-                      {column.render
-                        ? column.render(row[column.key], row)
-                        : String(row[column.key] ?? "")}
+                      {column.isAction && column.actions ? (
+                        <Menu shadow="md">
+                          <Menu.Target>
+                            <Button
+                              variant="transparent"
+                              size="xs"
+                              p={0}
+                              h="auto"
+                              style={{ cursor: "pointer" }}
+                            >
+                              <BsThreeDotsVertical size={16} />
+                            </Button>
+                          </Menu.Target>
+                          <Menu.Dropdown>
+                            {column.actions.map((action, index) => (
+                              <Menu.Item
+                                key={index}
+                                leftSection={action.icon}
+                                color={action.color}
+                                onClick={() => action.onClick(row)}
+                              >
+                                {action.label}
+                              </Menu.Item>
+                            ))}
+                          </Menu.Dropdown>
+                        </Menu>
+                      ) : column.render ? (
+                        column.render(row[column.key], row)
+                      ) : (
+                        String(row[column.key] ?? "")
+                      )}
                     </Table.Td>
                   ))}
                 </Table.Tr>

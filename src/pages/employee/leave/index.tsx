@@ -17,11 +17,15 @@ import {
   createLeaveRequest,
   getOwnLeaveCredits,
   getOwnLeaveRequests,
+  updateLeaveRequest,
+  deleteLeaveRequest,
 } from "../../../api/leave";
 import type { LeaveRequest, PaginationFilters } from "../../../types";
 import { notifications } from "@mantine/notifications";
 import type { LeaveType } from "../../../types/leave";
 import { PaginatedTable } from "../../../components/PaginatedTable";
+import { ConfirmationModal } from "../../../components/ConfirmationModal";
+import { MdEdit, MdDelete } from "react-icons/md";
 
 function Leave() {
   const { user } = useAuth();
@@ -35,6 +39,19 @@ function Leave() {
     pageNo: 0,
     limit: 10,
   });
+
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editStartDate, setEditStartDate] = useState<Date | string | null>(
+    null,
+  );
+  const [editEndDate, setEditEndDate] = useState<Date | string | null>(null);
+  const [editLeaveType, setEditLeaveType] = useState<string | null>(null);
+  const [editNote, setEditNote] = useState<string>("");
+
+  // Delete state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const { data, isFetching, isError } = useQuery({
     queryKey: ["leaverRequests", user?.employeeId, filters],
@@ -55,20 +72,70 @@ function Leave() {
     isPending,
     isError: isErrorSubmitting,
   } = useMutation({
-    mutationFn: createLeaveRequest,
+    mutationFn: (request: {
+      startDate: string;
+      endDate: string;
+      leaveType: LeaveType;
+      note?: string;
+    }) =>
+      editingId
+        ? updateLeaveRequest(editingId, request)
+        : createLeaveRequest(request),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["leaverRequests", user?.employeeId],
       });
       setIsModalOpen(false);
+      setEditingId(null);
       setStartDate(null);
       setEndDate(null);
       setLeaveType(null);
       setNote("");
+      setEditStartDate(null);
+      setEditEndDate(null);
+      setEditLeaveType(null);
+      setEditNote("");
       notifications.show({
         title: "Success",
         color: "green",
-        message: "Leave request submitted",
+        message: editingId
+          ? "Leave request updated"
+          : "Leave request submitted",
+        withBorder: true,
+      });
+    },
+    onError: (error: unknown) => {
+      const apiError = error as { status?: number; message?: string };
+      notifications.show({
+        title: "Error",
+        color: "red",
+        message: apiError?.message || "Failed to save leave request",
+        withBorder: true,
+      });
+    },
+  });
+
+  const { mutate: deleteRequest, isPending: isDeleting } = useMutation({
+    mutationFn: () => deleteLeaveRequest(deletingId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["leaverRequests", user?.employeeId],
+      });
+      setDeleteConfirmOpen(false);
+      setDeletingId(null);
+      notifications.show({
+        title: "Success",
+        color: "green",
+        message: "Leave request deleted",
+        withBorder: true,
+      });
+    },
+    onError: (error: unknown) => {
+      const apiError = error as { status?: number; message?: string };
+      notifications.show({
+        title: "Error",
+        color: "red",
+        message: apiError?.message || "Failed to delete leave request",
         withBorder: true,
       });
     },
@@ -83,26 +150,75 @@ function Leave() {
     label: credit.type,
   }));
 
+  const handleEditClick = (request: LeaveRequest) => {
+    setEditingId(request.id);
+    setEditStartDate(request.startDate);
+    setEditEndDate(request.endDate);
+    setEditLeaveType(request.leaveType);
+    setEditNote(request.note || "");
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteClick = (requestId: string) => {
+    setDeletingId(requestId);
+    setDeleteConfirmOpen(true);
+  };
+
   const leaveColumns = [
     { key: "leaveType", label: "Type" },
     { key: "startDate", label: "Start date" },
     { key: "endDate", label: "End date" },
     { key: "status", label: "Status" },
     { key: "note", label: "Notes" },
+    {
+      key: "actions",
+      label: "Actions",
+      isAction: true,
+      actions: [
+        {
+          label: "Edit",
+          icon: <MdEdit size={16} />,
+          onClick: (row: LeaveRequest) => handleEditClick(row),
+        },
+        {
+          label: "Delete",
+          icon: <MdDelete size={16} color="red" />,
+          onClick: (row: LeaveRequest) => handleDeleteClick(row.id),
+        },
+      ],
+    },
   ];
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingId(null);
+    setStartDate(null);
+    setEndDate(null);
+    setLeaveType(null);
+    setNote("");
+    setEditStartDate(null);
+    setEditEndDate(null);
+    setEditLeaveType(null);
+    setEditNote("");
+  };
+
   const handleSubmit = () => {
-    if (startDate && endDate && leaveType) {
+    const submitStartDate = editingId ? editStartDate : startDate;
+    const submitEndDate = editingId ? editEndDate : endDate;
+    const submitLeaveType = editingId ? editLeaveType : leaveType;
+    const submitNote = editingId ? editNote : note;
+
+    if (submitStartDate && submitEndDate && submitLeaveType) {
       const formatDate = (date: Date | string) => {
         if (typeof date === "string") return date;
         return date.toISOString().split("T")[0];
       };
 
       mutate({
-        startDate: formatDate(startDate),
-        endDate: formatDate(endDate),
-        leaveType: leaveType as LeaveType,
-        ...(note && { note }),
+        startDate: formatDate(submitStartDate),
+        endDate: formatDate(submitEndDate),
+        leaveType: submitLeaveType as LeaveType,
+        ...(submitNote && { note: submitNote }),
       });
     }
   };
@@ -151,7 +267,22 @@ function Leave() {
           </Box>
         </Box>
         <Group justify="end">
-          <Button onClick={() => setIsModalOpen(true)}>New Request</Button>
+          <Button
+            onClick={() => {
+              setEditingId(null);
+              setStartDate(null);
+              setEndDate(null);
+              setLeaveType(null);
+              setNote("");
+              setEditStartDate(null);
+              setEditEndDate(null);
+              setEditLeaveType(null);
+              setEditNote("");
+              setIsModalOpen(true);
+            }}
+          >
+            New Request
+          </Button>
         </Group>
         <PaginatedTable
           columns={leaveColumns}
@@ -178,56 +309,79 @@ function Leave() {
 
       <Modal
         opened={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="New Leave Request"
+        onClose={handleCloseModal}
+        title={editingId ? "Edit Leave Request" : "New Leave Request"}
         size="md"
       >
         <Stack gap="md">
           {isErrorSubmitting && (
             <Text c="red" size="sm">
-              Failed to create leave request
+              Failed to save leave request
             </Text>
           )}
           <DatePickerInput
             label="Start Date"
             placeholder="Select start date"
-            value={startDate}
-            onChange={setStartDate}
+            value={editingId ? editStartDate : startDate}
+            onChange={editingId ? setEditStartDate : setStartDate}
           />
           <DatePickerInput
             label="End Date"
             placeholder="Select end date"
-            value={endDate}
-            onChange={setEndDate}
+            value={editingId ? editEndDate : endDate}
+            onChange={editingId ? setEditEndDate : setEndDate}
           />
           <Select
             label="Leave Type"
             placeholder="Select leave type"
             data={leaveTypeOptions}
-            value={leaveType}
-            onChange={setLeaveType}
+            value={editingId ? editLeaveType : leaveType}
+            onChange={editingId ? setEditLeaveType : setLeaveType}
           />
           <Textarea
             label="Note"
             placeholder="Add any additional notes (optional)"
-            value={note}
-            onChange={(e) => setNote(e.currentTarget.value)}
+            value={editingId ? editNote : note}
+            onChange={(e) =>
+              editingId
+                ? setEditNote(e.currentTarget.value)
+                : setNote(e.currentTarget.value)
+            }
             minRows={3}
           />
           <Group justify="flex-end">
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button variant="outline" onClick={handleCloseModal}>
               Cancel
             </Button>
             <Button
               onClick={() => handleSubmit()}
               loading={isPending}
-              disabled={!startDate || !endDate || !leaveType}
+              disabled={
+                editingId
+                  ? !editStartDate || !editEndDate || !editLeaveType
+                  : !startDate || !endDate || !leaveType
+              }
             >
-              Submit
+              {editingId ? "Update" : "Submit"}
             </Button>
           </Group>
         </Stack>
       </Modal>
+
+      <ConfirmationModal
+        opened={deleteConfirmOpen}
+        title="Delete Leave Request"
+        message="Are you sure you want to delete this leave request?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDangerous={true}
+        isLoading={isDeleting}
+        onConfirm={() => deleteRequest()}
+        onCancel={() => {
+          setDeleteConfirmOpen(false);
+          setDeletingId(null);
+        }}
+      />
     </>
   );
 }
