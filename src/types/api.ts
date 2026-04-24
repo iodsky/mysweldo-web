@@ -35,3 +35,8 @@ export type ApiError = {
   validationErrors?: ValidationError[];
   duplicateField?: DuplicateField;
 };
+
+export type PaginationFilters = {
+  pageNo: number;
+  limit: number;
+};
