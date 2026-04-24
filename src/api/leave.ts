@@ -1,5 +1,10 @@
 import axios from "axios";
-import type { ApiError, ApiResponse, PaginatedApiResponse } from "../types";
+import type {
+  ApiError,
+  ApiResponse,
+  PaginatedApiResponse,
+  PaginationFilters,
+} from "../types";
 import type { LeaveCredit, LeaveRequest, LeaveType } from "../types/leave";
 import client from "./client";
 
@@ -18,11 +23,18 @@ export const getOwnLeaveCredits = async (): Promise<
   }
 };
 
-export const getOwnLeaveRequests = async (): Promise<
-  PaginatedApiResponse<LeaveRequest[]>
-> => {
+export type LeaveRequestsFilters = {
+  startDate: string;
+  endDate: string;
+};
+
+export const getOwnLeaveRequests = async (
+  filters: PaginationFilters,
+): Promise<PaginatedApiResponse<LeaveRequest[]>> => {
   try {
-    const response = await client.get("/leave-requests/me");
+    const response = await client.get("/leave-requests/me", {
+      params: filters,
+    });
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
