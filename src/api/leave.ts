@@ -23,11 +23,6 @@ export const getOwnLeaveCredits = async (): Promise<
   }
 };
 
-export type LeaveRequestsFilters = {
-  startDate: string;
-  endDate: string;
-};
-
 export const getOwnLeaveRequests = async (
   filters: PaginationFilters,
 ): Promise<PaginatedApiResponse<LeaveRequest[]>> => {
