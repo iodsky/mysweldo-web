@@ -18,7 +18,7 @@ import {
   getOwnLeaveCredits,
   getOwnLeaveRequests,
 } from "../../../api/leave";
-import type { LeaveRequest } from "../../../types";
+import type { LeaveRequest, PaginationFilters } from "../../../types";
 import { notifications } from "@mantine/notifications";
 import type { LeaveType } from "../../../types/leave";
 import { PaginatedTable } from "../../../components/PaginatedTable";
@@ -31,10 +31,14 @@ function Leave() {
   const [endDate, setEndDate] = useState<Date | string | null>(null);
   const [leaveType, setLeaveType] = useState<string | null>(null);
   const [note, setNote] = useState<string>("");
+  const [filters, setFilters] = useState<PaginationFilters>({
+    pageNo: 0,
+    limit: 10,
+  });
 
   const { data, isFetching, isError } = useQuery({
-    queryKey: ["leaverRequests", user?.employeeId],
-    queryFn: getOwnLeaveRequests,
+    queryKey: ["leaverRequests", user?.employeeId, filters],
+    queryFn: () => getOwnLeaveRequests(filters),
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 60, // 1 hour
   });
@@ -157,12 +161,18 @@ function Leave() {
           errorMessage="Failed to retrieve leave requests"
           emptyMessage="No Leave Request found"
           meta={meta}
-          onPreviousPage={() => {
-            // Implement pagination handler for leave requests
-          }}
-          onNextPage={() => {
-            // Implement pagination handler for leave requests
-          }}
+          onPreviousPage={() =>
+            setFilters((prev) => ({
+              ...prev,
+              pageNo: prev.pageNo - 1,
+            }))
+          }
+          onNextPage={() =>
+            setFilters((prev) => ({
+              ...prev,
+              pageNo: prev.pageNo + 1,
+            }))
+          }
         />
       </Stack>
 
