@@ -1,5 +1,10 @@
 // API types
-export type { ApiError, ApiResponse, PaginatedApiResponse } from "./api";
+export type {
+  ApiError,
+  ApiResponse,
+  PaginatedApiResponse,
+  PaginationFilters,
+} from "./api";
 
 // Auth domain types
 export type {
