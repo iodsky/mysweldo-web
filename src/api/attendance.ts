@@ -4,6 +4,7 @@ import type {
   ApiResponse,
   Attendance,
   PaginatedApiResponse,
+  PaginationFilters,
 } from "../types";
 import client from "./client";
 
@@ -33,9 +34,7 @@ export const clockOut = async (): Promise<ApiResponse<Attendance>> => {
   }
 };
 
-export type AttendanceFilters = {
-  pageNo: number;
-  limit: number;
+export type AttendanceFilters = PaginationFilters & {
   startDate?: string;
   endDate?: string;
 };
