@@ -2,10 +2,12 @@ import axios from "axios";
 import type {
   ApiError,
   ApiResponse,
+  LeaveCredit,
+  LeaveRequest,
+  LeaveType,
   PaginatedApiResponse,
   PaginationFilters,
 } from "../types";
-import type { LeaveCredit, LeaveRequest, LeaveType } from "../types/leave";
 import client from "./client";
 
 export const getOwnLeaveCredits = async (): Promise<

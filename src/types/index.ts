@@ -20,4 +20,4 @@ export type { Employee, EmployeeBenefit } from "./employee";
 
 export type { Attendance } from "./attendance";
 
-export type { LeaveRequest, LeaveCredit } from "./leave";
+export type { LeaveRequest, LeaveCredit, LeaveType } from "./leave";
