@@ -1,3 +1,5 @@
+import type { RequestStatus } from "./common";
+
 export type LeaveType =
   | "VACATION"
   | "SICK"
@@ -13,8 +15,6 @@ export type LeaveCredit = {
   credits: number;
   effectiveDate: string;
 };
-
-export type RequestStatus = "APPROVED" | "REJECTED" | "PENDING";
 
 export type LeaveRequest = {
   id: string;

@@ -21,3 +21,7 @@ export type { Employee, EmployeeBenefit } from "./employee";
 export type { Attendance } from "./attendance";
 
 export type { LeaveRequest, LeaveCredit, LeaveType } from "./leave";
+
+export type { RequestStatus } from "./common";
+
+export type { OvertimeRequest } from "./overtime";
