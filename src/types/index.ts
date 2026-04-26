@@ -25,3 +25,5 @@ export type { LeaveRequest, LeaveCredit, LeaveType } from "./leave";
 export type { RequestStatus } from "./common";
 
 export type { OvertimeRequest } from "./overtime";
+
+export type { Payslip } from "./payslip";
