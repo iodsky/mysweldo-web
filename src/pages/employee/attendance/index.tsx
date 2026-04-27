@@ -13,7 +13,7 @@ import {
   getEmployeeAttendances,
   type AttendanceFilters,
 } from "../../../api/attendance";
-import type { ApiError, Attendance } from "../../../types";
+import type { ApiError, Attendance as AttendanceType } from "../../../types";
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { PaginatedTable } from "../../../components/PaginatedTable";
@@ -83,7 +83,7 @@ function Attendance() {
     },
   });
 
-  const rows: Attendance[] = Array.isArray(data?.data) ? data.data : [];
+  const rows: AttendanceType[] = Array.isArray(data?.data) ? data.data : [];
   const meta = data?.meta;
 
   const attendanceColumns = [
