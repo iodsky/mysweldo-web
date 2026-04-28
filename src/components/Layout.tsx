@@ -1,10 +1,38 @@
-import { AppShell, Container } from "@mantine/core";
+import { AppShell, Burger, Container, Group } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
+import { useDisclosure } from "@mantine/hooks";
 
 function Layout() {
+  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
+  const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
+
   return (
-    <AppShell navbar={{ width: 250, breakpoint: "sm" }} padding="md">
+    <AppShell
+      navbar={{
+        width: 200,
+        breakpoint: "sm",
+        collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
+      }}
+      header={{ height: 60 }}
+      padding="md"
+    >
+      <AppShell.Header>
+        <Group h="100%" px="md">
+          <Burger
+            opened={mobileOpened}
+            onClick={toggleMobile}
+            hiddenFrom="md"
+            size="sm"
+          />
+          <Burger
+            opened={desktopOpened}
+            onClick={toggleDesktop}
+            visibleFrom="md"
+            size="sm"
+          />
+        </Group>
+      </AppShell.Header>
       <AppShell.Navbar>
         <Navbar />
       </AppShell.Navbar>
