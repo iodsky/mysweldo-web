@@ -16,7 +16,7 @@ import { useForm } from "@mantine/form";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "../../../api/auth";
 import { notifications } from "@mantine/notifications";
-import type { AccessType, ApiError } from "../../../types";
+import type { AccessType, ApiError, Role } from "../../../types";
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -52,7 +52,11 @@ function Login() {
         color: "green",
         withBorder: true,
       });
-      navigate("/employee/profile");
+      const redirectPath = getRedirectPath(
+        response.data.accessType,
+        response.data.user.role,
+      );
+      navigate(redirectPath);
     },
     onError: (error: ApiError) => {
       notifications.show({
@@ -63,6 +67,24 @@ function Login() {
       });
     },
   });
+
+  const getRedirectPath = (accessType: AccessType, role: Role): string => {
+    if (accessType === "ADMIN") {
+      switch (role) {
+        case "HR":
+        case "SUPERUSER":
+          return "/hr/dashboard";
+        case "PAYROLL":
+          return "/payroll/dashboard";
+        case "IT":
+          return "/it/dashboard";
+        default:
+          return "/hr/dashboard";
+      }
+    }
+
+    return "/employee/profile";
+  };
 
   return (
     <>

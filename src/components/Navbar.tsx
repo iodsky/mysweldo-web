@@ -1,8 +1,16 @@
 import { NavLink, Stack } from "@mantine/core";
-import { FaUmbrellaBeach, FaBusinessTime, FaUser } from "react-icons/fa";
+import {
+  FaUmbrellaBeach,
+  FaBusinessTime,
+  FaUser,
+  FaUsers,
+  FaBriefcase,
+} from "react-icons/fa";
+import { GoOrganization } from "react-icons/go";
 import { FaMoneyCheckDollar } from "react-icons/fa6";
 import { RiLogoutBoxFill } from "react-icons/ri";
-import { MdTimer } from "react-icons/md";
+import { MdCheckCircle } from "react-icons/md";
+import { TfiDashboard } from "react-icons/tfi";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
@@ -20,7 +28,7 @@ interface NavLinkItem {
 function Navbar() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { clearAuth } = useAuth();
+  const { clearAuth, accessType, user } = useAuth();
   const location = useLocation();
 
   const { mutate: logutFn } = useMutation({
@@ -38,9 +46,27 @@ function Navbar() {
     },
   });
 
+  const hrLinks: NavLinkItem[] = [
+    { label: "Dashboard", path: "/hr/dashboard", icon: TfiDashboard },
+    { label: "Employees", path: "/hr/employees", icon: FaUsers },
+    { label: "Attendance", path: "/hr/attendance", icon: MdCheckCircle },
+    { label: "Leave", path: "/hr/leave", icon: FaUmbrellaBeach },
+    { label: "Overtime", path: "/hr/overtime", icon: FaBusinessTime },
+    { label: "Position", path: "/hr/position", icon: FaBriefcase },
+    { label: "Department", path: "/hr/department", icon: GoOrganization },
+  ];
+
+  const itLinks: NavLinkItem[] = [
+    { label: "Users", path: "/it/users", icon: FaUsers },
+  ];
+
+  const payrollLinks: NavLinkItem[] = [
+    { label: "Payroll Run", path: "/payroll/runs", icon: FaMoneyCheckDollar },
+  ];
+
   const employeeLinks: NavLinkItem[] = [
     { label: "Profile", path: "/employee/profile", icon: FaUser },
-    { label: "Attendance", path: "/employee/attendance", icon: MdTimer },
+    { label: "Attendance", path: "/employee/attendance", icon: MdCheckCircle },
     {
       label: "Leave",
       path: "/employee/leave",
@@ -58,10 +84,21 @@ function Navbar() {
     },
   ];
 
+  const roleLinksMap: Record<string, NavLinkItem[]> = {
+    HR: hrLinks,
+    IT: itLinks,
+    PAYROLL: payrollLinks,
+  };
+
+  const links: NavLinkItem[] =
+    accessType === "EMPLOYEE"
+      ? employeeLinks
+      : (roleLinksMap[user?.role ?? ""] ?? employeeLinks);
+
   return (
     <Stack gap={0} justify="space-between" style={{ height: "100%" }}>
       <Stack gap={0}>
-        {employeeLinks.map((link) => (
+        {links.map((link) => (
           <NavLink
             key={link.path}
             label={link.label}
