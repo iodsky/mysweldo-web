@@ -9,6 +9,7 @@ import Overtime from "../pages/employee/overtime";
 import Payslip from "../pages/employee/payslip";
 import HRDashboard from "../pages/hr/dashboard";
 import HREmployees from "../pages/hr/employees";
+import HREmployeeDetail from "../pages/hr/employees/[id]";
 import HRAttendance from "../pages/hr/attendance";
 import HRLeave from "../pages/hr/leave";
 import HROvertime from "../pages/hr/overtime";
@@ -32,6 +33,7 @@ export const AppRoutes = createBrowserRouter([
 
           { path: "/hr/dashboard", element: <HRDashboard /> },
           { path: "/hr/employees", element: <HREmployees /> },
+          { path: "/hr/employees/:id", element: <HREmployeeDetail /> },
           { path: "/hr/attendance", element: <HRAttendance /> },
           { path: "/hr/leave", element: <HRLeave /> },
           { path: "/hr/overtime", element: <HROvertime /> },
