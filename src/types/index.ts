@@ -18,6 +18,7 @@ export type {
 
 export type {
   Employee,
+  EmployeeBasic,
   EmployeeDto,
   EmployeeBenefit,
   EmploymentStatus,
@@ -36,3 +37,7 @@ export type { RequestStatus } from "./common";
 export type { OvertimeRequest } from "./overtime";
 
 export type { Payslip } from "./payslip";
+
+export type { Department } from "./department";
+
+export type { Position } from "./position";

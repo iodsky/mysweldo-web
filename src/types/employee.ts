@@ -15,8 +15,26 @@ export type EmploymentType =
   | "CONTRACTUAL"
   | "INTERN";
 
-export type Employee = {
+export type Position = {
   id: string;
+  title: string;
+};
+
+export type Department = {
+  id: string;
+  title: string;
+};
+
+export type Supervisor = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  department: string;
+  position: string;
+};
+
+export type Employee = {
+  id: number;
   firstName: string;
   lastName: string;
   birthday: string; // LocalDate as ISO string
@@ -26,16 +44,27 @@ export type Employee = {
   tinNumber: string;
   philhealthNumber: string;
   pagIbigNumber: string;
-  supervisor: string;
-  position: string;
-  department: string;
+  supervisor: EmployeeBasic | null;
+  position: Position;
+  department: Department;
   status: EmploymentStatus;
   type: EmploymentType;
   startShift: string; // LocalTime as HH:MM:SS
   endShift: string; // LocalTime as HH:MM:SS
-  basicSalary: number; // BigDecimal as string
+  salary: Salary; // BigDecimal as string
   benefits: EmployeeBenefit[];
 };
+
+export type EmployeeBasic = Pick<
+  Employee,
+  | "id"
+  | "firstName"
+  | "lastName"
+  | "department"
+  | "position"
+  | "status"
+  | "type"
+>;
 
 export type EmployeeDto = {
   firstName: string;
@@ -70,6 +99,6 @@ export type PayrollFrequency =
 
 export type Salary = {
   rate: number;
-  type: PayType;
-  payrollFrequency: PayrollFrequency;
+  payType: PayType;
+  payFrequency: PayrollFrequency;
 };

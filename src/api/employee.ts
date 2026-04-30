@@ -9,6 +9,7 @@ import type {
   PaginatedApiResponse,
   PaginationFilters,
 } from "../types";
+import type { EmployeeBasic } from "../types/employee";
 
 export const getAuthenticatedEmployee = async (): Promise<
   ApiResponse<Employee>
@@ -33,7 +34,7 @@ type GetAllEmployeesFilters = PaginationFilters & {
 
 export const getAllEmployees = async (
   filters: GetAllEmployeesFilters,
-): Promise<PaginatedApiResponse<Employee[]>> => {
+): Promise<PaginatedApiResponse<EmployeeBasic[]>> => {
   try {
     const response = await client.get("/employees", { params: filters });
     return response.data;
