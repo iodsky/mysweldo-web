@@ -16,7 +16,16 @@ export type {
   AuthenticatedUser,
 } from "./auth";
 
-export type { Employee, EmployeeBenefit } from "./employee";
+export type {
+  Employee,
+  EmployeeDto,
+  EmployeeBenefit,
+  EmploymentStatus,
+  EmploymentType,
+  PayType,
+  PayrollFrequency,
+  Salary,
+} from "./employee";
 
 export type { Attendance } from "./attendance";
 
