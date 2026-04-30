@@ -11,12 +11,12 @@ import {
 } from "@mantine/core";
 import { VscServerProcess } from "react-icons/vsc";
 import { useQuery } from "@tanstack/react-query";
-import { getEmployeeProfile } from "../../../api/employee";
+import { getAuthenticatedEmployee } from "../../../api/employee";
 
 function Profile() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["employee"],
-    queryFn: getEmployeeProfile,
+    queryFn: getAuthenticatedEmployee,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours - rarely updated
     gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days - keep in cache long term
   });
@@ -63,7 +63,7 @@ function Profile() {
           <Group gap="xs" mt="xs">
             <Badge>{employee.position}</Badge>
             <Badge variant="light">{employee.department}</Badge>
-            <Badge color={employee.status === "ACTIVE" ? "green" : "gray"}>
+            <Badge color={employee.status === "REGULAR" ? "green" : "gray"}>
               {employee.status}
             </Badge>
           </Group>
