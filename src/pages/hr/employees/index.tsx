@@ -15,22 +15,34 @@ import {
 } from "@mantine/core";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BsEye, BsTrash, BsPlus, BsThreeDotsVertical } from "react-icons/bs";
-import { getAllEmployees, deleteEmployee } from "../../../api/employee";
+import {
+  getAllEmployees,
+  deleteEmployee,
+  getEmployeeById,
+} from "../../../api/employee";
 import { PaginatedTable } from "../../../components/PaginatedTable";
 import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { EmployeeForm } from "../../../components/EmployeeForm";
-import type { Employee, EmploymentStatus } from "../../../types";
+import type {
+  EmploymentStatus,
+  EmployeeBasic,
+  Employee,
+  Position,
+  Department,
+} from "../../../types";
 
 function Page() {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [formOpened, setFormOpened] = useState(false);
   const [deleteOpened, setDeleteOpened] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+  const [selectedEmployee, setSelectedEmployee] =
+    useState<EmployeeBasic | null>(null);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [departmentFilter, setDepartmentFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<EmploymentStatus | null>(
     null,
   );
-  const [departmentFilter, setDepartmentFilter] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch employees list
@@ -42,9 +54,16 @@ function Page() {
         limit: 10,
         department: departmentFilter || undefined,
         supervisor: undefined,
-        status: statusFilter ? (statusFilter as EmploymentStatus) : undefined,
+        status: statusFilter || undefined,
       }),
     staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Fetch full employee details for editing
+  const { data: employeeDetail } = useQuery({
+    queryKey: ["employee", editingEmployee?.id],
+    queryFn: () => getEmployeeById(editingEmployee!.id),
+    enabled: !!editingEmployee?.id,
   });
 
   // Delete employee mutation
@@ -57,29 +76,29 @@ function Page() {
     },
   });
 
-  const handleViewEmployee = (employee: Employee) => {
+  const handleViewEmployee = (employee: EmployeeBasic) => {
     navigate(`/hr/employees/${employee.id}`);
   };
 
-  const handleDeleteEmployee = (employee: Employee) => {
+  const handleDeleteEmployee = (employee: EmployeeBasic) => {
     setSelectedEmployee(employee);
     setDeleteOpened(true);
   };
 
   const handleCreateEmployee = () => {
-    setSelectedEmployee(null);
+    setEditingEmployee(null);
     setFormOpened(true);
   };
 
   const handleConfirmDelete = async () => {
     if (selectedEmployee) {
-      deleteMutation.mutate(parseInt(selectedEmployee.id));
+      deleteMutation.mutate(selectedEmployee.id);
     }
   };
 
   const handleFormClose = () => {
     setFormOpened(false);
-    setSelectedEmployee(null);
+    setEditingEmployee(null);
   };
 
   const handleResetFilters = () => {
@@ -102,7 +121,7 @@ function Page() {
     {
       key: "firstName",
       label: "Name",
-      render: (_: unknown, row: Employee) => (
+      render: (_: unknown, row: EmployeeBasic) => (
         <Text size="sm" fw={500}>
           {row.firstName} {row.lastName}
         </Text>
@@ -111,12 +130,16 @@ function Page() {
     {
       key: "position",
       label: "Position",
-      render: (value: unknown) => <Text size="sm">{String(value)}</Text>,
+      render: (value: unknown) => (
+        <Text size="sm">{String((value as Position)?.title)}</Text>
+      ),
     },
     {
       key: "department",
       label: "Department",
-      render: (value: unknown) => <Text size="sm">{String(value)}</Text>,
+      render: (value: unknown) => (
+        <Text size="sm">{String((value as Department)?.title)}</Text>
+      ),
     },
     {
       key: "status",
@@ -144,7 +167,7 @@ function Page() {
       key: "actions",
       label: "Actions",
       isAction: true,
-      render: (_: unknown, row: Employee) => (
+      render: (_: unknown, row: EmployeeBasic) => (
         <Menu shadow="md" position="bottom-end">
           <Menu.Target>
             <ActionIcon variant="subtle" color="gray" size="sm">
@@ -266,7 +289,7 @@ function Page() {
       <EmployeeForm
         opened={formOpened}
         onClose={handleFormClose}
-        employee={selectedEmployee || undefined}
+        employee={employeeDetail?.data || undefined}
         isEditing={false}
       />
 

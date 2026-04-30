@@ -11,8 +11,10 @@ import {
 import { showNotification } from "@mantine/notifications";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { createEmployee, updateEmployee } from "../api/employee";
+import { getAllDepartments } from "../api/department";
+import { getAllPositions } from "../api/position";
 import type {
   Employee,
   EmploymentStatus,
@@ -52,32 +54,58 @@ interface FormValues {
   payrollFrequency: PayrollFrequency;
 }
 
-const employmentStatusOptions = [
-  { value: "PROBATIONARY", label: "Probationary" },
-  { value: "REGULAR", label: "Regular" },
-  { value: "TERMINATED", label: "Terminated" },
-  { value: "RESIGNED", label: "Resigned" },
-];
+const EMPLOYMENT_STATUS_MAP: Record<EmploymentStatus, string> = {
+  PROBATIONARY: "Probationary",
+  REGULAR: "Regular",
+  TERMINATED: "Terminated",
+  RESIGNED: "Resigned",
+};
 
-const employmentTypeOptions = [
-  { value: "FULL_TIME", label: "Full Time" },
-  { value: "PART_TIME", label: "Part Time" },
-  { value: "CONTRACTUAL", label: "Contractual" },
-  { value: "INTERN", label: "Intern" },
-];
+const EMPLOYMENT_TYPE_MAP: Record<EmploymentType, string> = {
+  FULL_TIME: "Full Time",
+  PART_TIME: "Part Time",
+  CONTRACTUAL: "Contractual",
+  INTERN: "Intern",
+};
 
-const payTypeOptions = [
-  { value: "MONTHLY", label: "Monthly" },
-  { value: "DAILY", label: "Daily" },
-  { value: "HOURLY", label: "Hourly" },
-];
+const PAY_TYPE_MAP: Record<PayType, string> = {
+  MONTHLY: "Monthly",
+  DAILY: "Daily",
+  HOURLY: "Hourly",
+};
 
-const payrollFrequencyOptions = [
-  { value: "SEMI_MONTHLY", label: "Semi-Monthly" },
-  { value: "MONTHLY", label: "Monthly" },
-  { value: "WEEKLY", label: "Weekly" },
-  { value: "BI_WEEKLY", label: "Bi-Weekly" },
-];
+const PAYROLL_FREQUENCY_MAP: Record<PayrollFrequency, string> = {
+  SEMI_MONTHLY: "Semi-Monthly",
+  MONTHLY: "Monthly",
+  WEEKLY: "Weekly",
+  BI_WEEKLY: "Bi-Weekly",
+};
+
+const employmentStatusOptions = (
+  Object.keys(EMPLOYMENT_STATUS_MAP) as EmploymentStatus[]
+).map((key) => ({
+  value: key,
+  label: EMPLOYMENT_STATUS_MAP[key],
+}));
+
+const employmentTypeOptions = (
+  Object.keys(EMPLOYMENT_TYPE_MAP) as EmploymentType[]
+).map((key) => ({
+  value: key,
+  label: EMPLOYMENT_TYPE_MAP[key],
+}));
+
+const payTypeOptions = (Object.keys(PAY_TYPE_MAP) as PayType[]).map((key) => ({
+  value: key,
+  label: PAY_TYPE_MAP[key],
+}));
+
+const payrollFrequencyOptions = (
+  Object.keys(PAYROLL_FREQUENCY_MAP) as PayrollFrequency[]
+).map((key) => ({
+  value: key,
+  label: PAYROLL_FREQUENCY_MAP[key],
+}));
 
 const handleApiError = (
   error: unknown,
@@ -131,6 +159,34 @@ export function EmployeeForm({
 }: EmployeeFormProps) {
   const queryClient = useQueryClient();
 
+  // Fetch departments
+  const { data: departmentsData, isLoading: departmentsLoading } = useQuery({
+    queryKey: ["departments"],
+    queryFn: getAllDepartments,
+  });
+
+  // Fetch positions
+  const { data: positionsData, isLoading: positionsLoading } = useQuery({
+    queryKey: ["positions"],
+    queryFn: getAllPositions,
+  });
+
+  // Transform departments to Select options
+  const departmentOptions = departmentsData?.data
+    ? departmentsData.data.map((dept) => ({
+        value: dept.id,
+        label: dept.title,
+      }))
+    : [];
+
+  // Transform positions to Select options
+  const positionOptions = positionsData?.data
+    ? positionsData.data.map((pos) => ({
+        value: pos.id,
+        label: pos.title,
+      }))
+    : [];
+
   const form = useForm<FormValues>({
     initialValues: employee
       ? {
@@ -144,15 +200,15 @@ export function EmployeeForm({
           philhealthNumber: employee.philhealthNumber,
           pagibigNumber: employee.pagIbigNumber,
           supervisorId: 0,
-          positionId: "",
-          departmetnId: "",
-          status: employee.status as EmploymentStatus,
-          type: employee.type as EmploymentType,
+          positionId: employee.position.id,
+          departmetnId: employee.department.id,
+          status: employee.status,
+          type: employee.type,
           startShift: employee.startShift,
           endShift: employee.endShift,
-          salaryRate: employee.basicSalary,
-          salaryType: "MONTHLY" as PayType,
-          payrollFrequency: "MONTHLY" as PayrollFrequency,
+          salaryRate: employee.salary.rate,
+          salaryType: employee.salary.payType,
+          payrollFrequency: employee.salary.payFrequency,
         }
       : {
           firstName: "",
@@ -167,13 +223,13 @@ export function EmployeeForm({
           supervisorId: 0,
           positionId: "",
           departmetnId: "",
-          status: "PROBATIONARY" as EmploymentStatus,
-          type: "FULL_TIME" as EmploymentType,
+          status: "PROBATIONARY",
+          type: "FULL_TIME",
           startShift: "",
           endShift: "",
           salaryRate: 0,
-          salaryType: "MONTHLY" as PayType,
-          payrollFrequency: "MONTHLY" as PayrollFrequency,
+          salaryType: "MONTHLY",
+          payrollFrequency: "MONTHLY",
         },
     validate: {
       firstName: (value) => (!value ? "First name is required" : null),
@@ -197,19 +253,16 @@ export function EmployeeForm({
         tinNumber: employee.tinNumber,
         philhealthNumber: employee.philhealthNumber,
         pagibigNumber: employee.pagIbigNumber,
-        supervisorId: 0,
-        positionId: "",
-        departmetnId: "",
-        status: employee.status as EmploymentStatus,
-        type: employee.type as EmploymentType,
+        supervisorId: employee.supervisor?.id || 0,
+        positionId: employee.position.id,
+        departmetnId: employee.department.id,
+        status: employee.status,
+        type: employee.type,
         startShift: employee.startShift,
         endShift: employee.endShift,
-        salaryRate:
-          typeof employee.basicSalary === "number"
-            ? employee.basicSalary
-            : Number(employee.basicSalary) || 0,
-        salaryType: "MONTHLY" as PayType,
-        payrollFrequency: "MONTHLY" as PayrollFrequency,
+        salaryRate: employee.salary.rate,
+        salaryType: employee.salary.payType,
+        payrollFrequency: employee.salary.payFrequency,
       });
     } else if (opened && !isEditing) {
       form.reset();
@@ -231,6 +284,9 @@ export function EmployeeForm({
           philhealthNumber: formData.philhealthNumber,
           pagIbigNumber: formData.pagibigNumber,
         },
+        supervisorId: formData.supervisorId || undefined,
+        positionId: formData.positionId,
+        departmentId: formData.departmetnId,
         status: formData.status,
         type: formData.type,
         startShift: formData.startShift,
@@ -238,21 +294,10 @@ export function EmployeeForm({
         benefits: [],
         salaryRequest: {
           rate: formData.salaryRate,
-          type: formData.salaryType,
-          payrollFrequency: formData.payrollFrequency,
+          payType: formData.salaryType,
+          payFrequency: formData.payrollFrequency,
         },
       };
-
-      // Only include optional fields if they have valid values
-      if (formData.supervisorId > 0) {
-        baseDto.supervisorId = formData.supervisorId;
-      }
-      if (formData.positionId) {
-        baseDto.positionId = formData.positionId;
-      }
-      if (formData.departmetnId) {
-        baseDto.departmentId = formData.departmetnId;
-      }
 
       return createEmployee(baseDto);
     },
@@ -280,6 +325,9 @@ export function EmployeeForm({
           philhealthNumber: formData.philhealthNumber,
           pagIbigNumber: formData.pagibigNumber,
         },
+        supervisorId: formData.supervisorId || undefined,
+        positionId: formData.positionId,
+        departmentId: formData.departmetnId,
         status: formData.status,
         type: formData.type,
         startShift: formData.startShift,
@@ -287,26 +335,18 @@ export function EmployeeForm({
         benefits: [],
         salaryRequest: {
           rate: formData.salaryRate,
-          type: formData.salaryType,
-          payrollFrequency: formData.payrollFrequency,
+          payType: formData.salaryType,
+          payFrequency: formData.payrollFrequency,
         },
       };
 
-      // Only include optional fields if they have valid values
-      if (formData.supervisorId > 0) {
-        baseDto.supervisorId = formData.supervisorId;
-      }
-      if (formData.positionId) {
-        baseDto.positionId = formData.positionId;
-      }
-      if (formData.departmetnId) {
-        baseDto.departmentId = formData.departmetnId;
-      }
-
-      return updateEmployee(parseInt(employee!.id), baseDto);
+      return updateEmployee(employee!.id, baseDto);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
+      if (employee) {
+        queryClient.invalidateQueries({ queryKey: ["employee", employee.id] });
+      }
       onClose();
     },
     onError: (error: Error) => {
@@ -447,16 +487,20 @@ export function EmployeeForm({
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Position ID"
-                placeholder="Enter position ID"
+              <Select
+                label="Position"
+                placeholder="Select position"
+                data={positionOptions}
+                disabled={positionsLoading}
                 {...form.getInputProps("positionId")}
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Department ID"
-                placeholder="Enter department ID"
+              <Select
+                label="Department"
+                placeholder="Select department"
+                data={departmentOptions}
+                disabled={departmentsLoading}
                 {...form.getInputProps("departmetnId")}
               />
             </Grid.Col>

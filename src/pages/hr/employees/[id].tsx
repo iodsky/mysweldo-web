@@ -107,8 +107,8 @@ function Page() {
               {employee.firstName} {employee.lastName}
             </Text>
             <Group gap="xs" mt="xs">
-              <Badge>{employee.position}</Badge>
-              <Badge variant="light">{employee.department}</Badge>
+              <Badge>{employee.position.title}</Badge>
+              <Badge variant="light">{employee.department.title}</Badge>
               <Badge color={employee.status === "REGULAR" ? "green" : "gray"}>
                 {employee.status}
               </Badge>
@@ -168,7 +168,7 @@ function Page() {
                   <Text size="xs" c="dimmed">
                     Position
                   </Text>
-                  <Text>{employee.position}</Text>
+                  <Text>{employee.position.title}</Text>
                 </div>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -176,7 +176,7 @@ function Page() {
                   <Text size="xs" c="dimmed">
                     Department
                   </Text>
-                  <Text>{employee.department}</Text>
+                  <Text>{employee.department.title}</Text>
                 </div>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -184,7 +184,13 @@ function Page() {
                   <Text size="xs" c="dimmed">
                     Supervisor
                   </Text>
-                  <Text>{employee.supervisor}</Text>
+                  <Text>
+                    {employee.supervisor == null
+                      ? "N/A"
+                      : employee.supervisor.firstName +
+                        " " +
+                        employee.supervisor.lastName}
+                  </Text>
                 </div>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -216,7 +222,7 @@ function Page() {
                   <Text size="xs" c="dimmed">
                     Basic Salary
                   </Text>
-                  <Text>{employee.basicSalary}</Text>
+                  <Text>{employee.salary?.rate || "0"}</Text>
                 </div>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6 }}>
