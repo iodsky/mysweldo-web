@@ -93,11 +93,14 @@ export const updateEmployee = async (
   }
 };
 
-export const deleteEmployee = async (
+export const updateEmployeeStatus = async (
   id: number,
+  status: EmploymentStatus,
 ): Promise<ApiResponse<void>> => {
   try {
-    const response = await client.delete(`/employees/${id}`);
+    const response = await client.patch(`/employees/${id}/status`, null, {
+      params: { status },
+    });
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

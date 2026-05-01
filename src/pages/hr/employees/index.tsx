@@ -12,16 +12,17 @@ import {
   Select,
   Breadcrumbs,
   Anchor,
+  Modal,
 } from "@mantine/core";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BsEye, BsTrash, BsPlus, BsThreeDotsVertical } from "react-icons/bs";
+import { BsEye, BsPlus, BsThreeDotsVertical } from "react-icons/bs";
+import { TbUserEdit } from "react-icons/tb";
 import {
   getAllEmployees,
-  deleteEmployee,
+  updateEmployeeStatus,
   getEmployeeById,
 } from "../../../api/employee";
 import { PaginatedTable } from "../../../components/PaginatedTable";
-import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { EmployeeForm } from "../../../components/EmployeeForm";
 import type {
   EmploymentStatus,
@@ -30,6 +31,7 @@ import type {
   Position,
   Department,
 } from "../../../types";
+import { notifications } from "@mantine/notifications";
 
 function Page() {
   const navigate = useNavigate();
@@ -43,6 +45,10 @@ function Page() {
   const [statusFilter, setStatusFilter] = useState<EmploymentStatus | null>(
     null,
   );
+  const [selectedStatus, setSelectedStatus] = useState<EmploymentStatus | null>(
+    null,
+  );
+
   const queryClient = useQueryClient();
 
   // Fetch employees list
@@ -67,12 +73,28 @@ function Page() {
   });
 
   // Delete employee mutation
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteEmployee(id),
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: EmploymentStatus }) =>
+      updateEmployeeStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       setDeleteOpened(false);
       setSelectedEmployee(null);
+      setSelectedStatus(null);
+
+      notifications.show({
+        color: "green",
+        title: "Success",
+        message: "Employee status updated successfully",
+      });
+    },
+    onError: (err) => {
+      let message = "Something went wrong";
+      if ("message" in err && "status" in err) {
+        message = err.message;
+      }
+
+      notifications.show({ title: "Error", message, color: "red" });
     },
   });
 
@@ -90,10 +112,10 @@ function Page() {
     setFormOpened(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (selectedEmployee) {
-      deleteMutation.mutate(selectedEmployee.id);
-    }
+  const handleConfirmStatusUpdate = async () => {
+    if (!selectedEmployee || !selectedStatus) return;
+
+    statusMutation.mutate({ id: selectedEmployee.id, status: selectedStatus });
   };
 
   const handleFormClose = () => {
@@ -183,11 +205,11 @@ function Page() {
             </Menu.Item>
             <Menu.Divider />
             <Menu.Item
-              leftSection={<BsTrash size={14} />}
+              leftSection={<TbUserEdit size={14} />}
               color="red"
               onClick={() => handleDeleteEmployee(row)}
             >
-              Delete
+              Terminate
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>
@@ -293,20 +315,48 @@ function Page() {
         isEditing={false}
       />
 
-      <ConfirmationModal
+      <Modal
         opened={deleteOpened}
-        title="Delete Employee"
-        message={`Are you sure you want to delete ${selectedEmployee?.firstName} ${selectedEmployee?.lastName}? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        isDangerous
-        isLoading={deleteMutation.isPending}
-        onConfirm={handleConfirmDelete}
-        onCancel={() => {
+        title="Terminate Employee"
+        onClose={() => {
           setDeleteOpened(false);
           setSelectedEmployee(null);
         }}
-      />
+      >
+        <Stack gap="md">
+          <Text>{`Are you sure you want to terminate ${selectedEmployee?.firstName} ${selectedEmployee?.lastName}? This action cannot be undone.`}</Text>
+          <Select
+            label="Status"
+            placeholder="Select status"
+            value={selectedStatus}
+            onChange={(value) => setSelectedStatus(value as EmploymentStatus)}
+            data={[
+              { value: "TERMINATED", label: "Terminated" },
+              { value: "RESIGNED", label: "Resigned" },
+            ]}
+          />{" "}
+          <Group justify="flex-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteOpened(false);
+                setSelectedEmployee(null);
+              }}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmStatusUpdate}
+              loading={statusMutation.isPending}
+              color="red"
+              disabled={!selectedStatus}
+            >
+              Update
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Box>
   );
 }
