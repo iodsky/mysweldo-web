@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { AccessToken, ApiResponse } from "../types";
+import type { AccessToken, ApiError, ApiResponse } from "../types";
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 const client = axios.create({
   baseURL: baseURL,
@@ -27,10 +27,16 @@ client.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     // Prevent infinite refresh loops - don't retry refresh endpoint itself
+
+    const isAuthEndpoint =
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/logout") ||
+      originalRequest.url?.includes("/auth/refresh");
+
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/auth/refresh")
+      !isAuthEndpoint
     ) {
       originalRequest._retry = true; // Mark the request as retried to avoid infinite loops.
       try {
@@ -47,7 +53,22 @@ client.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
-    return Promise.reject(error);
+    const data = error.response?.data;
+
+    if (
+      typeof data === "object" &&
+      typeof data.message === "string" &&
+      typeof data.status === "number"
+    ) {
+      return Promise.reject(data);
+    }
+
+    // fallback: normalize unknown error into ApiError
+    return Promise.reject<ApiError>({
+      timestamp: new Date().toISOString(),
+      status: error.response?.status ?? 0,
+      message: error.message || "Unexpected error",
+    });
   },
 );
 
