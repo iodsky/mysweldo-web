@@ -22,7 +22,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { getEmployeePayslips, type PayslipsFilter } from "../../../api/payroll";
 import type { Payslip } from "../../../types";
 
-function PayslipPage() {
+function Page() {
   const { user } = useAuth();
   const [filters, setFilters] = useState<PayslipsFilter>({
     pageNo: 0,
@@ -499,4 +499,4 @@ function PayslipPage() {
   );
 }
 
-export default PayslipPage;
+export default Page;

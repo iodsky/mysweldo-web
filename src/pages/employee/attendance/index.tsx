@@ -13,12 +13,13 @@ import {
   getEmployeeAttendances,
   type AttendanceFilters,
 } from "../../../api/attendance";
-import type { ApiError, Attendance as AttendanceType } from "../../../types";
+import type { Attendance } from "../../../types";
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { PaginatedTable } from "../../../components/PaginatedTable";
+import { handleApiError } from "../../../utils/error-handler";
 
-function Attendance() {
+function Page() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -50,14 +51,7 @@ function Attendance() {
         withBorder: true,
       });
     },
-    onError: (error: ApiError) => {
-      notifications.show({
-        title: "Attendance error",
-        message: error.message ?? "An unexpected error has occured",
-        color: "red",
-        withBorder: true,
-      });
-    },
+    onError: handleApiError,
   });
 
   const { mutate: clockOutFn, isPending: isClockOutPending } = useMutation({
@@ -73,17 +67,10 @@ function Attendance() {
         withBorder: true,
       });
     },
-    onError: (error: ApiError) => {
-      notifications.show({
-        title: "Attendance error",
-        message: error.message ?? "An unexpected error has occured",
-        color: "red",
-        withBorder: true,
-      });
-    },
+    onError: handleApiError,
   });
 
-  const rows: AttendanceType[] = Array.isArray(data?.data) ? data.data : [];
+  const rows: Attendance[] = Array.isArray(data?.data) ? data.data : [];
   const meta = data?.meta;
 
   const attendanceColumns = [
@@ -206,4 +193,4 @@ function Attendance() {
   );
 }
 
-export default Attendance;
+export default Page;

@@ -8,7 +8,6 @@ import {
   Group,
   Textarea,
 } from "@mantine/core";
-import { showNotification } from "@mantine/notifications";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -107,49 +106,49 @@ const payrollFrequencyOptions = (
   label: PAYROLL_FREQUENCY_MAP[key],
 }));
 
-const handleApiError = (
-  error: unknown,
-  form: { setFieldError: (field: string, error: string) => void },
-): void => {
-  // Check for validation errors directly on the error object
-  const apiError = error as Partial<ApiError>;
+// const handleApiError = (
+//   error: unknown,
+//   form: { setFieldError: (field: string, error: string) => void },
+// ): void => {
+//   // Check for validation errors directly on the error object
+//   const apiError = error as Partial<ApiError>;
 
-  if (apiError.validationErrors && Array.isArray(apiError.validationErrors)) {
-    // Set field-level errors
-    apiError.validationErrors.forEach(
-      (validationError: { field: string; message: string }) => {
-        form.setFieldError(validationError.field, validationError.message);
-      },
-    );
-    // Show summary notification
-    showNotification({
-      title: "Validation Failed",
-      message: "Please fix the highlighted fields and try again.",
-      color: "red",
-      autoClose: 5000,
-    });
-    return;
-  }
+//   if (apiError.validationErrors && Array.isArray(apiError.validationErrors)) {
+//     // Set field-level errors
+//     apiError.validationErrors.forEach(
+//       (validationError: { field: string; message: string }) => {
+//         form.setFieldError(validationError.field, validationError.message);
+//       },
+//     );
+//     // Show summary notification
+//     showNotification({
+//       title: "Validation Failed",
+//       message: "Please fix the highlighted fields and try again.",
+//       color: "red",
+//       autoClose: 5000,
+//     });
+//     return;
+//   }
 
-  // Try to get message from error object
-  if (apiError.message) {
-    showNotification({
-      title: "Error",
-      message: apiError.message,
-      color: "red",
-      autoClose: 5000,
-    });
-    return;
-  }
+//   // Try to get message from error object
+//   if (apiError.message) {
+//     showNotification({
+//       title: "Error",
+//       message: apiError.message,
+//       color: "red",
+//       autoClose: 5000,
+//     });
+//     return;
+//   }
 
-  // Generic error handling
-  showNotification({
-    title: "Error",
-    message: "An unexpected error occurred. Please try again.",
-    color: "red",
-    autoClose: 5000,
-  });
-};
+//   // Generic error handling
+//   showNotification({
+//     title: "Error",
+//     message: "An unexpected error occurred. Please try again.",
+//     color: "red",
+//     autoClose: 5000,
+//   });
+// };
 
 export function EmployeeForm({
   opened,
@@ -306,13 +305,21 @@ export function EmployeeForm({
       form.reset();
       onClose();
     },
-    onError: (error: Error) => {
-      handleApiError(error, form);
+    onError: (error: unknown) => {
+      const apiError = error as ApiError;
+
+      // field errors
+      if (apiError.validationErrors?.length) {
+        apiError.validationErrors.forEach((err) => {
+          form.setFieldError(err.field, err.message);
+        });
+      }
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: (formData: FormValues) => {
+      console.log("FORM DATA:", formData);
       const baseDto: EmployeeDto = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -349,8 +356,15 @@ export function EmployeeForm({
       }
       onClose();
     },
-    onError: (error: Error) => {
-      handleApiError(error, form);
+    onError: (error: unknown) => {
+      const apiError = error as ApiError;
+
+      // field errors
+      if (apiError.validationErrors?.length) {
+        apiError.validationErrors.forEach((err) => {
+          form.setFieldError(err.field, err.message);
+        });
+      }
     },
   });
 
@@ -493,6 +507,7 @@ export function EmployeeForm({
                 data={positionOptions}
                 disabled={positionsLoading}
                 {...form.getInputProps("positionId")}
+                searchable
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -502,6 +517,7 @@ export function EmployeeForm({
                 data={departmentOptions}
                 disabled={departmentsLoading}
                 {...form.getInputProps("departmetnId")}
+                searchable
               />
             </Grid.Col>
 

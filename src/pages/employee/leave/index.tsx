@@ -26,8 +26,9 @@ import type { LeaveType } from "../../../types/leave";
 import { PaginatedTable } from "../../../components/PaginatedTable";
 import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { MdEdit, MdDelete } from "react-icons/md";
+import { handleApiError } from "../../../utils/error-handler";
 
-function Leave() {
+function Page() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,15 +105,7 @@ function Leave() {
         withBorder: true,
       });
     },
-    onError: (error: unknown) => {
-      const apiError = error as { status?: number; message?: string };
-      notifications.show({
-        title: "Error",
-        color: "red",
-        message: apiError?.message || "Failed to save leave request",
-        withBorder: true,
-      });
-    },
+    onError: handleApiError,
   });
 
   const { mutate: deleteRequest, isPending: isDeleting } = useMutation({
@@ -130,15 +123,7 @@ function Leave() {
         withBorder: true,
       });
     },
-    onError: (error: unknown) => {
-      const apiError = error as { status?: number; message?: string };
-      notifications.show({
-        title: "Error",
-        color: "red",
-        message: apiError?.message || "Failed to delete leave request",
-        withBorder: true,
-      });
-    },
+    onError: handleApiError,
   });
 
   const rows: LeaveRequest[] = data?.data ? data.data : [];
@@ -386,4 +371,4 @@ function Leave() {
   );
 }
 
-export default Leave;
+export default Page;

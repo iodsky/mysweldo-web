@@ -32,6 +32,7 @@ import type {
   Department,
 } from "../../../types";
 import { notifications } from "@mantine/notifications";
+import { handleApiError } from "../../../utils/error-handler";
 
 function Page() {
   const navigate = useNavigate();
@@ -88,14 +89,7 @@ function Page() {
         message: "Employee status updated successfully",
       });
     },
-    onError: (err) => {
-      let message = "Something went wrong";
-      if ("message" in err && "status" in err) {
-        message = err.message;
-      }
-
-      notifications.show({ title: "Error", message, color: "red" });
-    },
+    onError: handleApiError,
   });
 
   const handleViewEmployee = (employee: EmployeeBasic) => {

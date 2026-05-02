@@ -27,8 +27,9 @@ import type { OvertimeRequest, PaginationFilters } from "../../../types";
 import { notifications } from "@mantine/notifications";
 import { ConfirmationModal } from "../../../components/ConfirmationModal";
 import { MdEdit, MdDelete } from "react-icons/md";
+import { handleApiError } from "../../../utils/error-handler";
 
-function Overtime() {
+function Page() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -79,24 +80,7 @@ function Overtime() {
         withBorder: true,
       });
     },
-    onError: (error: unknown) => {
-      const apiError = error as { status?: number; message?: string };
-      if (apiError?.status === 409) {
-        notifications.show({
-          title: "Already Exists",
-          color: "yellow",
-          message: "Overtime request already exists for this day",
-          withBorder: true,
-        });
-      } else {
-        notifications.show({
-          title: "Error",
-          color: "red",
-          message: apiError?.message || "Failed to save overtime request",
-          withBorder: true,
-        });
-      }
-    },
+    onError: handleApiError,
   });
 
   const { mutate: deleteRequest, isPending: isDeleting } = useMutation({
@@ -114,15 +98,7 @@ function Overtime() {
         withBorder: true,
       });
     },
-    onError: (error: unknown) => {
-      const apiError = error as { status?: number; message?: string };
-      notifications.show({
-        title: "Error",
-        color: "red",
-        message: apiError?.message || "Failed to delete overtime request",
-        withBorder: true,
-      });
-    },
+    onError: handleApiError,
   });
 
   const requests: OvertimeRequest[] = data?.data ? data.data : [];
@@ -382,4 +358,4 @@ function Overtime() {
   );
 }
 
-export default Overtime;
+export default Page;

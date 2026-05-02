@@ -14,14 +14,21 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useMutation } from "@tanstack/react-query";
-import { login } from "../../../api/auth";
+import { login, type LoginCredentials } from "../../../api/auth";
 import { notifications } from "@mantine/notifications";
-import type { AccessType, ApiError, Role } from "../../../types";
+import type {
+  AccessType,
+  ApiError,
+  ApiResponse,
+  AuthSession,
+  Role,
+} from "../../../types";
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { handleApiError } from "../../../utils/error-handler";
 
-function Login() {
+function Page() {
   const { setAuth } = useAuth();
   const navigate = useNavigate();
   const [accessType, setAccessType] = useState<AccessType>("EMPLOYEE");
@@ -42,7 +49,11 @@ function Login() {
     loginFn({ email, password, accessType });
   };
 
-  const { mutate: loginFn, isPending } = useMutation({
+  const { mutate: loginFn, isPending } = useMutation<
+    ApiResponse<AuthSession>,
+    ApiError,
+    LoginCredentials
+  >({
     mutationFn: login,
     onSuccess: (response) => {
       setAuth(response.data);
@@ -58,14 +69,7 @@ function Login() {
       );
       navigate(redirectPath);
     },
-    onError: (error: ApiError) => {
-      notifications.show({
-        title: "Error",
-        message: error.message ?? "Authentication failed",
-        color: "red",
-        withBorder: true,
-      });
-    },
+    onError: handleApiError,
   });
 
   const getRedirectPath = (accessType: AccessType, role: Role): string => {
@@ -143,4 +147,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Page;

@@ -13,7 +13,7 @@ import { VscServerProcess } from "react-icons/vsc";
 import { useQuery } from "@tanstack/react-query";
 import { getAuthenticatedEmployee } from "../../../api/employee";
 
-function Profile() {
+function Page() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["employee"],
     queryFn: getAuthenticatedEmployee,
@@ -248,4 +248,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default Page;

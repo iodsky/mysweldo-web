@@ -1,12 +1,12 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from "../pages/auth/login";
-import Profile from "../pages/employee/profile";
+import EmployeeProfile from "../pages/employee/profile";
 import ProtectedRoute from "./ProtectedRoute";
 import Layout from "../components/Layout";
-import Attendance from "../pages/employee/attendance";
-import Leave from "../pages/employee/leave";
-import Overtime from "../pages/employee/overtime";
-import Payslip from "../pages/employee/payslip";
+import EmployeeAttendance from "../pages/employee/attendance";
+import EmployeeLeave from "../pages/employee/leave";
+import EmployeeOvertime from "../pages/employee/overtime";
+import EmployeePayslip from "../pages/employee/payslip";
 import HRDashboard from "../pages/hr/dashboard";
 import HREmployees from "../pages/hr/employees";
 import HREmployeeDetail from "../pages/hr/employees/[id]";
@@ -25,11 +25,11 @@ export const AppRoutes = createBrowserRouter([
       {
         element: <Layout />,
         children: [
-          { path: "/employee/profile", element: <Profile /> },
-          { path: "/employee/attendance", element: <Attendance /> },
-          { path: "/employee/leave", element: <Leave /> },
-          { path: "/employee/overtime", element: <Overtime /> },
-          { path: "/employee/payslip", element: <Payslip /> },
+          { path: "/employee/profile", element: <EmployeeProfile /> },
+          { path: "/employee/attendance", element: <EmployeeAttendance /> },
+          { path: "/employee/leave", element: <EmployeeLeave /> },
+          { path: "/employee/overtime", element: <EmployeeOvertime /> },
+          { path: "/employee/payslip", element: <EmployeePayslip /> },
 
           { path: "/hr/dashboard", element: <HRDashboard /> },
           { path: "/hr/employees", element: <HREmployees /> },
