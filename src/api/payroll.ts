@@ -1,6 +1,4 @@
-import axios from "axios";
 import type {
-  ApiError,
   PaginatedApiResponse,
   PaginationFilters,
   Payslip,
@@ -14,14 +12,6 @@ export type PayslipsFilter = PaginationFilters & {
 export const getEmployeePayslips = async (
   filters: PayslipsFilter,
 ): Promise<PaginatedApiResponse<Payslip>> => {
-  try {
-    const response = await client.get("/payroll-items/me", { params: filters });
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const apiError = error.response?.data as ApiError;
-      throw apiError;
-    }
-    throw error;
-  }
+  const response = await client.get("/payroll-items/me", { params: filters });
+  return response.data;
 };
