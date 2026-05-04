@@ -212,94 +212,87 @@ function Page() {
   ];
 
   return (
-    <Box p="lg">
-      <Stack gap="lg">
-        {/* Breadcrumbs */}
-        <Breadcrumbs>
-          <Anchor
-            href="/hr/dashboard"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/hr/dashboard");
-            }}
-            size="sm"
-          >
-            HR
-          </Anchor>
-          <Text size="sm">Employees</Text>
-        </Breadcrumbs>
+    <>
+      <Box p="lg">
+        <Stack gap="lg">
+          {/* Breadcrumbs */}
+          <Breadcrumbs>
+            <Text size="sm">HR</Text>
+            <Anchor size="sm">Employees</Anchor>
+          </Breadcrumbs>
 
-        {/* Header */}
-        <Group justify="space-between" align="center">
-          <div>
-            <Text size="lg" fw={700}>
-              Employee Management
-            </Text>
-            <Text size="sm" c="dimmed">
-              Manage all employees in the system
-            </Text>
-          </div>
-          <Button
-            leftSection={<BsPlus size={16} />}
-            onClick={handleCreateEmployee}
-          >
-            Add Employee
-          </Button>
-        </Group>
+          {/* Header */}
+          <Group justify="space-between" align="center">
+            <div>
+              <Text size="lg" fw={700}>
+                Employee Management
+              </Text>
+              <Text size="sm" c="dimmed">
+                Manage all employees in the system
+              </Text>
+            </div>
+            <Button
+              leftSection={<BsPlus size={16} />}
+              onClick={handleCreateEmployee}
+            >
+              Add Employee
+            </Button>
+          </Group>
 
-        {/* Filters */}
-        <Group gap="md">
-          <Select
-            placeholder="Filter by department"
-            searchable
-            clearable
-            data={[
-              { value: "IT", label: "IT" },
-              { value: "HR", label: "HR" },
-              { value: "Finance", label: "Finance" },
-              { value: "Operations", label: "Operations" },
-              { value: "Marketing", label: "Marketing" },
-            ]}
-            value={departmentFilter}
-            onChange={setDepartmentFilter}
-            style={{ flex: 1, maxWidth: 200 }}
+          {/* Filters */}
+          <Group gap="md">
+            <Select
+              placeholder="Filter by department"
+              searchable
+              clearable
+              data={[
+                { value: "IT", label: "IT" },
+                { value: "HR", label: "HR" },
+                { value: "Finance", label: "Finance" },
+                { value: "Operations", label: "Operations" },
+                { value: "Marketing", label: "Marketing" },
+              ]}
+              value={departmentFilter}
+              onChange={setDepartmentFilter}
+              style={{ flex: 1, maxWidth: 200 }}
+            />
+            <Select
+              placeholder="Filter by status"
+              searchable
+              clearable
+              data={[
+                { value: "PROBATIONARY", label: "Probationary" },
+                { value: "REGULAR", label: "Regular" },
+                { value: "TERMINATED", label: "Terminated" },
+                { value: "RESIGNED", label: "Resigned" },
+              ]}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ flex: 1, maxWidth: 200 }}
+            />
+            <Button
+              variant="outline"
+              onClick={handleResetFilters}
+              disabled={!departmentFilter && !statusFilter}
+            >
+              Reset Filters
+            </Button>
+          </Group>
+
+          {/* Table */}
+          <PaginatedTable
+            columns={columns}
+            rows={employees}
+            isFetching={isLoading}
+            isError={isError}
+            errorMessage={errorMessage}
+            emptyMessage="No employees found"
+            meta={meta}
+            onNextPage={() => setPage((p) => p + 1)}
+            onPreviousPage={() => setPage((p) => p - 1)}
           />
-          <Select
-            placeholder="Filter by status"
-            searchable
-            clearable
-            data={[
-              { value: "PROBATIONARY", label: "Probationary" },
-              { value: "REGULAR", label: "Regular" },
-              { value: "TERMINATED", label: "Terminated" },
-              { value: "RESIGNED", label: "Resigned" },
-            ]}
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ flex: 1, maxWidth: 200 }}
-          />
-          <Button
-            variant="outline"
-            onClick={handleResetFilters}
-            disabled={!departmentFilter && !statusFilter}
-          >
-            Reset Filters
-          </Button>
-        </Group>
-
-        {/* Table */}
-        <PaginatedTable
-          columns={columns}
-          rows={employees}
-          isFetching={isLoading}
-          isError={isError}
-          errorMessage={errorMessage}
-          emptyMessage="No employees found"
-          meta={meta}
-          onNextPage={() => setPage((p) => p + 1)}
-          onPreviousPage={() => setPage((p) => p - 1)}
-        />
-      </Stack>
+        </Stack>
+      </Box>
 
       {/* Modals */}
       <EmployeeForm
@@ -351,7 +344,7 @@ function Page() {
           </Group>
         </Stack>
       </Modal>
-    </Box>
+    </>
   );
 }
 

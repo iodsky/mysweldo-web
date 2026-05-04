@@ -18,7 +18,7 @@ export interface ActionItem<T = Record<string, unknown>> {
   onClick: (row: T) => void;
 }
 
-interface Column<T = Record<string, unknown>> {
+export interface Column<T = Record<string, unknown>> {
   key: string;
   label: string;
   render?: (value: unknown, row: T) => React.ReactNode;
@@ -156,7 +156,7 @@ export function PaginatedTable<
           </Button>
 
           <Text>
-            Page {meta.page} of {meta.totalPages}
+            Page {meta.page + 1} of {meta.totalPages}
           </Text>
 
           <Button disabled={meta.last} onClick={onNextPage}>

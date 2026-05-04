@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  Container,
   Paper,
   Text,
   Group,
@@ -75,7 +74,7 @@ function Page() {
   ];
 
   return (
-    <Container fluid>
+    <>
       {/* Breadcrumbs */}
       <Breadcrumbs mb="lg">
         {breadcrumbItems.map((item, index) =>
@@ -312,7 +311,7 @@ function Page() {
         employee={editingEmployee || undefined}
         isEditing={true}
       />
-    </Container>
+    </>
   );
 }
 

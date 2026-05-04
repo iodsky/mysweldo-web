@@ -10,13 +10,16 @@ import {
 import {
   clockIn,
   clockOut,
-  getEmployeeAttendances,
+  getOwnAttendances,
   type AttendanceFilters,
 } from "../../../api/attendance";
 import type { Attendance } from "../../../types";
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
-import { PaginatedTable } from "../../../components/PaginatedTable";
+import {
+  PaginatedTable,
+  type Column,
+} from "../../../components/PaginatedTable";
 import { handleApiError } from "../../../utils/error-handler";
 
 function Page() {
@@ -32,7 +35,7 @@ function Page() {
 
   const { data, isFetching, isError } = useQuery({
     queryKey: ["attendances", user?.employeeId, filters],
-    queryFn: () => getEmployeeAttendances(filters),
+    queryFn: () => getOwnAttendances(filters),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 5, // 5 minutes - attendance changes frequently
     gcTime: 1000 * 60 * 60, // 1 hour
@@ -73,23 +76,29 @@ function Page() {
   const rows: Attendance[] = Array.isArray(data?.data) ? data.data : [];
   const meta = data?.meta;
 
-  const attendanceColumns = [
+  const columns: Column<Attendance>[] = [
     { key: "date", label: "Date" },
-    { key: "timeIn", label: "Time In" },
+    {
+      key: "timeIn",
+      label: "Time In",
+      render: (value) =>
+        typeof value === "string" ? value.split(".")[0] : "-",
+    },
     {
       key: "timeOut",
       label: "Time Out",
-      render: (value: unknown) => (typeof value === "string" ? value : "-"),
+      render: (value) =>
+        typeof value === "string" ? value.split(".")[0] : "-",
     },
     {
       key: "totalHours",
       label: "Total Hours",
-      render: (value: unknown) => (typeof value === "number" ? value : "-"),
+      render: (value) => (typeof value === "number" ? value : "-"),
     },
     {
       key: "overtimeHours",
       label: "Overtime",
-      render: (value: unknown) => (typeof value === "number" ? value : "-"),
+      render: (value) => (typeof value === "number" ? value : "-"),
     },
   ];
 
@@ -124,6 +133,7 @@ function Page() {
               pageNo: 0,
             }))
           }
+          highlightToday
           clearable
         />
         <DateInput
@@ -138,6 +148,7 @@ function Page() {
               pageNo: 0,
             }))
           }
+          highlightToday
           clearable
         />
         <Button
@@ -166,10 +177,10 @@ function Page() {
         {!isError && (
           <>
             <PaginatedTable
-              columns={attendanceColumns}
+              columns={columns}
               rows={rows}
               isFetching={isFetching}
-              isError={false}
+              isError={isError}
               errorMessage="Failed to load attendance data"
               emptyMessage="No attendance records found"
               meta={meta}
