@@ -29,7 +29,7 @@ import {
   getEmployeeById,
 } from "../../../api/employee";
 import PaginatedTable from "../../../components/paginated-table";
-import { EmployeeForm } from "../../../components/EmployeeForm";
+import { EmployeeForm } from "../../../components/employee-form";
 import type {
   EmploymentStatus,
   EmployeeBasic,

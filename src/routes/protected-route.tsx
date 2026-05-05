@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { Center, Loader } from "@mantine/core";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/use-auth";
 
 function ProtectedRoute() {
   const { isAuthenticated, isInitializing } = useAuth();

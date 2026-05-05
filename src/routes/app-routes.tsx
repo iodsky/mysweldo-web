@@ -1,8 +1,8 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from "../pages/auth/login";
 import EmployeeProfile from "../pages/employee/profile";
-import ProtectedRoute from "./ProtectedRoute";
-import Layout from "../components/Layout";
+import ProtectedRoute from "./protected-route";
+import Layout from "../components/layout";
 import EmployeeAttendance from "../pages/employee/attendance";
 import EmployeeLeave from "../pages/employee/leave";
 import EmployeeOvertime from "../pages/employee/overtime";

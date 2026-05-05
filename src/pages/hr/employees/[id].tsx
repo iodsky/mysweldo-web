@@ -17,7 +17,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { BsPencil } from "react-icons/bs";
 import { getEmployeeById } from "../../../api/employee";
-import { EmployeeForm } from "../../../components/EmployeeForm";
+import { EmployeeForm } from "../../../components/employee-form";
 import type { Employee } from "../../../types";
 
 function Page() {

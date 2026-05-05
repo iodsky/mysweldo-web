@@ -1,6 +1,6 @@
 import { AppShell, Burger, Container, Group } from "@mantine/core";
 import { Outlet } from "react-router-dom";
-import Navbar from "./Navbar";
+import Navbar from "./navbar";
 import { useDisclosure } from "@mantine/hooks";
 
 function Layout() {

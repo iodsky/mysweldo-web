@@ -18,7 +18,7 @@ import {
 } from "@mantine/core";
 import { MonthPickerInput } from "@mantine/dates";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useAuth } from "../../../hooks/useAuth";
+import { useAuth } from "../../../hooks/use-auth";
 import { getEmployeePayslips, type PayslipsFilter } from "../../../api/payroll";
 import type { Payslip } from "../../../types";
 

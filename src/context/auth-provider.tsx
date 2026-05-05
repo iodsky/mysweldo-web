@@ -7,7 +7,7 @@ import type {
   AuthSession,
   User,
 } from "../types";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "./auth-context";
 import { me } from "../api/auth";
 import client from "../api/client";
 

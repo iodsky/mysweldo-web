@@ -16,7 +16,7 @@ import {
 import { DatePickerInput } from "@mantine/dates";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useAuth } from "../../../hooks/useAuth";
+import { useAuth } from "../../../hooks/use-auth";
 import {
   createLeaveRequest,
   getOwnLeaveCredits,
@@ -28,7 +28,7 @@ import type { LeaveRequest, PaginationFilters } from "../../../types";
 import { notifications } from "@mantine/notifications";
 import type { LeaveType } from "../../../types/leave";
 import PaginatedTable from "../../../components/paginated-table";
-import { ConfirmationModal } from "../../../components/ConfirmationModal";
+import { ConfirmationModal } from "../../../components/confirmation-modal";
 import { BsPencil, BsThreeDotsVertical } from "react-icons/bs";
 import { handleApiError } from "../../../utils/error-handler";
 
