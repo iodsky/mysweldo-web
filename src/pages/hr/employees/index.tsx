@@ -30,13 +30,7 @@ import {
 } from "@/api/employee";
 import PaginatedTable from "@/components/paginated-table";
 import { EmployeeForm } from "@/components/employee-form";
-import type {
-  EmploymentStatus,
-  EmployeeBasic,
-  Employee,
-  Position,
-  Department,
-} from "@/types";
+import type { EmploymentStatus, EmployeeBasic, Employee } from "@/types";
 import { notifications } from "@mantine/notifications";
 import { handleApiError } from "@/utils/error-handler";
 import { getAllDepartments } from "@/api/department";
@@ -239,14 +233,10 @@ function Page() {
                     </Text>
                   </Table.Td>
                   <Table.Td>
-                    <Text size="sm">
-                      {String((row.position as Position)?.title)}
-                    </Text>
+                    <Text size="sm">{String(row.position.title)}</Text>
                   </Table.Td>
                   <Table.Td>
-                    <Text size="sm">
-                      {String((row.department as Department)?.title)}
-                    </Text>
+                    <Text size="sm">{String(row.department.title)}</Text>
                   </Table.Td>
                   <Table.Td>
                     <Badge

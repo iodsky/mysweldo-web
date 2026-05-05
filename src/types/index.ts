@@ -1,44 +1,280 @@
-// API types
-export type {
-  ApiError,
-  ApiResponse,
-  PaginatedApiResponse,
-  PaginationFilters,
-  PaginationMeta,
-} from "./api";
+export type ApiResponse<T> = {
+  success: boolean;
+  message: string;
+  timestamp: string;
+  data: T;
+};
 
-// Auth domain types
-export type {
-  AccessType,
-  AuthSession,
-  Role,
-  AccessToken,
-  User,
-  AuthenticatedUser,
-} from "./auth";
+export type PaginationMeta = {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+};
 
-export type {
+export type PaginatedApiResponse<T> = ApiResponse<T> & {
+  meta: PaginationMeta;
+};
+
+type ValidationError = {
+  field: string;
+  message: string;
+};
+
+type DuplicateField = {
+  field: string;
+  value: string;
+};
+
+export type ApiError = {
+  timestamp: string;
+  status: number;
+  message: string;
+  validationErrors?: ValidationError[];
+  duplicateField?: DuplicateField;
+};
+
+export type PaginationFilters = {
+  pageNo: number;
+  limit: number;
+};
+
+export type Attendance = {
+  id: string;
+  employeeId: number;
+  employeeFirstName?: string;
+  employeeLastName?: string;
+  date: string;
+  timeIn: string;
+  timeOut: string | null;
+  totalHours: number | null;
+  overtimeHours: number | null;
+};
+
+export type Role =
+  | "HR"
+  | "EMPLOYEE"
+  | "PAYROLL"
+  | "IT"
+  | "SUPERUSER"
+  | "SUPERVISOR";
+
+export type User = {
+  id: string;
+  email: string;
+  employeeId: number;
+  role: Role;
+  createdAt: string;
+  updatedAt?: string;
+};
+
+export type AccessType = "EMPLOYEE" | "ADMIN";
+
+export type AuthSession = {
+  user: User;
+  accessType: AccessType;
+  token: string;
+};
+
+export type AccessToken = {
+  token: string;
+};
+
+export type AuthenticatedUser = {
+  user: User;
+  accessType: AccessType;
+};
+
+export type RequestStatus = "APPROVED" | "REJECTED" | "PENDING";
+
+export type Department = {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Position = {
+  id: string;
+  departmentId: string;
+  departmentTitle: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type EmployeeBenefit = {
+  benefit: string;
+  amount: number;
+};
+
+export type EmploymentStatus =
+  | "PROBATIONARY"
+  | "REGULAR"
+  | "TERMINATED"
+  | "RESIGNED";
+
+export type EmploymentType =
+  | "FULL_TIME"
+  | "PART_TIME"
+  | "CONTRACTUAL"
+  | "INTERN";
+
+export type PositionBasic = Pick<Position, "id" | "title">;
+
+export type DepartmentBasic = Pick<Department, "id" | "title">;
+
+export type Supervisor = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  department: string;
+  position: string;
+};
+
+export type Employee = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  birthday: string; // LocalDate as ISO string
+  address: string;
+  phoneNumber: string;
+  sssNumber: string;
+  tinNumber: string;
+  philhealthNumber: string;
+  pagIbigNumber: string;
+  supervisor: EmployeeBasic | null;
+  position: PositionBasic;
+  department: DepartmentBasic;
+  status: EmploymentStatus;
+  type: EmploymentType;
+  startShift: string; // LocalTime as HH:MM:SS
+  endShift: string; // LocalTime as HH:MM:SS
+  salary: Salary; // BigDecimal as string
+  benefits: EmployeeBenefit[];
+};
+
+export type EmployeeBasic = Pick<
   Employee,
-  EmployeeBasic,
-  EmployeeDto,
-  EmployeeBenefit,
-  EmploymentStatus,
-  EmploymentType,
-  PayType,
-  PayrollFrequency,
-  Salary,
-} from "./employee";
+  | "id"
+  | "firstName"
+  | "lastName"
+  | "department"
+  | "position"
+  | "status"
+  | "type"
+>;
 
-export type { Attendance } from "./attendance";
+export type EmployeeDto = {
+  firstName: string;
+  lastName: string;
+  birthday: string;
+  address: string;
+  phoneNumber: string;
+  governmentId: {
+    sssNumber: string;
+    tinNumber: string;
+    philhealthNumber: string;
+    pagIbigNumber: string;
+  };
+  supervisorId?: number;
+  positionId?: string;
+  departmentId?: string;
+  status: EmploymentStatus;
+  type: EmploymentType;
+  startShift: string;
+  endShift: string;
+  benefits: EmployeeBenefit[];
+  salaryRequest: Salary;
+};
 
-export type { LeaveRequest, LeaveCredit, LeaveType } from "./leave";
+export type PayType = "MONTHLY" | "DAILY" | "HOURLY";
 
-export type { RequestStatus } from "./common";
+export type PayrollFrequency =
+  | "SEMI_MONTHLY"
+  | "MONTHLY"
+  | "WEEKLY"
+  | "BI_WEEKLY";
 
-export type { OvertimeRequest } from "./overtime";
+export type Salary = {
+  rate: number;
+  payType: PayType;
+  payFrequency: PayrollFrequency;
+};
 
-export type { Payslip } from "./payslip";
+export type LeaveType =
+  | "VACATION"
+  | "SICK"
+  | "MATERNITY"
+  | "PATERNITY"
+  | "SOLO_PARENT"
+  | "BEREAVEMENT";
 
-export type { Department } from "./department";
+export type LeaveCredit = {
+  id: string;
+  employeeId: number;
+  type: LeaveType;
+  credits: number;
+  effectiveDate: string;
+};
 
-export type { Position } from "./position";
+export type LeaveRequest = {
+  id: string;
+  employeeId: number;
+  leaveType: LeaveType;
+  startDate: string;
+  endDate: string;
+  note: string;
+  status: RequestStatus;
+};
+
+export type OvertimeRequest = {
+  id: string;
+  employeeId: number;
+  date: string;
+  overtimeHours: number;
+  reason?: string;
+  status: RequestStatus;
+};
+
+export type Payslip = {
+  id: string;
+  employeeId: number;
+  employeeName: string;
+  designation: string;
+
+  periodStartDate: string;
+  periodEndDate: string;
+
+  daysWorked: number;
+  absences: number;
+  tardinessMinutes: number;
+  undertimeMinutes: number;
+  overtimeMinutes: number;
+  overtimePay: number;
+
+  monthlyRate: number;
+  semiMonthlyRate: number;
+  dailyRate: number;
+  hourlyRate: number;
+
+  totalBenefits: number;
+  grossPay: number;
+  totalDeductions: number;
+  netPay: number;
+
+  benefits: PayslipBenefit[];
+  deductions: PayslipDeduction[];
+};
+
+type PayslipBenefit = {
+  benefit: string;
+  amount: number;
+};
+
+type PayslipDeduction = {
+  deduction: string;
+  amount: number;
+};
