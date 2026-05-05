@@ -8,6 +8,10 @@ import {
   Text,
   Textarea,
   Title,
+  ActionIcon,
+  Menu,
+  Table,
+  Tooltip,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -23,9 +27,9 @@ import {
 import type { LeaveRequest, PaginationFilters } from "../../../types";
 import { notifications } from "@mantine/notifications";
 import type { LeaveType } from "../../../types/leave";
-import { PaginatedTable } from "../../../components/PaginatedTable";
+import PaginatedTable from "../../../components/paginated-table";
 import { ConfirmationModal } from "../../../components/ConfirmationModal";
-import { MdEdit, MdDelete } from "react-icons/md";
+import { BsPencil, BsThreeDotsVertical } from "react-icons/bs";
 import { handleApiError } from "../../../utils/error-handler";
 
 function Page() {
@@ -149,31 +153,6 @@ function Page() {
     setDeleteConfirmOpen(true);
   };
 
-  const leaveColumns = [
-    { key: "leaveType", label: "Type" },
-    { key: "startDate", label: "Start date" },
-    { key: "endDate", label: "End date" },
-    { key: "status", label: "Status" },
-    { key: "note", label: "Notes" },
-    {
-      key: "actions",
-      label: "Actions",
-      isAction: true,
-      actions: [
-        {
-          label: "Edit",
-          icon: <MdEdit size={16} />,
-          onClick: (row: LeaveRequest) => handleEditClick(row),
-        },
-        {
-          label: "Delete",
-          icon: <MdDelete size={16} color="red" />,
-          onClick: (row: LeaveRequest) => handleDeleteClick(row.id),
-        },
-      ],
-    },
-  ];
-
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
@@ -252,44 +231,95 @@ function Page() {
           </Box>
         </Box>
         <Group justify="end">
-          <Button
-            onClick={() => {
-              setEditingId(null);
-              setStartDate(null);
-              setEndDate(null);
-              setLeaveType(null);
-              setNote("");
-              setEditStartDate(null);
-              setEditEndDate(null);
-              setEditLeaveType(null);
-              setEditNote("");
-              setIsModalOpen(true);
-            }}
+          <Tooltip
+            label="No leave credits available. Please contact HR or wait for credits to be assigned."
+            disabled={credits.length > 0}
           >
-            New Request
-          </Button>
+            <Button
+              disabled={credits.length === 0}
+              onClick={() => {
+                setEditingId(null);
+                setStartDate(null);
+                setEndDate(null);
+                setLeaveType(null);
+                setNote("");
+                setEditStartDate(null);
+                setEditEndDate(null);
+                setEditLeaveType(null);
+                setEditNote("");
+                setIsModalOpen(true);
+              }}
+            >
+              New Request
+            </Button>
+          </Tooltip>
         </Group>
-        <PaginatedTable
-          columns={leaveColumns}
-          rows={rows}
-          isFetching={isFetching}
-          isError={isError}
-          errorMessage="Failed to retrieve leave requests"
-          emptyMessage="No Leave Request found"
-          meta={meta}
-          onPreviousPage={() =>
-            setFilters((prev) => ({
-              ...prev,
-              pageNo: prev.pageNo - 1,
-            }))
-          }
-          onNextPage={() =>
-            setFilters((prev) => ({
-              ...prev,
-              pageNo: prev.pageNo + 1,
-            }))
-          }
-        />
+
+        {meta && (
+          <PaginatedTable
+            heading={[
+              "Type",
+              "Start date",
+              "End date",
+              "Status",
+              "Notes",
+              "Actions",
+            ]}
+            isError={isError}
+            errorMessage="Failed to load your leave requests. Please try again."
+            isFetching={isFetching}
+            meta={meta}
+            onPageChange={(page) =>
+              setFilters((prev) => ({
+                ...prev,
+                pageNo: page - 1,
+              }))
+            }
+            rows={rows.map((request) => (
+              <Table.Tr key={String(request.id)}>
+                <Table.Td>
+                  <Text size="sm">{request.leaveType}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm">{request.startDate}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm">{request.endDate}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm">{request.status}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm">{request.note || "-"}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Menu shadow="md" position="bottom-end">
+                    <Menu.Target>
+                      <ActionIcon variant="subtle" color="gray" size="sm">
+                        <BsThreeDotsVertical size={16} />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item
+                        leftSection={<BsPencil size={14} />}
+                        onClick={() => handleEditClick(request)}
+                      >
+                        Edit
+                      </Menu.Item>
+                      <Menu.Item
+                        leftSection={<BsThreeDotsVertical size={14} />}
+                        color="red"
+                        onClick={() => handleDeleteClick(request.id)}
+                      >
+                        Delete
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          />
+        )}
       </Stack>
 
       <Modal
@@ -307,6 +337,7 @@ function Page() {
           <DatePickerInput
             label="Start Date"
             placeholder="Select start date"
+            highlightToday
             value={editingId ? editStartDate : startDate}
             onChange={editingId ? setEditStartDate : setStartDate}
           />

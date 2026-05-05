@@ -106,50 +106,6 @@ const payrollFrequencyOptions = (
   label: PAYROLL_FREQUENCY_MAP[key],
 }));
 
-// const handleApiError = (
-//   error: unknown,
-//   form: { setFieldError: (field: string, error: string) => void },
-// ): void => {
-//   // Check for validation errors directly on the error object
-//   const apiError = error as Partial<ApiError>;
-
-//   if (apiError.validationErrors && Array.isArray(apiError.validationErrors)) {
-//     // Set field-level errors
-//     apiError.validationErrors.forEach(
-//       (validationError: { field: string; message: string }) => {
-//         form.setFieldError(validationError.field, validationError.message);
-//       },
-//     );
-//     // Show summary notification
-//     showNotification({
-//       title: "Validation Failed",
-//       message: "Please fix the highlighted fields and try again.",
-//       color: "red",
-//       autoClose: 5000,
-//     });
-//     return;
-//   }
-
-//   // Try to get message from error object
-//   if (apiError.message) {
-//     showNotification({
-//       title: "Error",
-//       message: apiError.message,
-//       color: "red",
-//       autoClose: 5000,
-//     });
-//     return;
-//   }
-
-//   // Generic error handling
-//   showNotification({
-//     title: "Error",
-//     message: "An unexpected error occurred. Please try again.",
-//     color: "red",
-//     autoClose: 5000,
-//   });
-// };
-
 export function EmployeeForm({
   opened,
   onClose,
@@ -162,12 +118,16 @@ export function EmployeeForm({
   const { data: departmentsData, isLoading: departmentsLoading } = useQuery({
     queryKey: ["departments"],
     queryFn: getAllDepartments,
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours
   });
 
   // Fetch positions
   const { data: positionsData, isLoading: positionsLoading } = useQuery({
     queryKey: ["positions"],
     queryFn: getAllPositions,
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours
   });
 
   // Transform departments to Select options

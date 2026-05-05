@@ -5,7 +5,7 @@ export type ApiResponse<T> = {
   data: T;
 };
 
-type PaginationMeta = {
+export type PaginationMeta = {
   page: number;
   size: number;
   totalElements: number;

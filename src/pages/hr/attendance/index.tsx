@@ -9,6 +9,7 @@ import {
   Modal,
   Select,
   Stack,
+  Table,
   Text,
 } from "@mantine/core";
 import { DateInput, TimeInput } from "@mantine/dates";
@@ -28,10 +29,7 @@ import {
 } from "../../../api/attendance";
 import type { AttendanceDto, AttendanceFilters } from "../../../api/attendance";
 import type { Attendance } from "../../../types";
-import {
-  PaginatedTable,
-  type Column,
-} from "../../../components/PaginatedTable";
+import PaginatedTable from "../../../components/paginated-table";
 import { getAllEmployees } from "../../../api/employee";
 import { notifications } from "@mantine/notifications";
 import { handleApiError } from "../../../utils/error-handler";
@@ -67,7 +65,7 @@ function Page() {
       }),
   });
 
-  const attendanceQuery = useQuery({
+  const { data, isError, isFetching } = useQuery({
     queryKey: [
       "attendances",
       selectedEmployeeId ? "employee" : "list",
@@ -171,10 +169,8 @@ function Page() {
     });
   };
 
-  const rows: Attendance[] = Array.isArray(attendanceQuery.data?.data)
-    ? attendanceQuery.data.data
-    : [];
-  const meta = attendanceQuery.data?.meta;
+  const rows: Attendance[] = Array.isArray(data?.data) ? data.data : [];
+  const meta = data?.meta;
 
   const employeeOptions = employeesData?.data
     ? employeesData.data.map((employee) => ({
@@ -182,61 +178,6 @@ function Page() {
         label: `${employee.firstName} ${employee.lastName}`,
       }))
     : [];
-
-  const columns: Column<Attendance>[] = [
-    {
-      key: "employee",
-      label: "Employee",
-      render: (_, row) =>
-        `${row.employeeFirstName ?? ""} ${row.employeeLastName ?? ""}`.trim() ||
-        "-",
-    },
-    { key: "date", label: "Date" },
-    {
-      key: "timeIn",
-      label: "Time In",
-      render: (value) =>
-        typeof value === "string" ? value.split(".")[0] : "-",
-    },
-    {
-      key: "timeOut",
-      label: "Time out",
-      render: (value) =>
-        typeof value === "string" ? value.split(".")[0] : "-",
-    },
-    {
-      key: "totalHours",
-      label: "Total hours",
-      render: (value) => (typeof value === "number" ? value : "-"),
-    },
-    {
-      key: "overtimeHours",
-      label: "Overtime",
-      render: (value) => (typeof value === "number" ? value : "-"),
-    },
-    {
-      key: "actions",
-      label: "Acrions",
-      isAction: true,
-      render: (_, row: Attendance) => (
-        <Menu shadow="md" position="bottom-end">
-          <Menu.Target>
-            <ActionIcon variant="subtle" color="gray" size="sm">
-              <BsThreeDotsVertical size={16} />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item
-              leftSection={<BsPencil size={14} />}
-              onClick={() => handleEditAttendance(row)}
-            >
-              Edit
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      ),
-    },
-  ];
 
   return (
     <>
@@ -323,39 +264,87 @@ function Page() {
             </Button>
           </Group>
 
-          <Box>
-            {attendanceQuery.isError && (
-              <Text c="red" fw={500}>
-                Failed to retrieve attendance
-              </Text>
-            )}
-
-            {!attendanceQuery.isError && (
-              <>
-                <PaginatedTable
-                  columns={columns}
-                  rows={rows}
-                  isError={attendanceQuery.isError}
-                  isFetching={attendanceQuery.isFetching}
-                  errorMessage="Failed to load attendance data"
-                  emptyMessage="No attendance records found"
-                  meta={meta}
-                  onPreviousPage={() =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      pageNo: prev.pageNo - 1,
-                    }))
-                  }
-                  onNextPage={() =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      pageNo: prev.pageNo + 1,
-                    }))
-                  }
-                />
-              </>
-            )}
-          </Box>
+          {meta && (
+            <PaginatedTable
+              heading={[
+                "Employee",
+                "Date",
+                "Time In",
+                "Time Out",
+                "Total hours",
+                "Overtime",
+                "Actions",
+              ]}
+              isError={isError}
+              errorMessage="Failed to load attendance records. Please try again or contact support."
+              isFetching={isFetching}
+              meta={meta}
+              onPageChange={(page) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  pageNo: page - 1,
+                }))
+              }
+              rows={rows.map((row: Attendance) => (
+                <Table.Tr key={String(row.id)}>
+                  <Table.Td>
+                    <Text size="sm">
+                      {`${row.employeeFirstName ?? ""} ${row.employeeLastName ?? ""}`.trim() ||
+                        "-"}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">{row.date}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">
+                      {typeof row.timeIn === "string"
+                        ? row.timeIn.split(".")[0]
+                        : "-"}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">
+                      {typeof row.timeOut === "string"
+                        ? row.timeOut.split(".")[0]
+                        : "-"}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">
+                      {typeof row.totalHours === "number"
+                        ? row.totalHours
+                        : "-"}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">
+                      {typeof row.overtimeHours === "number"
+                        ? row.overtimeHours
+                        : "-"}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Menu shadow="md" position="bottom-end">
+                      <Menu.Target>
+                        <ActionIcon variant="subtle" color="gray" size="sm">
+                          <BsThreeDotsVertical size={16} />
+                        </ActionIcon>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          leftSection={<BsPencil size={14} />}
+                          onClick={() => handleEditAttendance(row)}
+                        >
+                          Edit
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            />
+          )}
         </Stack>
       </Box>
 

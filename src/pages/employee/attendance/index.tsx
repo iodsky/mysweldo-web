@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text, Box, Title } from "@mantine/core";
+import { Button, Group, Stack, Text, Title, Table } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import {
@@ -16,10 +16,7 @@ import {
 import type { Attendance } from "../../../types";
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
-import {
-  PaginatedTable,
-  type Column,
-} from "../../../components/PaginatedTable";
+import PaginatedTable from "../../../components/paginated-table";
 import { handleApiError } from "../../../utils/error-handler";
 
 function Page() {
@@ -33,7 +30,7 @@ function Page() {
     endDate: undefined,
   });
 
-  const { data, isFetching, isError } = useQuery({
+  const { data, isError, isFetching } = useQuery({
     queryKey: ["attendances", user?.employeeId, filters],
     queryFn: () => getOwnAttendances(filters),
     placeholderData: keepPreviousData,
@@ -75,32 +72,6 @@ function Page() {
 
   const rows: Attendance[] = Array.isArray(data?.data) ? data.data : [];
   const meta = data?.meta;
-
-  const columns: Column<Attendance>[] = [
-    { key: "date", label: "Date" },
-    {
-      key: "timeIn",
-      label: "Time In",
-      render: (value) =>
-        typeof value === "string" ? value.split(".")[0] : "-",
-    },
-    {
-      key: "timeOut",
-      label: "Time Out",
-      render: (value) =>
-        typeof value === "string" ? value.split(".")[0] : "-",
-    },
-    {
-      key: "totalHours",
-      label: "Total Hours",
-      render: (value) => (typeof value === "number" ? value : "-"),
-    },
-    {
-      key: "overtimeHours",
-      label: "Overtime",
-      render: (value) => (typeof value === "number" ? value : "-"),
-    },
-  ];
 
   return (
     <Stack gap="md">
@@ -166,40 +137,56 @@ function Page() {
         </Button>
       </Group>
 
-      {/* Content */}
-      <Box>
-        {isError && (
-          <Text c="red" fw={500}>
-            Failed to load attendance data
-          </Text>
-        )}
-
-        {!isError && (
-          <>
-            <PaginatedTable
-              columns={columns}
-              rows={rows}
-              isFetching={isFetching}
-              isError={isError}
-              errorMessage="Failed to load attendance data"
-              emptyMessage="No attendance records found"
-              meta={meta}
-              onPreviousPage={() =>
-                setFilters((prev) => ({
-                  ...prev,
-                  pageNo: prev.pageNo - 1,
-                }))
-              }
-              onNextPage={() =>
-                setFilters((prev) => ({
-                  ...prev,
-                  pageNo: prev.pageNo + 1,
-                }))
-              }
-            />
-          </>
-        )}
-      </Box>
+      {meta && (
+        <PaginatedTable
+          heading={["Date", "Time In", "Time Out", "Total Hours", "Overtime"]}
+          isError={isError}
+          errorMessage="Failed to load your attendance records. Please try again."
+          isFetching={isFetching}
+          meta={meta}
+          onPageChange={(newPage) =>
+            setFilters((prev) => ({
+              ...prev,
+              pageNo: newPage - 1,
+            }))
+          }
+          rows={rows.map((attendance) => (
+            <Table.Tr key={String(attendance.id)}>
+              <Table.Td>
+                <Text size="sm">{attendance.date}</Text>
+              </Table.Td>
+              <Table.Td>
+                <Text size="sm">
+                  {typeof attendance.timeIn === "string"
+                    ? attendance.timeIn.split(".")[0]
+                    : "-"}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Text size="sm">
+                  {typeof attendance.timeOut === "string"
+                    ? attendance.timeOut.split(".")[0]
+                    : "-"}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Text size="sm">
+                  {typeof attendance.totalHours === "number"
+                    ? attendance.totalHours
+                    : "-"}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Text size="sm">
+                  {typeof attendance.overtimeHours === "number"
+                    ? attendance.overtimeHours
+                    : "-"}
+                </Text>
+              </Table.Td>
+            </Table.Tr>
+          ))}
+        />
+      )}
     </Stack>
   );
 }

@@ -4,6 +4,7 @@ export type {
   ApiResponse,
   PaginatedApiResponse,
   PaginationFilters,
+  PaginationMeta,
 } from "./api";
 
 // Auth domain types
