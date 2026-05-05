@@ -5,7 +5,7 @@ import type {
   LeaveType,
   PaginatedApiResponse,
   PaginationFilters,
-} from "../types";
+} from "@/types";
 import client from "./client";
 
 export const getOwnLeaveCredits = async (): Promise<

@@ -13,10 +13,10 @@ import { MdCheckCircle } from "react-icons/md";
 import { TfiDashboard } from "react-icons/tfi";
 
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { IconType } from "react-icons/lib";
-import { logout } from "../api/auth";
+import { logout } from "@/api/auth";
 import { notifications } from "@mantine/notifications";
 
 interface NavLinkItem {

@@ -26,13 +26,13 @@ import {
   getAllAttendances,
   getEmployeeAttendances,
   updateAttendance,
-} from "../../../api/attendance";
-import type { AttendanceDto, AttendanceFilters } from "../../../api/attendance";
-import type { Attendance } from "../../../types";
-import PaginatedTable from "../../../components/paginated-table";
-import { getAllEmployees } from "../../../api/employee";
+} from "@/api/attendance";
+import type { AttendanceDto, AttendanceFilters } from "@/api/attendance";
+import type { Attendance } from "@/types";
+import PaginatedTable from "@/components/paginated-table";
+import { getAllEmployees } from "@/api/employee";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "../../../utils/error-handler";
+import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const queryClient = useQueryClient();

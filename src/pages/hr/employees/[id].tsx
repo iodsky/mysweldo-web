@@ -16,9 +16,9 @@ import {
 } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { BsPencil } from "react-icons/bs";
-import { getEmployeeById } from "../../../api/employee";
-import { EmployeeForm } from "../../../components/employee-form";
-import type { Employee } from "../../../types";
+import { getEmployeeById } from "@/api/employee";
+import { EmployeeForm } from "@/components/employee-form";
+import type { Employee } from "@/types";
 
 function Page() {
   const { id } = useParams<{ id: string }>();

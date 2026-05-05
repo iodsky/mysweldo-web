@@ -7,7 +7,7 @@ import type {
   PaginatedApiResponse,
   PaginationFilters,
 } from "../types";
-import type { EmployeeBasic } from "../types/employee";
+import type { EmployeeBasic } from "@/types";
 
 export const getAuthenticatedEmployee = async (): Promise<
   ApiResponse<Employee>

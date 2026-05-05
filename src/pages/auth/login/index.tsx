@@ -14,7 +14,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useMutation } from "@tanstack/react-query";
-import { login, type LoginCredentials } from "../../../api/auth";
+import { login, type LoginCredentials } from "@/api/auth";
 import { notifications } from "@mantine/notifications";
 import type {
   AccessType,

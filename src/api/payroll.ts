@@ -1,8 +1,4 @@
-import type {
-  PaginatedApiResponse,
-  PaginationFilters,
-  Payslip,
-} from "../types";
+import type { PaginatedApiResponse, PaginationFilters, Payslip } from "@/types";
 import client from "./client";
 
 export type PayslipsFilter = PaginationFilters & {

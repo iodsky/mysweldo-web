@@ -27,19 +27,19 @@ import {
   getAllEmployees,
   updateEmployeeStatus,
   getEmployeeById,
-} from "../../../api/employee";
-import PaginatedTable from "../../../components/paginated-table";
-import { EmployeeForm } from "../../../components/employee-form";
+} from "@/api/employee";
+import PaginatedTable from "@/components/paginated-table";
+import { EmployeeForm } from "@/components/employee-form";
 import type {
   EmploymentStatus,
   EmployeeBasic,
   Employee,
   Position,
   Department,
-} from "../../../types";
+} from "@/types";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "../../../utils/error-handler";
-import { getAllDepartments } from "../../../api/department";
+import { handleApiError } from "@/utils/error-handler";
+import { getAllDepartments } from "@/api/department";
 
 function Page() {
   const navigate = useNavigate();

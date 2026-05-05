@@ -1,5 +1,5 @@
 import { notifications } from "@mantine/notifications";
-import type { ApiError } from "../types";
+import type { ApiError } from "@/types";
 
 export const handleApiError = (error: ApiError) => {
   if (error.validationErrors?.length) {

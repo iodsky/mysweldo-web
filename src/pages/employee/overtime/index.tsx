@@ -15,19 +15,19 @@ import {
 import { DatePickerInput } from "@mantine/dates";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useAuth } from "../../../hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import {
   createOvertimeRequest,
   getOwnOvertimeRequests,
   updateOvertimeRequest,
   deleteOvertimeRequest,
   type OvertimeRequestDto,
-} from "../../../api/overtime";
-import type { OvertimeRequest, PaginationFilters } from "../../../types";
+} from "@/api/overtime";
+import type { OvertimeRequest, PaginationFilters } from "@/types";
 import { notifications } from "@mantine/notifications";
-import { ConfirmationModal } from "../../../components/confirmation-modal";
+import { ConfirmationModal } from "@/components/confirmation-modal";
 import { MdEdit, MdDelete } from "react-icons/md";
-import { handleApiError } from "../../../utils/error-handler";
+import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const { user } = useAuth();

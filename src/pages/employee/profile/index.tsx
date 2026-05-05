@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { VscServerProcess } from "react-icons/vsc";
 import { useQuery } from "@tanstack/react-query";
-import { getAuthenticatedEmployee } from "../../../api/employee";
+import { getAuthenticatedEmployee } from "@/api/employee";
 
 function Page() {
   const { data, isLoading, error } = useQuery({

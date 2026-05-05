@@ -12,12 +12,12 @@ import {
   clockOut,
   getOwnAttendances,
   type AttendanceFilters,
-} from "../../../api/attendance";
-import type { Attendance } from "../../../types";
+} from "@/api/attendance";
+import type { Attendance } from "@/types";
 import { useState } from "react";
-import { useAuth } from "../../../hooks/use-auth";
-import PaginatedTable from "../../../components/paginated-table";
-import { handleApiError } from "../../../utils/error-handler";
+import { useAuth } from "@/hooks/use-auth";
+import PaginatedTable from "@/components/paginated-table";
+import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const queryClient = useQueryClient();

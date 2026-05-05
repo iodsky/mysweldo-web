@@ -3,7 +3,7 @@ import type {
   PaginatedApiResponse,
   PaginationFilters,
 } from "../types";
-import type { OvertimeRequest } from "../types/overtime";
+import type { OvertimeRequest } from "@/types";
 import client from "./client";
 
 export type OvertimeRequestDto = {

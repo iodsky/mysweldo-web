@@ -8,8 +8,8 @@ import type {
   User,
 } from "../types";
 import { AuthContext } from "./auth-context";
-import { me } from "../api/auth";
-import client from "../api/client";
+import { me } from "@/api/auth";
+import client from "@/api/client";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

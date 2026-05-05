@@ -3,7 +3,7 @@ import type {
   Attendance,
   PaginatedApiResponse,
   PaginationFilters,
-} from "../types";
+} from "@/types";
 import client from "./client";
 
 export const clockIn = async (): Promise<ApiResponse<Attendance>> => {

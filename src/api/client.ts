@@ -1,5 +1,6 @@
 import axios from "axios";
-import type { AccessToken, ApiError, ApiResponse } from "../types";
+import type { AccessToken, ApiError, ApiResponse } from "@/types";
+
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 const client = axios.create({
   baseURL: baseURL,

@@ -16,21 +16,20 @@ import {
 import { DatePickerInput } from "@mantine/dates";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useAuth } from "../../../hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import {
   createLeaveRequest,
   getOwnLeaveCredits,
   getOwnLeaveRequests,
   updateLeaveRequest,
   deleteLeaveRequest,
-} from "../../../api/leave";
-import type { LeaveRequest, PaginationFilters } from "../../../types";
+} from "@/api/leave";
+import type { LeaveRequest, PaginationFilters, LeaveType } from "@/types";
 import { notifications } from "@mantine/notifications";
-import type { LeaveType } from "../../../types/leave";
-import PaginatedTable from "../../../components/paginated-table";
-import { ConfirmationModal } from "../../../components/confirmation-modal";
+import PaginatedTable from "@/components/paginated-table";
+import { ConfirmationModal } from "@/components/confirmation-modal";
 import { BsPencil, BsThreeDotsVertical } from "react-icons/bs";
-import { handleApiError } from "../../../utils/error-handler";
+import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const { user } = useAuth();

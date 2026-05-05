@@ -1,20 +1,20 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import Login from "../pages/auth/login";
-import EmployeeProfile from "../pages/employee/profile";
+import Login from "@/pages/auth/login";
+import EmployeeProfile from "@/pages/employee/profile";
 import ProtectedRoute from "./protected-route";
-import Layout from "../components/layout";
-import EmployeeAttendance from "../pages/employee/attendance";
-import EmployeeLeave from "../pages/employee/leave";
-import EmployeeOvertime from "../pages/employee/overtime";
-import EmployeePayslip from "../pages/employee/payslip";
-import HRDashboard from "../pages/hr/dashboard";
-import HREmployees from "../pages/hr/employees";
-import HREmployeeDetail from "../pages/hr/employees/[id]";
-import HRAttendance from "../pages/hr/attendance";
-import HRLeave from "../pages/hr/leave";
-import HROvertime from "../pages/hr/overtime";
-import HRPosition from "../pages/hr/position";
-import HRDepartment from "../pages/hr/department";
+import Layout from "@/components/layout";
+import EmployeeAttendance from "@/pages/employee/attendance";
+import EmployeeLeave from "@/pages/employee/leave";
+import EmployeeOvertime from "@/pages/employee/overtime";
+import EmployeePayslip from "@/pages/employee/payslip";
+import HRDashboard from "@/pages/hr/dashboard";
+import HREmployees from "@/pages/hr/employees";
+import HREmployeeDetail from "@/pages/hr/employees/[id]";
+import HRAttendance from "@/pages/hr/attendance";
+import HRLeave from "@/pages/hr/leave";
+import HROvertime from "@/pages/hr/overtime";
+import HRPosition from "@/pages/hr/position";
+import HRDepartment from "@/pages/hr/department";
 
 export const AppRoutes = createBrowserRouter([
   { path: "/", element: <Navigate to="login" replace /> },

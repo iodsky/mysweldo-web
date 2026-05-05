@@ -4,7 +4,7 @@ import type {
   ApiResponse,
   AuthSession,
   AuthenticatedUser,
-} from "../types";
+} from "@/types";
 
 export type LoginCredentials = {
   email: string;

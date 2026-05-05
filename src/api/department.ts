@@ -1,4 +1,4 @@
-import type { ApiResponse, Department } from "../types";
+import type { ApiResponse, Department } from "@/types";
 import client from "./client";
 
 export const getAllDepartments = async (): Promise<

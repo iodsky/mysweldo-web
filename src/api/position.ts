@@ -1,4 +1,4 @@
-import type { ApiResponse, Position } from "../types";
+import type { ApiResponse, Position } from "@/types";
 import client from "./client";
 
 export const getAllPositions = async (): Promise<ApiResponse<Position[]>> => {

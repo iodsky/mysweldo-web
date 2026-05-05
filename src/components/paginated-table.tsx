@@ -8,7 +8,7 @@ import {
   Box,
   type TableProps,
 } from "@mantine/core";
-import type { PaginationMeta } from "../types";
+import type { PaginationMeta } from "@/types";
 import type { ReactNode } from "react";
 
 interface PaginatedTableProps {

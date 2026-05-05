@@ -11,9 +11,9 @@ import {
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { createEmployee, updateEmployee } from "../api/employee";
-import { getAllDepartments } from "../api/department";
-import { getAllPositions } from "../api/position";
+import { createEmployee, updateEmployee } from "@/api/employee";
+import { getAllDepartments } from "@/api/department";
+import { getAllPositions } from "@/api/position";
 import type {
   Employee,
   EmploymentStatus,
