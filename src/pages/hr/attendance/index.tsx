@@ -27,8 +27,8 @@ import {
   getEmployeeAttendances,
   updateAttendance,
 } from "@/api/attendance";
-import type { AttendanceDto, AttendanceFilters } from "@/api/attendance";
-import type { Attendance } from "@/types";
+import type { AttendanceFilters } from "@/api/attendance";
+import type { Attendance, AttendanceDto } from "@/types";
 import PaginatedTable from "@/components/paginated-table";
 import { getAllEmployees } from "@/api/employee";
 import { notifications } from "@mantine/notifications";

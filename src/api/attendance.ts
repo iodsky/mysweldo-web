@@ -1,6 +1,7 @@
 import type {
   ApiResponse,
   Attendance,
+  AttendanceDto,
   PaginatedApiResponse,
   PaginationFilters,
 } from "@/types";
@@ -44,11 +45,6 @@ export const getEmployeeAttendances = async (
   });
   return response.data;
 };
-
-export type AttendanceDto = Pick<
-  Attendance,
-  "employeeId" | "date" | "timeIn" | "timeOut"
->;
 
 export const createAttendance = async (
   attendance: AttendanceDto,

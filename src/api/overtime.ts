@@ -1,15 +1,11 @@
 import type {
   ApiResponse,
+  OvertimeRequest,
+  OvertimeRequestDto,
   PaginatedApiResponse,
   PaginationFilters,
-} from "../types";
-import type { OvertimeRequest } from "@/types";
+} from "@/types";
 import client from "./client";
-
-export type OvertimeRequestDto = {
-  date: string;
-  reason?: string;
-};
 
 export const createOvertimeRequest = async (
   request: OvertimeRequestDto,

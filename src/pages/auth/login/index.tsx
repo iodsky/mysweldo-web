@@ -14,15 +14,16 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useMutation } from "@tanstack/react-query";
-import { login, type LoginCredentials } from "@/api/auth";
+import { login } from "@/api/auth";
 import { notifications } from "@mantine/notifications";
 import type {
   AccessType,
   ApiError,
   ApiResponse,
   AuthSession,
+  LoginCredentials,
   Role,
-} from "../../../types";
+} from "@/types";
 import { useState } from "react";
 import { useAuth } from "../../../hooks/use-auth";
 import { useNavigate } from "react-router-dom";

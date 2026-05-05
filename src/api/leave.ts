@@ -2,7 +2,7 @@ import type {
   ApiResponse,
   LeaveCredit,
   LeaveRequest,
-  LeaveType,
+  LeaveRequestDto,
   PaginatedApiResponse,
   PaginationFilters,
 } from "@/types";
@@ -22,13 +22,6 @@ export const getOwnLeaveRequests = async (
     params: filters,
   });
   return response.data;
-};
-
-export type LeaveRequestDto = {
-  startDate: string;
-  endDate: string;
-  leaveType: LeaveType;
-  note?: string;
 };
 
 export const createLeaveRequest = async (

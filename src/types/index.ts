@@ -53,6 +53,11 @@ export type Attendance = {
   overtimeHours: number | null;
 };
 
+export type AttendanceDto = Pick<
+  Attendance,
+  "employeeId" | "date" | "timeIn" | "timeOut"
+>;
+
 export type Role =
   | "HR"
   | "EMPLOYEE"
@@ -84,6 +89,12 @@ export type AccessToken = {
 
 export type AuthenticatedUser = {
   user: User;
+  accessType: AccessType;
+};
+
+export type LoginCredentials = {
+  email: string;
+  password: string;
   accessType: AccessType;
 };
 
@@ -226,9 +237,14 @@ export type LeaveRequest = {
   leaveType: LeaveType;
   startDate: string;
   endDate: string;
-  note: string;
+  note?: string;
   status: RequestStatus;
 };
+
+export type LeaveRequestDto = Omit<
+  LeaveRequest,
+  "id" | "employeeId" | "status"
+>;
 
 export type OvertimeRequest = {
   id: string;
@@ -238,6 +254,8 @@ export type OvertimeRequest = {
   reason?: string;
   status: RequestStatus;
 };
+
+export type OvertimeRequestDto = Pick<OvertimeRequest, "date" | "reason">;
 
 export type Payslip = {
   id: string;

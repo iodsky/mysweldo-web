@@ -21,9 +21,12 @@ import {
   getOwnOvertimeRequests,
   updateOvertimeRequest,
   deleteOvertimeRequest,
-  type OvertimeRequestDto,
 } from "@/api/overtime";
-import type { OvertimeRequest, PaginationFilters } from "@/types";
+import type {
+  OvertimeRequest,
+  OvertimeRequestDto,
+  PaginationFilters,
+} from "@/types";
 import { notifications } from "@mantine/notifications";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import { MdEdit, MdDelete } from "react-icons/md";

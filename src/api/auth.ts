@@ -1,16 +1,10 @@
 import client from "./client";
 import type {
-  AccessType,
   ApiResponse,
   AuthSession,
   AuthenticatedUser,
+  LoginCredentials,
 } from "@/types";
-
-export type LoginCredentials = {
-  email: string;
-  password: string;
-  accessType: AccessType;
-};
 
 export const login = async (
   credentials: LoginCredentials,
