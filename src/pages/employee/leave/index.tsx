@@ -58,7 +58,7 @@ function Page() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const { data, isFetching, isError } = useQuery({
-    queryKey: ["leaverRequests", user?.employeeId, filters],
+    queryKey: ["leaveRequests", user?.employeeId, filters],
     queryFn: () => getOwnLeaveRequests(filters),
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 60, // 1 hour
@@ -87,7 +87,7 @@ function Page() {
         : createLeaveRequest(request),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["leaverRequests", user?.employeeId],
+        queryKey: ["leaveRequests", user?.employeeId],
       });
       setIsModalOpen(false);
       setEditingId(null);
@@ -115,7 +115,7 @@ function Page() {
     mutationFn: () => deleteLeaveRequest(deletingId!),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["leaverRequests", user?.employeeId],
+        queryKey: ["leaveRequests", user?.employeeId],
       });
       setDeleteConfirmOpen(false);
       setDeletingId(null);

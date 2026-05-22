@@ -1,0 +1,591 @@
+import { useState } from "react";
+import {
+  Box,
+  Button,
+  Group,
+  Stack,
+  Text,
+  Badge,
+  ActionIcon,
+  Menu,
+  Select,
+  Modal,
+  Textarea,
+  Loader,
+  Table,
+} from "@mantine/core";
+import { DatePickerInput } from "@mantine/dates";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
+import { BsPlus, BsThreeDotsVertical, BsCheck, BsX } from "react-icons/bs";
+import {
+  getAllLeaveRequest,
+  updateLeaveStatus,
+  updateLeaveRequest,
+  deleteLeaveRequest,
+  createLeaveRequest,
+} from "@/api/leave";
+import { getAllEmployees } from "@/api/employee";
+import PaginatedTable from "@/components/paginated-table";
+import { ConfirmationModal } from "@/components/confirmation-modal";
+import type {
+  LeaveRequest,
+  PaginationFilters,
+  RequestStatus,
+  LeaveType,
+  EmployeeBasic,
+  LeaveRequestDto,
+} from "@/types";
+import { notifications } from "@mantine/notifications";
+import { handleApiError } from "@/utils/error-handler";
+import { MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
+
+const STATUS_COLORS: Record<RequestStatus, string> = {
+  PENDING: "yellow",
+  APPROVED: "green",
+  REJECTED: "red",
+};
+
+const LEAVE_TYPE_MAP: Record<LeaveType, string> = {
+  VACATION: "Vacation",
+  SICK: "Sick",
+  MATERNITY: "Maternity",
+  PATERNITY: "Paternity",
+  SOLO_PARENT: "Solo Parent",
+  BEREAVEMENT: "Bereavement",
+};
+
+function LeaveRequestsTab() {
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<RequestStatus | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [actionType, setActionType] = useState<
+    "approve" | "reject" | "delete" | null
+  >(null);
+  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(
+    null,
+  );
+  const [editStartDate, setEditStartDate] = useState<Date | string | null>(
+    null,
+  );
+  const [editEndDate, setEditEndDate] = useState<Date | string | null>(null);
+  const [editNote, setEditNote] = useState<string>("");
+
+  // Create form state
+  const [createEmployeeId, setCreateEmployeeId] = useState<number | null>(null);
+  const [createLeaveType, setCreateLeaveType] = useState<string | null>(null);
+  const [createStartDate, setCreateStartDate] = useState<Date | string | null>(
+    null,
+  );
+  const [createEndDate, setCreateEndDate] = useState<Date | string | null>(
+    null,
+  );
+  const [createNote, setCreateNote] = useState<string>("");
+
+  const filters: PaginationFilters = {
+    pageNo: page,
+    limit: 10,
+  };
+
+  const { data: employeesData } = useQuery({
+    queryKey: ["employees"],
+    queryFn: () =>
+      getAllEmployees({
+        pageNo: 0,
+        limit: 100,
+      }),
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+  });
+
+  const { data, isLoading, isFetching, isError } = useQuery({
+    queryKey: ["leaveRequests", page, statusFilter],
+    queryFn: () => getAllLeaveRequest(filters),
+    staleTime: 1000 * 60 * 5,
+    placeholderData: keepPreviousData,
+  });
+
+  const requests = data?.data || [];
+  const meta = data?.meta;
+
+  const { mutate: updateStatus, isPending: isUpdatingStatus } = useMutation({
+    mutationFn: (status: RequestStatus) =>
+      updateLeaveStatus(selectedRequest!.id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["leaveRequests", "leaveCredits"],
+      });
+      setConfirmModalOpen(false);
+      setActionType(null);
+      setSelectedRequest(null);
+      notifications.show({
+        title: "Success",
+        color: "green",
+        message: `Leave request ${actionType}ed successfully`,
+        withBorder: true,
+      });
+    },
+    onError: handleApiError,
+  });
+
+  const { mutate: createRequest, isPending: isCreating } = useMutation({
+    mutationFn: (request: LeaveRequestDto) => createLeaveRequest(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leaveRequests"] });
+      setCreateModalOpen(false);
+      resetCreateForm();
+      notifications.show({
+        title: "Success",
+        color: "green",
+        message: "Leave request created successfully",
+        withBorder: true,
+      });
+    },
+    onError: handleApiError,
+  });
+
+  const { mutate: updateRequest, isPending: isUpdating } = useMutation({
+    mutationFn: (request: {
+      leaveType: LeaveType;
+      startDate: string;
+      endDate: string;
+      note?: string;
+    }) => updateLeaveRequest(selectedRequest!.id, request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leaveRequests"] });
+      setEditModalOpen(false);
+      setSelectedRequest(null);
+      notifications.show({
+        title: "Success",
+        color: "green",
+        message: "Leave request updated successfully",
+        withBorder: true,
+      });
+    },
+    onError: handleApiError,
+  });
+
+  const { mutate: deleteRequest, isPending: isDeleting } = useMutation({
+    mutationFn: () => deleteLeaveRequest(selectedRequest!.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leaveRequests"] });
+      setConfirmModalOpen(false);
+      setActionType(null);
+      setSelectedRequest(null);
+      notifications.show({
+        title: "Success",
+        color: "green",
+        message: "Leave request deleted successfully",
+        withBorder: true,
+      });
+    },
+    onError: handleApiError,
+  });
+
+  const handleEditClick = (request: LeaveRequest) => {
+    setSelectedRequest(request);
+    setEditStartDate(new Date(request.startDate));
+    setEditEndDate(new Date(request.endDate));
+    setEditNote(request.note || "");
+    setEditModalOpen(true);
+  };
+
+  const handleEditSave = () => {
+    if (!editStartDate || !editEndDate) {
+      notifications.show({
+        title: "Error",
+        color: "red",
+        message: "Please select both start and end dates",
+        withBorder: true,
+      });
+      return;
+    }
+
+    const startStr =
+      editStartDate instanceof Date
+        ? editStartDate.toISOString().split("T")[0]
+        : editStartDate;
+    const endStr =
+      editEndDate instanceof Date
+        ? editEndDate.toISOString().split("T")[0]
+        : editEndDate;
+
+    updateRequest({
+      leaveType: selectedRequest!.leaveType,
+      startDate: startStr,
+      endDate: endStr,
+      note: editNote || undefined,
+    });
+  };
+
+  const resetCreateForm = () => {
+    setCreateEmployeeId(null);
+    setCreateLeaveType(null);
+    setCreateStartDate(null);
+    setCreateEndDate(null);
+    setCreateNote("");
+  };
+
+  const handleCreateClick = () => {
+    setCreateModalOpen(true);
+    resetCreateForm();
+  };
+
+  const handleCreateSave = () => {
+    if (
+      !createEmployeeId ||
+      !createLeaveType ||
+      !createStartDate ||
+      !createEndDate
+    ) {
+      notifications.show({
+        title: "Error",
+        color: "red",
+        message: "Please fill in all required fields",
+        withBorder: true,
+      });
+      return;
+    }
+
+    const startStr =
+      createStartDate instanceof Date
+        ? createStartDate.toISOString().split("T")[0]
+        : createStartDate;
+    const endStr =
+      createEndDate instanceof Date
+        ? createEndDate.toISOString().split("T")[0]
+        : createEndDate;
+
+    createRequest({
+      employeeId: createEmployeeId,
+      leaveType: createLeaveType as LeaveType,
+      startDate: startStr,
+      endDate: endStr,
+      note: createNote || undefined,
+    });
+  };
+
+  const handleStatusAction = (request: LeaveRequest, action: RequestStatus) => {
+    setSelectedRequest(request);
+    setActionType(action === "APPROVED" ? "approve" : "reject");
+    setConfirmModalOpen(true);
+  };
+
+  const handleDeleteClick = (request: LeaveRequest) => {
+    setSelectedRequest(request);
+    setActionType("delete");
+    setConfirmModalOpen(true);
+  };
+
+  const handleConfirmAction = () => {
+    if (actionType === "approve" || actionType === "reject") {
+      const status = actionType === "approve" ? "APPROVED" : "REJECTED";
+      updateStatus(status);
+    } else if (actionType === "delete") {
+      deleteRequest();
+    }
+  };
+
+  const rows = requests.map((request: LeaveRequest) => (
+    <Table.Tr key={request.id}>
+      <Table.Td>{request.employeeId}</Table.Td>
+      <Table.Td>{LEAVE_TYPE_MAP[request.leaveType]}</Table.Td>
+      <Table.Td>{new Date(request.startDate).toLocaleDateString()}</Table.Td>
+      <Table.Td>{new Date(request.endDate).toLocaleDateString()}</Table.Td>
+      <Table.Td>{request.note || "-"}</Table.Td>
+      <Table.Td>
+        <Badge color={STATUS_COLORS[request.status]}>{request.status}</Badge>
+      </Table.Td>
+      <Table.Td align="center">
+        <Menu shadow="md">
+          <Menu.Target>
+            <ActionIcon
+              variant="transparent"
+              color="gray"
+              disabled={request.status !== "PENDING"}
+            >
+              <BsThreeDotsVertical />
+            </ActionIcon>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item
+              onClick={() => handleEditClick(request)}
+              leftSection={<MdOutlineModeEdit />}
+            >
+              Edit
+            </Menu.Item>
+            {request.status === "PENDING" && (
+              <>
+                <Menu.Item
+                  onClick={() => handleStatusAction(request, "APPROVED")}
+                  leftSection={<BsCheck />}
+                >
+                  Approve
+                </Menu.Item>
+                <Menu.Item
+                  onClick={() => handleStatusAction(request, "REJECTED")}
+                  leftSection={<BsX />}
+                >
+                  Reject
+                </Menu.Item>
+              </>
+            )}
+            <Menu.Item
+              onClick={() => handleDeleteClick(request)}
+              leftSection={<MdDeleteOutline />}
+              color="red"
+            >
+              Delete
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      </Table.Td>
+    </Table.Tr>
+  ));
+
+  const getConfirmationMessage = () => {
+    if (actionType === "approve")
+      return "Are you sure you want to approve this leave request?";
+    if (actionType === "reject")
+      return "Are you sure you want to reject this leave request?";
+    return "Are you sure you want to delete this leave request?";
+  };
+
+  const getConfirmationTitle = () => {
+    if (actionType === "approve") return "Approve Leave Request";
+    if (actionType === "reject") return "Reject Leave Request";
+    return "Delete Leave Request";
+  };
+
+  return (
+    <Stack gap="lg">
+      <Group justify="flex-end">
+        <Select
+          label="Filter by Status"
+          placeholder="All"
+          data={[
+            { value: "PENDING", label: "Pending" },
+            { value: "APPROVED", label: "Approved" },
+            { value: "REJECTED", label: "Rejected" },
+          ]}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          clearable
+        />
+        <Button
+          leftSection={<BsPlus />}
+          onClick={handleCreateClick}
+          style={{ alignSelf: "flex-end" }}
+        >
+          Create Leave Request
+        </Button>
+      </Group>
+
+      {isError && (
+        <Text c="red" fw={500}>
+          Failed to load leave requests
+        </Text>
+      )}
+
+      {!isError && meta && (
+        <PaginatedTable
+          heading={[
+            "Employee ID",
+            "Leave Type",
+            "Start Date",
+            "End Date",
+            "Notes",
+            "Status",
+            "Actions",
+          ]}
+          rows={rows}
+          meta={meta}
+          onPageChange={(p) => setPage(p - 1)}
+          isFetching={isFetching}
+          isError={isError}
+        />
+      )}
+
+      {isLoading && (
+        <Group justify="center" py="xl">
+          <Loader />
+        </Group>
+      )}
+
+      {/* Create Modal */}
+      <Modal
+        opened={createModalOpen}
+        onClose={() => {
+          setCreateModalOpen(false);
+          resetCreateForm();
+        }}
+        title="Create Leave Request"
+        size="sm"
+      >
+        <Stack gap="md">
+          <Select
+            label="Employee"
+            placeholder="Select employee"
+            searchable
+            data={
+              employeesData?.data?.map((emp: EmployeeBasic) => ({
+                value: emp.id,
+                label: `${emp.firstName} ${emp.lastName}`,
+              })) || []
+            }
+            value={createEmployeeId}
+            onChange={setCreateEmployeeId}
+            required
+          />
+
+          <Select
+            label="Leave Type"
+            placeholder="Select leave type"
+            data={[
+              { value: "VACATION", label: "Vacation" },
+              { value: "SICK", label: "Sick" },
+              { value: "MATERNITY", label: "Maternity" },
+              { value: "PATERNITY", label: "Paternity" },
+              { value: "SOLO_PARENT", label: "Solo Parent" },
+              { value: "BEREAVEMENT", label: "Bereavement" },
+            ]}
+            value={createLeaveType}
+            onChange={setCreateLeaveType}
+            required
+          />
+
+          <DatePickerInput
+            label="Start Date"
+            placeholder="Select start date"
+            value={createStartDate}
+            onChange={setCreateStartDate}
+            required
+            highlightToday
+          />
+
+          <DatePickerInput
+            label="End Date"
+            placeholder="Select end date"
+            value={createEndDate}
+            onChange={setCreateEndDate}
+            required
+            highlightToday
+          />
+
+          <Textarea
+            label="Notes"
+            placeholder="Add any notes..."
+            value={createNote}
+            onChange={(e) => setCreateNote(e.currentTarget.value)}
+            minRows={3}
+          />
+
+          <Group justify="flex-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCreateModalOpen(false);
+                resetCreateForm();
+              }}
+              disabled={isCreating}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreateSave} loading={isCreating}>
+              Create Request
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        opened={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedRequest(null);
+        }}
+        title="Edit Leave Request"
+        size="sm"
+      >
+        <Stack gap="md">
+          <Box>
+            <Text size="sm" fw={500} mb="xs">
+              Employee ID
+            </Text>
+            <Text>{selectedRequest?.employeeId}</Text>
+          </Box>
+
+          <DatePickerInput
+            label="Start Date"
+            placeholder="Select start date"
+            value={editStartDate}
+            onChange={setEditStartDate}
+          />
+
+          <DatePickerInput
+            label="End Date"
+            placeholder="Select end date"
+            value={editEndDate}
+            onChange={setEditEndDate}
+          />
+
+          <Textarea
+            label="Notes"
+            placeholder="Add any notes..."
+            value={editNote}
+            onChange={(e) => setEditNote(e.currentTarget.value)}
+            minRows={3}
+          />
+
+          <Group justify="flex-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditModalOpen(false);
+                setSelectedRequest(null);
+              }}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleEditSave} loading={isUpdating}>
+              Save Changes
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        opened={confirmModalOpen}
+        title={getConfirmationTitle()}
+        message={getConfirmationMessage()}
+        confirmText={
+          actionType === "approve"
+            ? "Approve"
+            : actionType === "reject"
+              ? "Reject"
+              : "Delete"
+        }
+        isDangerous={actionType === "delete" || actionType === "reject"}
+        isLoading={isUpdatingStatus || isDeleting}
+        onConfirm={handleConfirmAction}
+        onCancel={() => {
+          setConfirmModalOpen(false);
+          setActionType(null);
+          setSelectedRequest(null);
+        }}
+      />
+    </Stack>
+  );
+}
+
+export default LeaveRequestsTab;

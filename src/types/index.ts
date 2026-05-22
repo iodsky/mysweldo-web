@@ -231,6 +231,23 @@ export type LeaveCredit = {
   effectiveDate: string;
 };
 
+export type LeaveCreditDto = {
+  employeeId: number;
+  effectiveDate: string;
+};
+
+export type CreditSummary = {
+  type: string;
+  credits: number;
+};
+
+export type EmployeeLeaveCredit = Pick<
+  EmployeeBasic,
+  "id" | "firstName" | "lastName"
+> & {
+  credits: CreditSummary[];
+};
+
 export type LeaveRequest = {
   id: string;
   employeeId: number;
@@ -244,7 +261,9 @@ export type LeaveRequest = {
 export type LeaveRequestDto = Omit<
   LeaveRequest,
   "id" | "employeeId" | "status"
->;
+> & {
+  employeeId?: number;
+};
 
 export type OvertimeRequest = {
   id: string;

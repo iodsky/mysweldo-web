@@ -27,8 +27,9 @@ client.interceptors.response.use(
   (response) => response, // Directly return successful responses.
   async (error) => {
     const originalRequest = error.config;
-    // Prevent infinite refresh loops - don't retry refresh endpoint itself
+    if (!originalRequest) return Promise.reject(error);
 
+    // Prevent infinite refresh loops - don't retry refresh endpoint itself
     const isAuthEndpoint =
       originalRequest.url?.includes("/auth/login") ||
       originalRequest.url?.includes("/auth/logout") ||
