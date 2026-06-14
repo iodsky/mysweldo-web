@@ -1,9 +1,6 @@
 import { useState } from "react";
 import {
-  Box,
   Button,
-  Group,
-  Stack,
   Text,
   Badge,
   ActionIcon,
@@ -365,8 +362,8 @@ function LeaveRequestsTab() {
   };
 
   return (
-    <Stack gap="lg">
-      <Group justify="flex-end">
+    <div className="flex flex-col gap-6">
+      <div className="flex items-end justify-end gap-2">
         <Select
           label="Filter by Status"
           placeholder="All"
@@ -379,14 +376,10 @@ function LeaveRequestsTab() {
           onChange={setStatusFilter}
           clearable
         />
-        <Button
-          leftSection={<BsPlus />}
-          onClick={handleCreateClick}
-          style={{ alignSelf: "flex-end" }}
-        >
+        <Button leftSection={<BsPlus />} onClick={handleCreateClick}>
           Create Leave Request
         </Button>
-      </Group>
+      </div>
 
       {isError && (
         <Text c="red" fw={500}>
@@ -414,9 +407,9 @@ function LeaveRequestsTab() {
       )}
 
       {isLoading && (
-        <Group justify="center" py="xl">
+        <div className="flex justify-center py-8">
           <Loader />
-        </Group>
+        </div>
       )}
 
       {/* Create Modal */}
@@ -429,7 +422,7 @@ function LeaveRequestsTab() {
         title="Create Leave Request"
         size="sm"
       >
-        <Stack gap="md">
+        <div className="flex flex-col gap-4">
           <Select
             label="Employee"
             placeholder="Select employee"
@@ -487,7 +480,7 @@ function LeaveRequestsTab() {
             minRows={3}
           />
 
-          <Group justify="flex-end">
+          <div className="flex justify-end gap-2">
             <Button
               variant="outline"
               onClick={() => {
@@ -501,8 +494,8 @@ function LeaveRequestsTab() {
             <Button onClick={handleCreateSave} loading={isCreating}>
               Create Request
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </div>
       </Modal>
 
       {/* Edit Modal */}
@@ -515,13 +508,13 @@ function LeaveRequestsTab() {
         title="Edit Leave Request"
         size="sm"
       >
-        <Stack gap="md">
-          <Box>
+        <div className="flex flex-col gap-4">
+          <div>
             <Text size="sm" fw={500} mb="xs">
               Employee ID
             </Text>
             <Text>{selectedRequest?.employeeId}</Text>
-          </Box>
+          </div>
 
           <DatePickerInput
             label="Start Date"
@@ -545,7 +538,7 @@ function LeaveRequestsTab() {
             minRows={3}
           />
 
-          <Group justify="flex-end">
+          <div className="flex justify-end gap-2">
             <Button
               variant="outline"
               onClick={() => {
@@ -559,8 +552,8 @@ function LeaveRequestsTab() {
             <Button onClick={handleEditSave} loading={isUpdating}>
               Save Changes
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </div>
       </Modal>
 
       {/* Confirmation Modal */}
@@ -584,7 +577,7 @@ function LeaveRequestsTab() {
           setSelectedRequest(null);
         }}
       />
-    </Stack>
+    </div>
   );
 }
 

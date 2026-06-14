@@ -1,14 +1,11 @@
 import {
   ActionIcon,
   Anchor,
-  Box,
   Breadcrumbs,
   Button,
-  Group,
   Menu,
   Modal,
   Select,
-  Stack,
   Table,
   Text,
 } from "@mantine/core";
@@ -181,14 +178,14 @@ function Page() {
 
   return (
     <>
-      <Box p="lg">
-        <Stack gap="lg">
+      <div className="p-5">
+        <div className="flex flex-col gap-5">
           <Breadcrumbs>
             <Text size="sm">HR</Text>
             <Anchor size="sm">Attendances</Anchor>
           </Breadcrumbs>
 
-          <Group justify="space-between" align="center">
+          <div className="flex justify-between items-center">
             <div>
               <Text size="lg" fw={700}>
                 Attendance Management
@@ -203,9 +200,9 @@ function Page() {
             >
               New attendance
             </Button>
-          </Group>
+          </div>
 
-          <Group align="flex-end">
+          <div className="flex items-end gap-2">
             <Select
               label="Employee"
               placeholder="All employees"
@@ -262,7 +259,7 @@ function Page() {
             >
               Clear Filters
             </Button>
-          </Group>
+          </div>
 
           {meta && (
             <PaginatedTable
@@ -345,8 +342,8 @@ function Page() {
               ))}
             />
           )}
-        </Stack>
-      </Box>
+        </div>
+      </div>
 
       <Modal
         opened={isModalOpen}
@@ -356,7 +353,7 @@ function Page() {
         }}
         title={modalMode === "create" ? "New attendance" : "Edit attendance"}
       >
-        <Stack>
+        <div className="flex flex-col gap-4">
           <Select
             label="Employee"
             placeholder="Select employee"
@@ -387,15 +384,15 @@ function Page() {
             onChange={(e) => setTimeOut(e.target.value)}
           />
 
-          <Group justify="flex-end">
+          <div className="flex justify-end">
             <Button
               onClick={handleUpdate}
               loading={createMutation.isPending || updateMutation.isPending}
             >
               {modalMode === "create" ? "Create" : "Save"}
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </div>
       </Modal>
     </>
   );

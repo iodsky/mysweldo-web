@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text, Title, Table } from "@mantine/core";
+import { Button, Text, Title, Table } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import {
@@ -74,24 +74,20 @@ function Page() {
   const meta = data?.meta;
 
   return (
-    <Stack gap="md">
-      {/* Header */}
-      <div>
-        <Title order={1}>Attendance</Title>
-      </div>
+    <div className="flex flex-col gap-4"> 
+      <Title order={1}>Attendance</Title>
 
-      {/* Clock In/Out Buttons */}
-      <Group justify="end">
+      <div className="flex justify-end gap-4">
         <Button onClick={() => clockInFn()} loading={isClockInPending}>
           Clock in
         </Button>
         <Button onClick={() => clockOutFn()} loading={isClockOutPending}>
           Clock out
         </Button>
-      </Group>
+      </div>
 
       {/* Date Filters */}
-      <Group align="flex-end">
+      <div className="flex items-end gap-4 ">
         <DateInput
           label="Start Date"
           placeholder="Pick start date"
@@ -135,15 +131,16 @@ function Page() {
         >
           Clear Filters
         </Button>
-      </Group>
+      </div>  
 
       {meta && (
         <PaginatedTable
           heading={["Date", "Time In", "Time Out", "Total Hours", "Overtime"]}
           isError={isError}
+          emptyMessage="No attendances found"
           errorMessage="Failed to load your attendance records. Please try again."
           isFetching={isFetching}
-          meta={meta}
+          meta={meta} 
           onPageChange={(newPage) =>
             setFilters((prev) => ({
               ...prev,
@@ -187,7 +184,7 @@ function Page() {
           ))}
         />
       )}
-    </Stack>
+    </div>
   );
 }
 

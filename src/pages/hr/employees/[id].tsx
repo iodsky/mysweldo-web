@@ -1,16 +1,11 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  Paper,
   Text,
-  Group,
   Badge,
-  Stack,
   Grid,
-  Divider,
   Button,
   Loader,
-  Center,
   Breadcrumbs,
   Anchor,
 } from "@mantine/core";
@@ -36,24 +31,24 @@ function Page() {
 
   if (isLoading) {
     return (
-      <Center className="h-screen">
+      <div className="flex flex-col h-screen justify-center items-center">
         <Loader size="xl" />
-      </Center>
+      </div>
     );
   }
 
   if (error || !employee) {
     return (
-      <Center className="h-screen">
-        <Stack align="center" gap="md">
+      <div className="flex flex-col h-screen justify-center items-center">
+        <div className="flex items-center gap-4">
           <Text size="lg" fw={700} c="red">
             Failed to load employee details
           </Text>
           <Button onClick={() => navigate("/hr/employees")}>
             Back to Employees
           </Button>
-        </Stack>
-      </Center>
+        </div>
+      </div>
     );
   }
 
@@ -98,29 +93,29 @@ function Page() {
         )}
       </Breadcrumbs>
 
-      <Paper withBorder p="lg" radius="md">
+      <div className="rounded-md border p-6">
         {/* Header Section */}
-        <Group justify="space-between" mb="lg">
+        <div className="flex justify-between mb-4">
           <div>
             <Text size="lg" fw={700}>
               {employee.firstName} {employee.lastName}
             </Text>
-            <Group gap="xs" mt="xs">
+            <div className="flex gap-2.5 mt-2.5">
               <Badge>{employee.position.title}</Badge>
               <Badge variant="light">{employee.department.title}</Badge>
               <Badge color={employee.status === "REGULAR" ? "green" : "gray"}>
                 {employee.status}
               </Badge>
-            </Group>
+            </div>
           </div>
           <Button leftSection={<BsPencil size={16} />} onClick={handleEdit}>
             Edit
           </Button>
-        </Group>
+        </div>
 
-        <Divider my="md" />
+        <hr className="my-4" />
 
-        <Stack gap="md">
+        <div className="flex flex-col gap-4">
           {/* Personal Information */}
           <div>
             <Text size="sm" fw={700} mb="xs">
@@ -154,7 +149,7 @@ function Page() {
             </Grid>
           </div>
 
-          <Divider />
+          <hr />
 
           {/* Employment Information */}
           <div>
@@ -235,7 +230,7 @@ function Page() {
             </Grid>
           </div>
 
-          <Divider />
+          <hr />
 
           {/* Government IDs */}
           <div>
@@ -281,7 +276,7 @@ function Page() {
           {/* Benefits */}
           {employee.benefits && employee.benefits.length > 0 && (
             <>
-              <Divider />
+              <hr />
               <div>
                 <Text size="sm" fw={700} mb="xs">
                   Benefits
@@ -301,8 +296,8 @@ function Page() {
               </div>
             </>
           )}
-        </Stack>
-      </Paper>
+        </div>
+      </div>
 
       {/* Edit Modal */}
       <EmployeeForm

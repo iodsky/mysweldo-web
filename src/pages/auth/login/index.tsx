@@ -1,14 +1,9 @@
 import {
   Anchor,
   Button,
-  Card,
-  Center,
-  Container,
-  Group,
   Loader,
   PasswordInput,
   SegmentedControl,
-  Stack,
   TextInput,
   Title,
 } from "@mantine/core";
@@ -92,19 +87,16 @@ function Page() {
   };
 
   return (
-    <>
-      <Container className="h-screen">
-        <Center className="h-full">
-          <Card className="w-full max-w-md" withBorder={true}>
+      <div className="h-screen max-w-5xl mx-auto px-4"> 
+        <div className="flex h-full items-center justify-center">
+          <div className="w-full max-w-md border border-gray-200 rounded-lg p-4" >
             <form
-              onSubmit={form.onSubmit((values) => {
+              onSubmit={form.onSubmit((values) => { 
                 handleLogin(values.email, values.password);
               })}
             >
-              <Stack>
-                <Center>
-                  <Title order={3}>MySweldo</Title>
-                </Center>
+              <div className="flex flex-col gap-4">
+                <Title order={3} ta="center"  >MySweldo</Title>
 
                 <SegmentedControl
                   value={accessType}
@@ -132,19 +124,18 @@ function Page() {
                   {...form.getInputProps("password")}
                 />
 
-                <Group gap="xs" justify="flex-end">
+                <div className="flex justify-end">
                   <Anchor size="sm">Forgot password?</Anchor>
-                </Group>
+                </div>
 
                 <Button variant="filled" type="submit" color="black">
                   {isPending ? <Loader size="sm" /> : "Login"}
                 </Button>
-              </Stack>
+              </div>
             </form>
-          </Card>
-        </Center>
-      </Container>
-    </>
+          </div>
+        </div>
+      </div>
   );
 }
 

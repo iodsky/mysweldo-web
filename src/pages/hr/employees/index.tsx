@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Box,
   Button,
-  Group,
-  Stack,
   Text,
   Badge,
   ActionIcon,
@@ -140,8 +137,8 @@ function Page() {
 
   return (
     <>
-      <Box p="lg">
-        <Stack gap="lg">
+      <div className="p-5">
+        <div className="flex flex-col gap-5">
           {/* Breadcrumbs */}
           <Breadcrumbs>
             <Text size="sm">HR</Text>
@@ -149,7 +146,7 @@ function Page() {
           </Breadcrumbs>
 
           {/* Header */}
-          <Group justify="space-between" align="center">
+          <div className="flex justify-between items-center">
             <div>
               <Text size="lg" fw={700}>
                 Employee Management
@@ -164,10 +161,10 @@ function Page() {
             >
               Add Employee
             </Button>
-          </Group>
+          </div>
 
           {/* Filters */}
-          <Group gap="md">
+          <div className="flex gap-3">
             <Select
               placeholder="Filter by department"
               searchable
@@ -204,7 +201,7 @@ function Page() {
             >
               Reset Filters
             </Button>
-          </Group>
+          </div>
 
           {meta && (
             <PaginatedTable
@@ -285,8 +282,8 @@ function Page() {
               ))}
             />
           )}
-        </Stack>
-      </Box>
+        </div>
+      </div>
 
       {/* Modals */}
       <EmployeeForm
@@ -304,7 +301,7 @@ function Page() {
           setSelectedEmployee(null);
         }}
       >
-        <Stack gap="md">
+        <div className="flex flex-col gap-3">
           <Text>{`Are you sure you want to terminate ${selectedEmployee?.firstName} ${selectedEmployee?.lastName}? This action cannot be undone.`}</Text>
           <Select
             label="Status"
@@ -316,7 +313,7 @@ function Page() {
               { value: "RESIGNED", label: "Resigned" },
             ]}
           />{" "}
-          <Group justify="flex-end">
+          <div className="flex justify-end gap-2">
             <Button
               variant="outline"
               onClick={() => {
@@ -335,8 +332,8 @@ function Page() {
             >
               Update
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </div>
       </Modal>
     </>
   );

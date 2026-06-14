@@ -1,8 +1,6 @@
 import { useState } from "react";
 import {
   Button,
-  Group,
-  Stack,
   Text,
   Modal,
   Select,
@@ -135,12 +133,12 @@ function LeaveCreditsTab() {
   ));
 
   return (
-    <Stack gap="lg">
-      <Group justify="flex-end">
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-end">
         <Button leftSection={<BsPlus />} onClick={() => setModalOpen(true)}>
           Assign Credits
         </Button>
-      </Group>
+      </div>
 
       {isError && (
         <Text c="red" fw={500}>
@@ -164,9 +162,9 @@ function LeaveCreditsTab() {
       )}
 
       {isLoading && (
-        <Group justify="center" py="xl">
+        <div className="flex justify-center py-8">
           <Loader />
-        </Group>
+        </div>
       )}
 
       <Modal
@@ -178,7 +176,7 @@ function LeaveCreditsTab() {
         title="Assign Leave Credits"
         size="sm"
       >
-        <Stack gap="md">
+        <div className="flex flex-col gap-4">
           <Select
             label="Employee"
             placeholder="Select employee"
@@ -203,7 +201,7 @@ function LeaveCreditsTab() {
             highlightToday
           />
 
-          <Group justify="flex-end">
+          <div className="flex justify-end gap-2">
             <Button
               variant="outline"
               onClick={() => {
@@ -217,10 +215,10 @@ function LeaveCreditsTab() {
             <Button onClick={handleAssignSave} loading={isAssigning}>
               Assign
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </div>
       </Modal>
-    </Stack>
+    </div>
   );
 }
 

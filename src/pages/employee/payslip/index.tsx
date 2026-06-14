@@ -94,12 +94,12 @@ function Page() {
   }
 
   return (
-    <Container size="xl" py="xl">
+    <Container size="xl">
       <Stack gap="lg">
         {/* Header */}
         <Group justify="space-between" align="flex-end">
           <div>
-            <Title order={2}>Payslips</Title>
+            <Title order={1}>Payslips</Title>
             <Text size="sm" c="dimmed" mt={4}>
               View your payslips and earning details
             </Text>

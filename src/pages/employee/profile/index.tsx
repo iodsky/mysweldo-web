@@ -1,11 +1,8 @@
 import {
   Paper,
   Text,
-  Group,
   Badge,
-  Stack,
   Loader,
-  Center,
   Grid,
   Divider,
 } from "@mantine/core";
@@ -23,22 +20,22 @@ function Page() {
 
   if (isLoading) {
     return (
-      <Center className="h-screen">
+      <div className="flex h-screen items-center justify-center">
         <Loader size="xl" />
-      </Center>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Center className="h-screen" bg="red.0">
-        <Stack align="center" gap="md">
+      <div className="flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
           <VscServerProcess size={48} color="red" />
           <Text size="lg" fw={700} c="red">
             An unexpected error has occured
           </Text>
-        </Stack>
-      </Center>
+        </div>
+      </div>
     );
   }
 
@@ -46,33 +43,33 @@ function Page() {
 
   if (!employee) {
     return (
-      <Center className="h-screen">
+      <div className="flex h-screen items-center justify-center">
         <Text>No employee data found</Text>
-      </Center>
+      </div>
     );
   }
 
   return (
     <Paper withBorder p="lg" radius="md">
       {/* Header Section */}
-      <Group justify="space-between" mb="lg">
+      <div className="flex justify-between mb-5">
         <div>
           <Text size="lg" fw={700}>
             {employee.firstName} {employee.lastName}
           </Text>
-          <Group gap="xs" mt="xs">
+          <div className="flex gap-2 mt-2">
             <Badge>{employee.position.title}</Badge>
             <Badge variant="light">{employee.department.title}</Badge>
             <Badge color={employee.status === "REGULAR" ? "green" : "gray"}>
               {employee.status}
             </Badge>
-          </Group>
+          </div>
         </div>
-      </Group>
+      </div>
 
       <Divider my="md" />
 
-      <Stack gap="md">
+      <div className="flex flex-col gap-4">
         {/* Personal Information */}
         <div>
           <Text size="sm" fw={700} mb="xs">
@@ -243,7 +240,7 @@ function Page() {
             </div>
           </>
         )}
-      </Stack>
+      </div>
     </Paper>
   );
 }

@@ -1,11 +1,8 @@
 import {
-  Group,
   Pagination,
-  Stack,
   Table,
   Text,
   Loader,
-  Box,
   type TableProps,
 } from "@mantine/core";
 import type { PaginationMeta } from "@/types";
@@ -35,31 +32,18 @@ function PaginatedTable({
   errorMessage,
 }: PaginatedTableProps) {
   return (
-    <Stack>
+    <div className="flex flex-col gap-4">
       {isError && (
         <Text c="red" fw={500}>
           {errorMessage || "Failed to load data"}
         </Text>
       )}
 
-      <Box pos="relative">
+      <div className="relative">
         {isFetching && (
-          <Box
-            pos="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            display="flex"
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 10,
-            }}
-            bg="rgba(255, 255, 255, 0.5)"
-          >
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50">
             <Loader size="lg" />
-          </Box>
+          </div>
         )}
         <Table
           highlightOnHover
@@ -80,34 +64,25 @@ function PaginatedTable({
             ) : (
               <Table.Tr>
                 <Table.Td colSpan={heading.length}>
-                  <Group justify="center" py="lg">
-                    <Stack align="center" gap="xs">
-                      <Text fw={500}>
-                        {emptyMessage || "No data available"}
-                      </Text>
-                      {!emptyMessage && (
-                        <Text size="sm" c="dimmed">
-                          Nothing to display yet.
-                        </Text>
-                      )}
-                    </Stack>
-                  </Group>
+                  <Text size="md" c="dimmed" ta="center" my="md">
+                    {emptyMessage || "No data available"}
+                  </Text>
                 </Table.Td>
               </Table.Tr>
             )}
           </Table.Tbody>
         </Table>
-      </Box>
+      </div>
 
-      <Group justify="center">
+      <div className="flex flex-col items-center">
         <Pagination
           total={meta.totalPages}
           value={meta.page + 1}
           onChange={onPageChange}
           withEdges
         />
-      </Group>
-    </Stack>
+      </div>
+    </div>
   );
 }
 

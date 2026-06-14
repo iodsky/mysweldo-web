@@ -1,10 +1,7 @@
 import {
-  Box,
   Button,
-  Group,
   Modal,
   Select,
-  Stack,
   Text,
   Textarea,
   Title,
@@ -188,31 +185,17 @@ function Page() {
 
   return (
     <>
-      <Stack gap="md">
+      <div className="flex flex-col gap-4">
         <Title>Leave</Title>
 
-        {/* Leave Credits Section */}
-        <Box>
+        <div>
           <Title order={3} mb="sm">
             Available Credits
           </Title>
-          <Box
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "1rem",
-            }}
-          >
+
+          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
             {credits.map((credit) => (
-              <Box
-                key={credit.id}
-                style={{
-                  padding: "1rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  backgroundColor: "#f9f9f9",
-                }}
-              >
+              <div className="p-4 border rounded-md border-gray-300 bg-gray-50" key={credit.id}>
                 <Text fw={600} mb="0.5rem">
                   {credit.type}
                 </Text>
@@ -222,14 +205,15 @@ function Page() {
                 <Text size="sm" c="dimmed">
                   Effective: {credit.effectiveDate}
                 </Text>
-              </Box>
+              </div>
             ))}
             {credits.length === 0 && (
               <Text c="dimmed">No leave credits available</Text>
             )}
-          </Box>
-        </Box>
-        <Group justify="end">
+          </div>
+        </div>
+
+        <div className="flex justify-end">
           <Tooltip
             label="No leave credits available. Please contact HR or wait for credits to be assigned."
             disabled={credits.length > 0}
@@ -252,7 +236,7 @@ function Page() {
               New Request
             </Button>
           </Tooltip>
-        </Group>
+        </div>
 
         {meta && (
           <PaginatedTable
@@ -265,6 +249,7 @@ function Page() {
               "Actions",
             ]}
             isError={isError}
+            emptyMessage="No leave requests found"
             errorMessage="Failed to load your leave requests. Please try again."
             isFetching={isFetching}
             meta={meta}
@@ -319,7 +304,7 @@ function Page() {
             ))}
           />
         )}
-      </Stack>
+      </div>
 
       <Modal
         opened={isModalOpen}
@@ -327,7 +312,7 @@ function Page() {
         title={editingId ? "Edit Leave Request" : "New Leave Request"}
         size="md"
       >
-        <Stack gap="md">
+        <div className="flex flex-col gap-4">
           {isErrorSubmitting && (
             <Text c="red" size="sm">
               Failed to save leave request
@@ -364,7 +349,7 @@ function Page() {
             }
             minRows={3}
           />
-          <Group justify="flex-end">
+          <div className="flex justify-end gap-4">
             <Button variant="outline" onClick={handleCloseModal}>
               Cancel
             </Button>
@@ -379,8 +364,8 @@ function Page() {
             >
               {editingId ? "Update" : "Submit"}
             </Button>
-          </Group>
-        </Stack>
+          </div>
+        </div>
       </Modal>
 
       <ConfirmationModal

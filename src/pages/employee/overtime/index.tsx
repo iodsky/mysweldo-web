@@ -4,7 +4,6 @@ import {
   Divider,
   Group,
   Modal,
-  Stack,
   Text,
   Textarea,
   Title,
@@ -162,8 +161,8 @@ function Page() {
 
   return (
     <>
-      <Stack gap="md">
-        <Group justify="space-between" align="center">
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-center">
           <Title>Overtime Requests</Title>
           <Button
             onClick={() => {
@@ -177,10 +176,10 @@ function Page() {
           >
             New Request
           </Button>
-        </Group>
+        </div>
 
         {/* Overtime Requests Section */}
-        <Box>
+        <div>
           {isError && (
             <Text c="red" mb="md">
               Failed to retrieve overtime requests
@@ -188,9 +187,9 @@ function Page() {
           )}
 
           {isFetching && !requests.length ? (
-            <Group justify="center" py="xl">
+            <div className="flex justify-center py-10">
               <Loader />
-            </Group>
+            </div>
           ) : requests.length === 0 ? (
             <Box
               style={{
@@ -204,7 +203,7 @@ function Page() {
               <Text c="dimmed">No overtime requests found</Text>
             </Box>
           ) : (
-            <Stack gap="md">
+            <div className="flex flex-col gap-4">
               {requests.map((request) => (
                 <Box
                   key={request.id}
@@ -215,7 +214,7 @@ function Page() {
                     backgroundColor: "#ffffff",
                   }}
                 >
-                  <Group justify="space-between" mb="sm">
+                  <div className="flex justify-between mb-2.5">
                     <Box>
                       <Text fw={600} size="lg">
                         {request.date}
@@ -249,19 +248,19 @@ function Page() {
                         </Group>
                       )}
                     </Group>
-                  </Group>
+                  </div>
 
                   <Divider my="sm" />
 
                   {request.reason && (
-                    <Box mb="sm">
+                    <div className="mb-2.5">
                       <Text size="sm" fw={500} mb="0.25rem">
                         Reason:
                       </Text>
                       <Text size="sm" c="dimmed">
                         {request.reason}
                       </Text>
-                    </Box>
+                    </div>
                   )}
                 </Box>
               ))}
@@ -298,10 +297,10 @@ function Page() {
                   </Button>
                 </Group>
               ) : null}
-            </Stack>
+            </div>
           )}
-        </Box>
-      </Stack>
+        </div>
+      </div>
 
       <Modal
         opened={isModalOpen}
@@ -309,7 +308,7 @@ function Page() {
         title={editingId ? "Edit Overtime Request" : "New Overtime Request"}
         size="md"
       >
-        <Stack gap="md">
+        <div className="flex flex-col gap-4">
           <DatePickerInput
             label="Date"
             placeholder="Select date"
@@ -340,7 +339,7 @@ function Page() {
               {editingId ? "Update" : "Submit"}
             </Button>
           </Group>
-        </Stack>
+        </div>
       </Modal>
 
       <ConfirmationModal
