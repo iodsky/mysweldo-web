@@ -74,7 +74,7 @@ function Page() {
   const meta = data?.meta;
 
   return (
-    <div className="flex flex-col gap-4"> 
+    <div className="flex flex-col gap-4 flex-1">
       <Title order={1}>Attendance</Title>
 
       <div className="flex justify-end gap-4">

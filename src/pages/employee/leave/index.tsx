@@ -185,7 +185,7 @@ function Page() {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 flex-1">
         <Title>Leave</Title>
 
         <div>

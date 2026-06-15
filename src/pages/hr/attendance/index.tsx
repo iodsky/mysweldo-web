@@ -178,9 +178,8 @@ function Page() {
 
   return (
     <>
-      <div className="p-5">
-        <div className="flex flex-col gap-5">
-          <Breadcrumbs>
+      <div className="flex flex-col flex-1 gap-5 p-5">
+        <Breadcrumbs>
             <Text size="sm">HR</Text>
             <Anchor size="sm">Attendances</Anchor>
           </Breadcrumbs>
@@ -191,7 +190,7 @@ function Page() {
                 Attendance Management
               </Text>
               <Text size="sm" c="dimmed">
-                Manage attendance in the system
+                Track and manage employee attendances
               </Text>
             </div>
             <Button
@@ -342,7 +341,6 @@ function Page() {
               ))}
             />
           )}
-        </div>
       </div>
 
       <Modal

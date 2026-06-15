@@ -137,152 +137,150 @@ function Page() {
 
   return (
     <>
-      <div className="p-5">
-        <div className="flex flex-col gap-5">
-          {/* Breadcrumbs */}
-          <Breadcrumbs>
-            <Text size="sm">HR</Text>
-            <Anchor size="sm">Employees</Anchor>
-          </Breadcrumbs>
+      <div className="flex flex-col flex-1 gap-5 p-5">
+        {/* Breadcrumbs */}
+        <Breadcrumbs>
+          <Text size="sm">HR</Text>
+          <Anchor size="sm">Employees</Anchor>
+        </Breadcrumbs>
 
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <Text size="lg" fw={700}>
-                Employee Management
-              </Text>
-              <Text size="sm" c="dimmed">
-                Manage all employees in the system
-              </Text>
-            </div>
-            <Button
-              leftSection={<BsPlus size={16} />}
-              onClick={handleCreateEmployee}
-            >
-              Add Employee
-            </Button>
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <Text size="lg" fw={700}>
+              Employee Management
+            </Text>
+            <Text size="sm" c="dimmed">
+              Manage all employees in the system
+            </Text>
           </div>
-
-          {/* Filters */}
-          <div className="flex gap-3">
-            <Select
-              placeholder="Filter by department"
-              searchable
-              clearable
-              disabled={departmentsLoading}
-              data={
-                departmentsData?.data.map((dept) => ({
-                  value: dept.id,
-                  label: dept.title,
-                })) || []
-              }
-              value={departmentFilter}
-              onChange={setDepartmentFilter}
-              style={{ flex: 1, maxWidth: 200 }}
-            />
-            <Select
-              placeholder="Filter by status"
-              searchable
-              clearable
-              data={[
-                { value: "PROBATIONARY", label: "Probationary" },
-                { value: "REGULAR", label: "Regular" },
-                { value: "TERMINATED", label: "Terminated" },
-                { value: "RESIGNED", label: "Resigned" },
-              ]}
-              value={statusFilter}
-              onChange={setStatusFilter}
-              style={{ flex: 1, maxWidth: 200 }}
-            />
-            <Button
-              variant="outline"
-              onClick={handleResetFilters}
-              disabled={!departmentFilter && !statusFilter}
-            >
-              Reset Filters
-            </Button>
-          </div>
-
-          {meta && (
-            <PaginatedTable
-              heading={[
-                "ID",
-                "Name",
-                "Position",
-                "Department",
-                "Status",
-                "Type",
-                "Actions",
-              ]}
-              isError={isError}
-              errorMessage="Failed to load employees. Please try again or contact support."
-              isFetching={isFetching}
-              meta={meta}
-              onPageChange={(pageNum) => setPage(pageNum - 1)}
-              rows={employees.map((row: EmployeeBasic) => (
-                <Table.Tr key={String(row.id)}>
-                  <Table.Td>
-                    <Text size="sm">{String(row.id)}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm" fw={500}>
-                      {row.firstName} {row.lastName}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm">{String(row.position.title)}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm">{String(row.department.title)}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge
-                      color={
-                        row.status === "REGULAR"
-                          ? "green"
-                          : row.status === "PROBATIONARY"
-                            ? "blue"
-                            : "gray"
-                      }
-                    >
-                      {String(row.status)}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge variant="light" size="sm">
-                      {String(row.type).replace(/_/g, " ")}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Menu shadow="md" position="bottom-end">
-                      <Menu.Target>
-                        <ActionIcon variant="subtle" color="gray" size="sm">
-                          <BsThreeDotsVertical size={16} />
-                        </ActionIcon>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item
-                          leftSection={<BsEye size={14} />}
-                          onClick={() => handleViewEmployee(row)}
-                        >
-                          View
-                        </Menu.Item>
-                        <Menu.Divider />
-                        <Menu.Item
-                          leftSection={<TbUserEdit size={14} />}
-                          color="red"
-                          onClick={() => handleDeleteEmployee(row)}
-                        >
-                          Terminate
-                        </Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-            />
-          )}
+          <Button
+            leftSection={<BsPlus size={16} />}
+            onClick={handleCreateEmployee}
+          >
+            Add Employee
+          </Button>
         </div>
+
+        {/* Filters */}
+        <div className="flex gap-3">
+          <Select
+            placeholder="Filter by department"
+            searchable
+            clearable
+            disabled={departmentsLoading}
+            data={
+              departmentsData?.data.map((dept) => ({
+                value: dept.id,
+                label: dept.title,
+              })) || []
+            }
+            value={departmentFilter}
+            onChange={setDepartmentFilter}
+            style={{ flex: 1, maxWidth: 200 }}
+          />
+          <Select
+            placeholder="Filter by status"
+            searchable
+            clearable
+            data={[
+              { value: "PROBATIONARY", label: "Probationary" },
+              { value: "REGULAR", label: "Regular" },
+              { value: "TERMINATED", label: "Terminated" },
+              { value: "RESIGNED", label: "Resigned" },
+            ]}
+            value={statusFilter}
+            onChange={setStatusFilter}
+            style={{ flex: 1, maxWidth: 200 }}
+          />
+          <Button
+            variant="outline"
+            onClick={handleResetFilters}
+            disabled={!departmentFilter && !statusFilter}
+          >
+            Reset Filters
+          </Button>
+        </div>
+
+        {meta && (
+          <PaginatedTable
+            heading={[
+              "ID",
+              "Name",
+              "Position",
+              "Department",
+              "Status",
+              "Type",
+              "Actions",
+            ]}
+            isError={isError}
+            errorMessage="Failed to load employees. Please try again or contact support."
+            isFetching={isFetching}
+            meta={meta}
+            onPageChange={(pageNum) => setPage(pageNum - 1)}
+            rows={employees.map((row: EmployeeBasic) => (
+              <Table.Tr key={String(row.id)}>
+                <Table.Td>
+                  <Text size="sm">{String(row.id)}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm" fw={500}>
+                    {row.firstName} {row.lastName}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm">{String(row.position.title)}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm">{String(row.department.title)}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Badge
+                    color={
+                      row.status === "REGULAR"
+                        ? "green"
+                        : row.status === "PROBATIONARY"
+                          ? "blue"
+                          : "gray"
+                    }
+                  >
+                    {String(row.status)}
+                  </Badge>
+                </Table.Td>
+                <Table.Td>
+                  <Badge variant="light" size="sm">
+                    {String(row.type).replace(/_/g, " ")}
+                  </Badge>
+                </Table.Td>
+                <Table.Td>
+                  <Menu shadow="md" position="bottom-end">
+                    <Menu.Target>
+                      <ActionIcon variant="subtle" color="gray" size="sm">
+                        <BsThreeDotsVertical size={16} />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item
+                        leftSection={<BsEye size={14} />}
+                        onClick={() => handleViewEmployee(row)}
+                      >
+                        View
+                      </Menu.Item>
+                      <Menu.Divider />
+                      <Menu.Item
+                        leftSection={<TbUserEdit size={14} />}
+                        color="red"
+                        onClick={() => handleDeleteEmployee(row)}
+                      >
+                        Terminate
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          />
+        )}
       </div>
 
       {/* Modals */}

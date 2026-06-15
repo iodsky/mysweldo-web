@@ -37,7 +37,14 @@ function Layout() {
         <Navbar />
       </AppShell.Navbar>
       <AppShell.Main>
-        <Container fluid>
+        <Container
+          fluid
+          className="flex flex-col"
+          style={{
+            minHeight:
+              "calc(100dvh - var(--app-shell-header-height, 60px) - 2 * var(--mantine-spacing-md, 1rem))",
+          }}
+        >
           <Outlet />
         </Container>
       </AppShell.Main>

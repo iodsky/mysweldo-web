@@ -32,7 +32,7 @@ function PaginatedTable({
   errorMessage,
 }: PaginatedTableProps) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col flex-1 gap-4">
       {isError && (
         <Text c="red" fw={500}>
           {errorMessage || "Failed to load data"}

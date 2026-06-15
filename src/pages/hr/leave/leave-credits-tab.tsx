@@ -125,7 +125,7 @@ function LeaveCreditsTab() {
         const summary = emp.credits.find((c) => c.type === type);
         return (
           <Table.Td key={type} ta="center">
-            {summary != null ? summary.credits : "—"}
+            {summary != null ? summary.credits : "0"}
           </Table.Td>
         );
       })}
@@ -133,7 +133,7 @@ function LeaveCreditsTab() {
   ));
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 flex-1">
       <div className="flex justify-end">
         <Button leftSection={<BsPlus />} onClick={() => setModalOpen(true)}>
           Assign Credits

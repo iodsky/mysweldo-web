@@ -94,10 +94,10 @@ function Page() {
   }
 
   return (
-    <Container size="xl">
-      <Stack gap="lg">
+    <div>
+      <div className="flex flex-col flex-1 gap-5">
         {/* Header */}
-        <Group justify="space-between" align="flex-end">
+        <div className="flex justify-between items-end">
           <div>
             <Title order={1}>Payslips</Title>
             <Text size="sm" c="dimmed" mt={4}>
@@ -111,13 +111,13 @@ function Page() {
             onChange={handlePeriodChange}
             clearable
           />
-        </Group>
+        </div>
 
         {/* Loading State */}
         {isFetching && payslips.length === 0 && (
-          <Center className="h-96">
+          <div className="flex flex-colflex-1 justify-center items-center">
             <Loader size="xl" />
-          </Center>
+          </div>
         )}
 
         {/* Empty State */}
@@ -272,7 +272,7 @@ function Page() {
             />
           </Group>
         )}
-      </Stack>
+      </div>
 
       {/* Payslip Details Modal */}
       <Modal
@@ -495,7 +495,7 @@ function Page() {
           </Stack>
         )}
       </Modal>
-    </Container>
+    </div>
   );
 }
 

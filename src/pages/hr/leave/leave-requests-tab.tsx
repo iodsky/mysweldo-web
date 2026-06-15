@@ -362,7 +362,7 @@ function LeaveRequestsTab() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 flex-1">
       <div className="flex items-end justify-end gap-2">
         <Select
           label="Filter by Status"

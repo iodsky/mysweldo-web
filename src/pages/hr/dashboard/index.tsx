@@ -2,7 +2,7 @@ import { Text } from "@mantine/core";
 
 function Page() {
   return (
-    <div className="flex h-screen items-center justify-center">
+    <div className="flex flex-col flex-1 justify-center items-center">
       <Text>Dashboard</Text>
     </div>
   );
