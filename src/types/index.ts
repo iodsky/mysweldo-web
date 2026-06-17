@@ -274,7 +274,9 @@ export type OvertimeRequest = {
   status: RequestStatus;
 };
 
-export type OvertimeRequestDto = Pick<OvertimeRequest, "date" | "reason">;
+export type OvertimeRequestDto = Pick<OvertimeRequest, "date" | "reason"> & {
+  employeeId?: string;
+};
 
 export type Payslip = {
   id: string;
