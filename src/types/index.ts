@@ -107,6 +107,10 @@ export type Department = {
   updatedAt: string;
 };
 
+export type DepartmentDto = Pick<Department, "id" | "title">;
+
+export type DepartmentUpdateDto = Pick<Department, "title">;
+
 export type Position = {
   id: string;
   departmentId: string;

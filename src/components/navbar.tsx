@@ -52,8 +52,8 @@ function Navbar() {
     { label: "Attendance", path: "/hr/attendance", icon: MdCheckCircle },
     { label: "Leave", path: "/hr/leave", icon: FaUmbrellaBeach },
     { label: "Overtime", path: "/hr/overtime", icon: FaBusinessTime },
-    { label: "Position", path: "/hr/position", icon: FaBriefcase },
     { label: "Department", path: "/hr/department", icon: GoOrganization },
+    { label: "Position", path: "/hr/position", icon: FaBriefcase },
   ];
 
   const itLinks: NavLinkItem[] = [
