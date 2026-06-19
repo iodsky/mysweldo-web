@@ -120,6 +120,10 @@ export type Position = {
   updatedAt: string;
 };
 
+export type PositionDto = Pick<Position, "id" | "departmentId" | "title">;
+
+export type PositionUpdateDto = Pick<Position, "departmentId" | "title">;
+
 export type EmployeeBenefit = {
   benefit: string;
   amount: number;
