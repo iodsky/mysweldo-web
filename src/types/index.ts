@@ -145,6 +145,22 @@ export type PositionBasic = Pick<Position, "id" | "title">;
 
 export type DepartmentBasic = Pick<Department, "id" | "title">;
 
+export type Benefit = {
+  code: string;
+  description: string;
+  taxable: boolean;
+  nonTaxablelimit: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BenefitRequest = {
+  code: string;
+  description: string;
+  taxable: boolean;
+  nonTaxableLimit: number | null;
+};
+
 export type Supervisor = {
   id: number;
   firstName: string;

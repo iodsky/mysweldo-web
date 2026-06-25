@@ -9,7 +9,7 @@ import {
 import { GoOrganization } from "react-icons/go";
 import { FaMoneyCheckDollar } from "react-icons/fa6";
 import { RiLogoutBoxFill } from "react-icons/ri";
-import { MdCheckCircle } from "react-icons/md";
+import { MdCheckCircle, MdCardGiftcard } from "react-icons/md";
 import { TfiDashboard } from "react-icons/tfi";
 
 import { useLocation, useNavigate } from "react-router-dom";
@@ -54,6 +54,7 @@ function Navbar() {
     { label: "Overtime", path: "/hr/overtime", icon: FaBusinessTime },
     { label: "Department", path: "/hr/department", icon: GoOrganization },
     { label: "Position", path: "/hr/position", icon: FaBriefcase },
+    { label: "Benefit", path: "/hr/benefit", icon: MdCardGiftcard },
   ];
 
   const itLinks: NavLinkItem[] = [

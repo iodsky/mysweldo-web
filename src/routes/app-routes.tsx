@@ -15,6 +15,7 @@ import HRLeave from "@/pages/hr/leave";
 import HROvertime from "@/pages/hr/overtime";
 import HRPosition from "@/pages/hr/position";
 import HRDepartment from "@/pages/hr/department";
+import HRBenefit from "@/pages/hr/benefit";
 
 export const AppRoutes = createBrowserRouter([
   { path: "/", element: <Navigate to="login" replace /> },
@@ -39,6 +40,7 @@ export const AppRoutes = createBrowserRouter([
           { path: "/hr/overtime", element: <HROvertime /> },
           { path: "/hr/position", element: <HRPosition /> },
           { path: "/hr/department", element: <HRDepartment /> },
+          { path: "/hr/benefit", element: <HRBenefit /> },
         ],
       },
     ],

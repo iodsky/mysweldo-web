@@ -31,7 +31,7 @@ function Page() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-screen justify-center items-center">
+      <div className="flex flex-1 justify-center items-center">
         <Loader size="xl" />
       </div>
     );
@@ -39,8 +39,8 @@ function Page() {
 
   if (error || !employee) {
     return (
-      <div className="flex flex-col h-screen justify-center items-center">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-1 justify-center items-center">
+        <div className="flex flex-col items-center gap-4">
           <Text size="lg" fw={700} c="red">
             Failed to load employee details
           </Text>
