@@ -1,57 +1,31 @@
 import type React from "react";
-import { useEffect, useState } from "react";
-import type {
-  AccessToken,
-  AccessType,
-  ApiResponse,
-  AuthSession,
-  User,
-} from "../types";
+import { useEffect, useRef, useState } from "react";
+import type { AccessType, AuthSession, User } from "../types";
 import { AuthContext } from "./auth-context";
 import { me } from "@/api/auth";
-import client from "@/api/client";
+import { refreshAccessToken } from "@/api/client";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [accessType, setAccessType] = useState<AccessType | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const initialized = useRef(false);
 
   const setAuth = (auth: AuthSession) => {
-    localStorage.setItem("token", auth.token);
     setUser(auth.user);
-    setToken(auth.token);
     setAccessType(auth.accessType);
   };
 
   const clearAuth = () => {
-    localStorage.removeItem("token");
     setUser(null);
-    setToken(null);
     setAccessType(null);
   };
 
   const initializeAuth = async () => {
     try {
-      let accessToken = localStorage.getItem("token");
-
-      if (!accessToken) {
-        const refreshResponse =
-          await client.post<ApiResponse<AccessToken>>("/auth/refresh");
-        accessToken = refreshResponse.data.data.token ?? null;
-
-        if (accessToken) {
-          localStorage.setItem("token", accessToken);
-          setToken(accessToken);
-        }
-      } else {
-        setToken(accessToken);
-      }
-
-      if (!accessToken) {
-        clearAuth();
-        return;
-      }
+      // The refresh token (and access token) live in httpOnly cookies, so we
+      // silently refresh on every page load and then fetch the current user.
+      await refreshAccessToken();
 
       const { data } = await me();
       setUser(data.user);
@@ -65,14 +39,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // StrictMode double-invokes effects in dev; guard so refresh/me run once.
+    if (initialized.current) return;
+    initialized.current = true;
     initializeAuth();
   }, []);
 
   const value = {
     user,
-    token,
     accessType,
-    isAuthenticated: !!token,
+    isAuthenticated: !!user,
     isInitializing,
     setAuth,
     clearAuth,

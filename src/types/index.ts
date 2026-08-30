@@ -80,11 +80,6 @@ export type AccessType = "EMPLOYEE" | "ADMIN";
 export type AuthSession = {
   user: User;
   accessType: AccessType;
-  token: string;
-};
-
-export type AccessToken = {
-  token: string;
 };
 
 export type AuthenticatedUser = {

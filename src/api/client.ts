@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { AccessToken, ApiError, ApiResponse } from "@/types";
+import type { ApiError } from "@/types";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 const client = axios.create({
@@ -10,18 +10,21 @@ const client = axios.create({
   },
 });
 
-client.interceptors.request.use(
-  (request) => {
-    const accessToken = localStorage.getItem("token");
-    if (accessToken && accessToken !== "undefined" && accessToken !== "null") {
-      request.headers["Authorization"] = `Bearer ${accessToken}`;
-    }
-    return request;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
-);
+// Single-flight refresh: concurrent 401s share one in-flight /auth/refresh call
+// instead of each triggering its own.
+let refreshPromise: Promise<void> | null = null;
+
+export const refreshAccessToken = (): Promise<void> => {
+  if (!refreshPromise) {
+    refreshPromise = client
+      .post("/auth/refresh")
+      .then(() => undefined)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+};
 
 client.interceptors.response.use(
   (response) => response, // Directly return successful responses.
@@ -42,16 +45,12 @@ client.interceptors.response.use(
     ) {
       originalRequest._retry = true; // Mark the request as retried to avoid infinite loops.
       try {
-        // The refreshToken is sent automatically as an httpOnly cookie.
-        const { data } =
-          await client.post<ApiResponse<AccessToken>>("/auth/refresh");
-        const accessToken = data.data.token;
-        localStorage.setItem("token", accessToken);
-        originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
-        return client(originalRequest); // Retry the original request with the new access token.
+        // Refresh tokens are httpOnly cookies; the new access token is also an
+        // httpOnly cookie set by the server, so we only need to refresh and retry.
+        await refreshAccessToken();
+        return client(originalRequest); // Retry the original request with the new access token cookie.
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);
-        localStorage.removeItem("token");
         return Promise.reject(refreshError);
       }
     }

@@ -3,7 +3,6 @@ import type { AccessType, AuthSession, User } from "@/types";
 
 interface AuthContextValue {
   user: User | null;
-  token: string | null;
   accessType: AccessType | null;
   isAuthenticated: boolean;
   isInitializing: boolean;
@@ -13,7 +12,6 @@ interface AuthContextValue {
 
 export const AuthContext = createContext<AuthContextValue>({
   user: null,
-  token: null,
   accessType: null,
   isAuthenticated: false,
   isInitializing: true,
