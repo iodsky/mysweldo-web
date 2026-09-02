@@ -16,7 +16,7 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-import { BsPlus, BsThreeDotsVertical, BsCheck, BsX } from "react-icons/bs";
+import { IconPlus, IconDotsVertical, IconCheck, IconX } from "@tabler/icons-react";
 import {
   useCreateLeaveRequest,
   useDeleteLeaveRequest,
@@ -37,7 +37,7 @@ import type {
 import type { GetLeaveRequestsParams } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import { handleApiError } from "@/utils/error-handler";
-import { MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
+import { IconTrash, IconPencil } from "@tabler/icons-react";
 
 const STATUS_COLORS: Record<RequestStatus, string> = {
   PENDING: "yellow",
@@ -327,13 +327,13 @@ function LeaveRequestsTab() {
               color="gray"
               disabled={request.status !== "PENDING"}
             >
-              <BsThreeDotsVertical />
+              <IconDotsVertical />
             </ActionIcon>
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item
               onClick={() => handleEditClick(request)}
-              leftSection={<MdOutlineModeEdit />}
+              leftSection={<IconPencil />}
             >
               Edit
             </Menu.Item>
@@ -341,13 +341,13 @@ function LeaveRequestsTab() {
               <>
                 <Menu.Item
                   onClick={() => handleStatusAction(request, "APPROVED")}
-                  leftSection={<BsCheck />}
+                  leftSection={<IconCheck />}
                 >
                   Approve
                 </Menu.Item>
                 <Menu.Item
                   onClick={() => handleStatusAction(request, "REJECTED")}
-                  leftSection={<BsX />}
+                  leftSection={<IconX />}
                 >
                   Reject
                 </Menu.Item>
@@ -355,7 +355,7 @@ function LeaveRequestsTab() {
             )}
             <Menu.Item
               onClick={() => handleDeleteClick(request)}
-              leftSection={<MdDeleteOutline />}
+              leftSection={<IconTrash />}
               color="red"
             >
               Delete
@@ -395,7 +395,7 @@ function LeaveRequestsTab() {
           onChange={setStatusFilter}
           clearable
         />
-        <Button leftSection={<BsPlus />} onClick={handleCreateClick}>
+        <Button leftSection={<IconPlus />} onClick={handleCreateClick}>
           Create Leave Request
         </Button>
       </div>

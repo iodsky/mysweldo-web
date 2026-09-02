@@ -9,7 +9,7 @@ import {
   Breadcrumbs,
   Anchor,
 } from "@mantine/core";
-import { BsPencil } from "react-icons/bs";
+import { IconPencil } from "@tabler/icons-react";
 import { useGetEmployeeById } from "@/api/generated/endpoints/employees/employees";
 import { unwrapData } from "@/api/helpers";
 import { EmployeeForm } from "@/components/employee-form";
@@ -106,7 +106,7 @@ function Page() {
               </Badge>
             </div>
           </div>
-          <Button leftSection={<BsPencil size={16} />} onClick={handleEdit}>
+          <Button leftSection={<IconPencil size={16} />} onClick={handleEdit}>
             Edit
           </Button>
         </div>

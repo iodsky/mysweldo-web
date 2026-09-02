@@ -16,8 +16,7 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-import { BsPlus, BsThreeDotsVertical } from "react-icons/bs";
-import { MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
+import { IconPlus, IconDotsVertical, IconTrash, IconPencil } from "@tabler/icons-react";
 import {
   useCreatePosition,
   useDeletePosition,
@@ -197,7 +196,7 @@ function Page() {
             Manage all positions in the system
           </Text>
         </div>
-        <Button leftSection={<BsPlus size={16} />} onClick={handleCreateClick}>
+        <Button leftSection={<IconPlus size={16} />} onClick={handleCreateClick}>
           Add Position
         </Button>
       </div>
@@ -217,18 +216,18 @@ function Page() {
                 <Menu shadow="md" position="bottom-end">
                   <Menu.Target>
                     <ActionIcon variant="subtle" color="gray" size="sm">
-                      <BsThreeDotsVertical size={16} />
+                      <IconDotsVertical size={16} />
                     </ActionIcon>
                   </Menu.Target>
                   <Menu.Dropdown>
                     <Menu.Item
-                      leftSection={<MdOutlineModeEdit size={14} />}
+                      leftSection={<IconPencil size={14} />}
                       onClick={() => handleEditClick(position)}
                     >
                       Edit
                     </Menu.Item>
                     <Menu.Item
-                      leftSection={<MdDeleteOutline size={14} />}
+                      leftSection={<IconTrash size={14} />}
                       color="red"
                       onClick={() => handleDeleteClick(position)}
                     >

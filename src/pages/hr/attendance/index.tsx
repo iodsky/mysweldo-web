@@ -15,7 +15,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import { BsPencil, BsPlus, BsThreeDotsVertical } from "react-icons/bs";
+import { IconPencil, IconPlus, IconDotsVertical } from "@tabler/icons-react";
 import {
   useCreateAttendance,
   useGetAllAttendances,
@@ -206,7 +206,7 @@ function Page() {
               </Text>
             </div>
             <Button
-              leftSection={<BsPlus size={14} />}
+              leftSection={<IconPlus size={14} />}
               onClick={openCreateAttendance}
             >
               New attendance
@@ -320,12 +320,12 @@ function Page() {
                     <Menu shadow="md" position="bottom-end">
                       <Menu.Target>
                         <ActionIcon variant="subtle" color="gray" size="sm">
-                          <BsThreeDotsVertical size={16} />
+                          <IconDotsVertical size={16} />
                         </ActionIcon>
                       </Menu.Target>
                       <Menu.Dropdown>
                         <Menu.Item
-                          leftSection={<BsPencil size={14} />}
+                          leftSection={<IconPencil size={14} />}
                           onClick={() => handleEditAttendance(row)}
                         >
                           Edit

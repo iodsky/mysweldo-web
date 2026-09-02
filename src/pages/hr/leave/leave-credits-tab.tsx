@@ -12,7 +12,7 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-import { BsPlus } from "react-icons/bs";
+import { IconPlus } from "@tabler/icons-react";
 import {
   useCreateLeaveCredits,
   useGetAllLeaveCredits,
@@ -149,7 +149,7 @@ function LeaveCreditsTab() {
   return (
     <div className="flex flex-col gap-6 flex-1">
       <div className="flex justify-end">
-        <Button leftSection={<BsPlus />} onClick={() => setModalOpen(true)}>
+        <Button leftSection={<IconPlus />} onClick={() => setModalOpen(true)}>
           Assign Credits
         </Button>
       </div>

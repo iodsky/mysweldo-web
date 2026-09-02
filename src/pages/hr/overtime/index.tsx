@@ -19,8 +19,7 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-import { BsPlus, BsThreeDotsVertical, BsCheck, BsX } from "react-icons/bs";
-import { MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
+import { IconPlus, IconDotsVertical, IconCheck, IconX, IconTrash, IconPencil } from "@tabler/icons-react";
 import {
   useCreateOvertimeRequest,
   useDeleteOvertimeRequest,
@@ -256,7 +255,7 @@ function Page() {
           </Text>
         </div>
         <Button
-          leftSection={<BsPlus size={16} />}
+          leftSection={<IconPlus size={16} />}
           onClick={() => {
             setCreateDate(null);
             setCreateReason("");
@@ -332,18 +331,18 @@ function Page() {
                       color="gray"
                       disabled={request.status !== "PENDING"}
                     >
-                      <BsThreeDotsVertical />
+                      <IconDotsVertical />
                     </ActionIcon>
                   </Menu.Target>
                   <Menu.Dropdown>
                     <Menu.Item
-                      leftSection={<MdOutlineModeEdit />}
+                      leftSection={<IconPencil />}
                       onClick={() => handleEditClick(request)}
                     >
                       Edit
                     </Menu.Item>
                     <Menu.Item
-                      leftSection={<BsCheck />}
+                      leftSection={<IconCheck />}
                       onClick={() => {
                         setSelectedRequest(request);
                         setActionType("approve");
@@ -353,7 +352,7 @@ function Page() {
                       Approve
                     </Menu.Item>
                     <Menu.Item
-                      leftSection={<BsX />}
+                      leftSection={<IconX />}
                       onClick={() => {
                         setSelectedRequest(request);
                         setActionType("reject");
@@ -363,7 +362,7 @@ function Page() {
                       Reject
                     </Menu.Item>
                     <Menu.Item
-                      leftSection={<MdDeleteOutline />}
+                      leftSection={<IconTrash />}
                       color="red"
                       onClick={() => {
                         setSelectedRequest(request);

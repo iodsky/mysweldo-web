@@ -1,28 +1,29 @@
 import { NavLink, Stack } from "@mantine/core";
 import {
-  FaUmbrellaBeach,
-  FaBusinessTime,
-  FaUser,
-  FaUsers,
-  FaBriefcase,
-} from "react-icons/fa";
-import { GoOrganization } from "react-icons/go";
-import { FaMoneyCheckDollar } from "react-icons/fa6";
-import { RiLogoutBoxFill } from "react-icons/ri";
-import { MdCheckCircle, MdCardGiftcard } from "react-icons/md";
-import { TfiDashboard } from "react-icons/tfi";
+  IconBeach,
+  IconBriefcase,
+  IconCalendarCheck,
+  IconCash,
+  IconClockPlus,
+  IconGift,
+  IconLayoutDashboard,
+  IconLogout,
+  IconSitemap,
+  IconUser,
+  IconUsers,
+} from "@tabler/icons-react";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { useQueryClient } from "@tanstack/react-query";
-import type { IconType } from "react-icons/lib";
+import type { TablerIcon } from "@tabler/icons-react";
 import { useLogout } from "@/api/generated/endpoints/authentication/authentication";
 import { notifications } from "@mantine/notifications";
 
 interface NavLinkItem {
   label: string;
   path: string;
-  icon: IconType;
+  icon: TablerIcon;
 }
 
 function Navbar() {
@@ -48,41 +49,41 @@ function Navbar() {
   });
 
   const hrLinks: NavLinkItem[] = [
-    { label: "Dashboard", path: "/hr/dashboard", icon: TfiDashboard },
-    { label: "Employees", path: "/hr/employees", icon: FaUsers },
-    { label: "Attendance", path: "/hr/attendance", icon: MdCheckCircle },
-    { label: "Leave", path: "/hr/leave", icon: FaUmbrellaBeach },
-    { label: "Overtime", path: "/hr/overtime", icon: FaBusinessTime },
-    { label: "Department", path: "/hr/department", icon: GoOrganization },
-    { label: "Position", path: "/hr/position", icon: FaBriefcase },
-    { label: "Benefit", path: "/hr/benefit", icon: MdCardGiftcard },
+    { label: "Dashboard", path: "/hr/dashboard", icon: IconLayoutDashboard },
+    { label: "Employees", path: "/hr/employees", icon: IconUsers },
+    { label: "Attendance", path: "/hr/attendance", icon: IconCalendarCheck },
+    { label: "Leave", path: "/hr/leave", icon: IconBeach },
+    { label: "Overtime", path: "/hr/overtime", icon: IconClockPlus },
+    { label: "Department", path: "/hr/department", icon: IconSitemap },
+    { label: "Position", path: "/hr/position", icon: IconBriefcase },
+    { label: "Benefit", path: "/hr/benefit", icon: IconGift },
   ];
 
   const itLinks: NavLinkItem[] = [
-    { label: "Users", path: "/it/users", icon: FaUsers },
+    { label: "Users", path: "/it/users", icon: IconUsers },
   ];
 
   const payrollLinks: NavLinkItem[] = [
-    { label: "Payroll Run", path: "/payroll/runs", icon: FaMoneyCheckDollar },
+    { label: "Payroll Run", path: "/payroll/runs", icon: IconCash },
   ];
 
   const employeeLinks: NavLinkItem[] = [
-    { label: "Profile", path: "/employee/profile", icon: FaUser },
-    { label: "Attendance", path: "/employee/attendance", icon: MdCheckCircle },
+    { label: "Profile", path: "/employee/profile", icon: IconUser },
+    { label: "Attendance", path: "/employee/attendance", icon: IconCalendarCheck },
     {
       label: "Leave",
       path: "/employee/leave",
-      icon: FaUmbrellaBeach,
+      icon: IconBeach,
     },
     {
       label: "Overtime",
       path: "/employee/overtime",
-      icon: FaBusinessTime,
+      icon: IconClockPlus,
     },
     {
       label: "Payslip",
       path: "/employee/payslip",
-      icon: FaMoneyCheckDollar,
+      icon: IconCash,
     },
   ];
 
@@ -115,7 +116,7 @@ function Navbar() {
       <NavLink
         label="Logout"
         onClick={() => logutFn()}
-        leftSection={<RiLogoutBoxFill />}
+        leftSection={<IconLogout size={16} />}
       />
     </Stack>
   );

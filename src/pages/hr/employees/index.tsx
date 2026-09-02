@@ -16,8 +16,7 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-import { BsEye, BsPlus, BsThreeDotsVertical } from "react-icons/bs";
-import { TbUserEdit } from "react-icons/tb";
+import { IconEye, IconPlus, IconDotsVertical, IconUserEdit } from "@tabler/icons-react";
 import {
   useGetAllEmployees,
   useUpdateEmployeeStatus,
@@ -168,7 +167,7 @@ function Page() {
             </Text>
           </div>
           <Button
-            leftSection={<BsPlus size={16} />}
+            leftSection={<IconPlus size={16} />}
             onClick={handleCreateEmployee}
           >
             Add Employee
@@ -269,19 +268,19 @@ function Page() {
                   <Menu shadow="md" position="bottom-end">
                     <Menu.Target>
                       <ActionIcon variant="subtle" color="gray" size="sm">
-                        <BsThreeDotsVertical size={16} />
+                        <IconDotsVertical size={16} />
                       </ActionIcon>
                     </Menu.Target>
                     <Menu.Dropdown>
                       <Menu.Item
-                        leftSection={<BsEye size={14} />}
+                        leftSection={<IconEye size={14} />}
                         onClick={() => handleViewEmployee(row)}
                       >
                         View
                       </Menu.Item>
                       <Menu.Divider />
                       <Menu.Item
-                        leftSection={<TbUserEdit size={14} />}
+                        leftSection={<IconUserEdit size={14} />}
                         color="red"
                         onClick={() => handleDeleteEmployee(row)}
                       >

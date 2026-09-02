@@ -28,7 +28,7 @@ import type {
 import type { GetMyOvertimeRequestsParams } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import { ConfirmationModal } from "@/components/confirmation-modal";
-import { MdEdit, MdDelete } from "react-icons/md";
+import { IconPencil, IconTrash } from "@tabler/icons-react";
 import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
@@ -257,7 +257,7 @@ function Page() {
                             size="sm"
                             onClick={() => handleEditClick(request)}
                           >
-                            <MdEdit size={16} />
+                            <IconPencil size={16} />
                           </ActionIcon>
                           <ActionIcon
                             variant="subtle"
@@ -265,7 +265,7 @@ function Page() {
                             size="sm"
                             onClick={() => handleDeleteClick(request.id ?? "")}
                           >
-                            <MdDelete size={16} />
+                            <IconTrash size={16} />
                           </ActionIcon>
                         </Group>
                       )}

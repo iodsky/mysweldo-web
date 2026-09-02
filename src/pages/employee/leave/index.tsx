@@ -26,7 +26,7 @@ import type { LeaveCreditDto } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
-import { BsPencil, BsThreeDotsVertical } from "react-icons/bs";
+import { IconPencil, IconDotsVertical, IconTrash } from "@tabler/icons-react";
 import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
@@ -306,18 +306,18 @@ function Page() {
                   <Menu shadow="md" position="bottom-end">
                     <Menu.Target>
                       <ActionIcon variant="subtle" color="gray" size="sm">
-                        <BsThreeDotsVertical size={16} />
+                        <IconDotsVertical size={16} />
                       </ActionIcon>
                     </Menu.Target>
                     <Menu.Dropdown>
                       <Menu.Item
-                        leftSection={<BsPencil size={14} />}
+                        leftSection={<IconPencil size={14} />}
                         onClick={() => handleEditClick(request)}
                       >
                         Edit
                       </Menu.Item>
                       <Menu.Item
-                        leftSection={<BsThreeDotsVertical size={14} />}
+                        leftSection={<IconTrash size={14} />}
                         color="red"
                         onClick={() => handleDeleteClick(request.id ?? "")}
                       >

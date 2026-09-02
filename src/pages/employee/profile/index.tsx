@@ -6,7 +6,7 @@ import {
   Grid,
   Divider,
 } from "@mantine/core";
-import { VscServerProcess } from "react-icons/vsc";
+import { IconAlertCircle } from "@tabler/icons-react";
 import { useGetAuthenticatedEmployee } from "@/api/generated/endpoints/employees/employees";
 import { unwrapData } from "@/api/helpers";
 
@@ -30,7 +30,7 @@ function Page() {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <VscServerProcess size={48} color="red" />
+          <IconAlertCircle size={48} color="red" />
           <Text size="lg" fw={700} c="red">
             An unexpected error has occured
           </Text>
