@@ -9,7 +9,7 @@ import {
   Table,
   Text,
 } from "@mantine/core";
-import { DateInput, TimeInput } from "@mantine/dates";
+import { DateInput, DateTimePicker } from "@mantine/dates";
 import {
   keepPreviousData,
   useQueryClient,
@@ -86,16 +86,14 @@ function Page() {
   const [selectedAttendance, setSelectedAttendance] =
     useState<Attendance | null>(null);
   const [employeeId, setEmployeeId] = useState("");
-  const [date, setDate] = useState("");
-  const [timeIn, setTimeIn] = useState("");
-  const [timeOut, setTimeOut] = useState("");
+  const [timeIn, setTimeIn] = useState<string | null>(null);
+  const [timeOut, setTimeOut] = useState<string | null>(null);
 
   const resetForm = () => {
     setSelectedAttendance(null);
     setEmployeeId("");
-    setDate("");
-    setTimeIn("");
-    setTimeOut("");
+    setTimeIn(null);
+    setTimeOut(null);
   };
 
   const openCreateAttendance = () => {
@@ -104,14 +102,26 @@ function Page() {
     setIsModalOpen(true);
   };
 
+  const formatPickerValue = (iso: string) => {
+    const date = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate(),
+    )} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
+  const toIsoDateTime = (pickerValue: string) =>
+    `${pickerValue.replace(" ", "T")}:00`;
+
   const handleEditAttendance = (attendance: Attendance) => {
     setModalMode("edit");
     setIsModalOpen(true);
     setSelectedAttendance(attendance);
     setEmployeeId(String(attendance.employeeId ?? ""));
-    setDate(attendance.date ?? "");
-    setTimeIn(attendance.timeIn ?? "");
-    setTimeOut(attendance.timeOut ?? "");
+    setTimeIn(attendance.timeIn ? formatPickerValue(attendance.timeIn) : null);
+    setTimeOut(
+      attendance.timeOut ? formatPickerValue(attendance.timeOut) : null,
+    );
   };
 
   const createMutation = useCreateAttendance({
@@ -149,13 +159,12 @@ function Page() {
   });
 
   const handleUpdate = () => {
-    if (!employeeId || !date || !timeIn) return;
+    if (!employeeId || !timeIn || !timeOut) return;
 
     const payload: AttendanceDto = {
       employeeId: Number(employeeId),
-      date,
-      timeIn,
-      timeOut: timeOut || undefined,
+      timeIn: toIsoDateTime(timeIn),
+      timeOut: toIsoDateTime(timeOut),
     };
 
     if (modalMode === "create") {
@@ -271,7 +280,6 @@ function Page() {
                 "Time In",
                 "Time Out",
                 "Total hours",
-                "Overtime",
                 "Actions",
               ]}
               isError={isError}
@@ -293,33 +301,18 @@ function Page() {
                     </Text>
                   </Table.Td>
                   <Table.Td>
-                    <Text size="sm">{row.date}</Text>
+                    <Text size="sm">{row.timeIn?.slice(0, 10) ?? "-"}</Text>
                   </Table.Td>
                   <Table.Td>
-                    <Text size="sm">
-                      {typeof row.timeIn === "string"
-                        ? row.timeIn.split(".")[0]
-                        : "-"}
-                    </Text>
+                    <Text size="sm">{row.timeIn?.slice(11, 16) ?? "-"}</Text>
                   </Table.Td>
                   <Table.Td>
-                    <Text size="sm">
-                      {typeof row.timeOut === "string"
-                        ? row.timeOut.split(".")[0]
-                        : "-"}
-                    </Text>
+                    <Text size="sm">{row.timeOut?.slice(11, 16) ?? "-"}</Text>
                   </Table.Td>
                   <Table.Td>
                     <Text size="sm">
                       {typeof row.totalHours === "number"
                         ? row.totalHours
-                        : "-"}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm">
-                      {typeof row.overtimeHours === "number"
-                        ? row.overtimeHours
                         : "-"}
                     </Text>
                   </Table.Td>
@@ -365,24 +358,21 @@ function Page() {
             clearable={modalMode === "create"}
             disabled={modalMode === "edit"}
           />
-          <DateInput
-            label="Date"
-            valueFormat="YYYY-MM-DD"
-            placeholder="YYYY-MM-DD"
-            value={date ? new Date(`${date}T00:00:00`) : null}
-            onChange={(nextDate) =>
-              setDate(nextDate ? nextDate.split("T")[0] : "")
-            }
-          />
-          <TimeInput
+          <DateTimePicker
             label="Time in"
-            value={timeIn ? timeIn.slice(0, 5) : ""}
-            onChange={(e) => setTimeIn(e.target.value)}
+            placeholder="Pick date and time"
+            value={timeIn}
+            onChange={(value) => setTimeIn(value)}
+            valueFormat="YYYY-MM-DD HH:mm"
+            clearable={modalMode === "create"}
           />
-          <TimeInput
+          <DateTimePicker
             label="Time out"
-            value={timeOut ? timeOut.slice(0, 5) : ""}
-            onChange={(e) => setTimeOut(e.target.value)}
+            placeholder="Pick date and time"
+            value={timeOut}
+            onChange={(value) => setTimeOut(value)}
+            valueFormat="YYYY-MM-DD HH:mm"
+            clearable={modalMode === "create"}
           />
 
           <div className="flex justify-end">

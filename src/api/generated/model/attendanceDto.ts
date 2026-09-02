@@ -7,9 +7,7 @@ export interface AttendanceDto {
   employeeId: number;
   employeeFirstName?: string;
   employeeLastName?: string;
-  date: string;
   timeIn: string;
   timeOut?: string;
   totalHours?: number;
-  overtimeHours?: number;
 }

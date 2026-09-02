@@ -4,7 +4,6 @@
  */
 export interface AttendanceRequest {
   employeeId?: number;
-  date?: string;
   timeIn?: string;
   timeOut?: string;
 }

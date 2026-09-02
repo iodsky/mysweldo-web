@@ -131,7 +131,7 @@ function Page() {
 
       {meta && (
         <PaginatedTable
-          heading={["Date", "Time In", "Time Out", "Total Hours", "Overtime"]}
+          heading={["Date", "Time In", "Time Out", "Total Hours"]}
           isError={isError}
           emptyMessage="No attendances found"
           errorMessage="Failed to load your attendance records. Please try again."
@@ -146,33 +146,18 @@ function Page() {
           rows={rows.map((attendance) => (
             <Table.Tr key={String(attendance.id)}>
               <Table.Td>
-                <Text size="sm">{attendance.date}</Text>
+                <Text size="sm">{attendance.timeIn?.slice(0, 10) ?? "-"}</Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm">
-                  {typeof attendance.timeIn === "string"
-                    ? attendance.timeIn.split(".")[0]
-                    : "-"}
-                </Text>
+                <Text size="sm">{attendance.timeIn?.slice(11, 16) ?? "-"}</Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm">
-                  {typeof attendance.timeOut === "string"
-                    ? attendance.timeOut.split(".")[0]
-                    : "-"}
-                </Text>
+                <Text size="sm">{attendance.timeOut?.slice(11, 16) ?? "-"}</Text>
               </Table.Td>
               <Table.Td>
                 <Text size="sm">
                   {typeof attendance.totalHours === "number"
                     ? attendance.totalHours
-                    : "-"}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Text size="sm">
-                  {typeof attendance.overtimeHours === "number"
-                    ? attendance.overtimeHours
                     : "-"}
                 </Text>
               </Table.Td>
