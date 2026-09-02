@@ -16,6 +16,7 @@ import HROvertime from "@/pages/hr/overtime";
 import HRPosition from "@/pages/hr/position";
 import HRDepartment from "@/pages/hr/department";
 import HRBenefit from "@/pages/hr/benefit";
+import NotFound from "@/pages/not-found";
 
 export const AppRoutes = createBrowserRouter([
   { path: "/", element: <Navigate to="login" replace /> },
@@ -45,4 +46,5 @@ export const AppRoutes = createBrowserRouter([
       },
     ],
   },
+  { path: "*", element: <NotFound /> },
 ]);

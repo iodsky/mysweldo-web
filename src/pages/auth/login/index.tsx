@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useAuth } from "../../../hooks/use-auth";
 import { useNavigate } from "react-router-dom";
 import { handleApiError } from "../../../utils/error-handler";
+import { getRedirectPath } from "@/utils/redirect";
 
 function Page() {
   const { setAuth } = useAuth();
@@ -58,24 +59,6 @@ function Page() {
       onError: handleApiError,
     },
   });
-
-  const getRedirectPath = (accessType: AccessType, role: Role): string => {
-    if (accessType === "ADMIN") {
-      switch (role) {
-        case "HR":
-        case "SUPERUSER":
-          return "/hr/dashboard";
-        case "PAYROLL":
-          return "/payroll/dashboard";
-        case "IT":
-          return "/it/dashboard";
-        default:
-          return "/hr/dashboard";
-      }
-    }
-
-    return "/employee/profile";
-  };
 
   return (
       <div className="h-screen max-w-5xl mx-auto px-4"> 
