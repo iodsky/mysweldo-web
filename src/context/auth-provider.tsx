@@ -2,7 +2,7 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import type { AccessType, AuthSession, User } from "../types";
 import { AuthContext } from "./auth-context";
-import { me } from "@/api/auth";
+import { getAuthenticatedUser } from "@/api/generated/endpoints/authentication/authentication";
 import { refreshAccessToken } from "@/api/client";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -12,8 +12,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const initialized = useRef(false);
 
   const setAuth = (auth: AuthSession) => {
-    setUser(auth.user);
-    setAccessType(auth.accessType);
+    setUser(auth.user ?? null);
+    setAccessType(auth.accessType ?? null);
   };
 
   const clearAuth = () => {
@@ -27,9 +27,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // silently refresh on every page load and then fetch the current user.
       await refreshAccessToken();
 
-      const { data } = await me();
-      setUser(data.user);
-      setAccessType(data.accessType);
+      const response = await getAuthenticatedUser();
+      const auth = response.data;
+      if (auth) {
+        setUser(auth.user ?? null);
+        setAccessType(auth.accessType ?? null);
+      }
     } catch (error) {
       console.error("Auth initialization failed:", error);
       clearAuth();

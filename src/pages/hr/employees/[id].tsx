@@ -9,9 +9,9 @@ import {
   Breadcrumbs,
   Anchor,
 } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
 import { BsPencil } from "react-icons/bs";
-import { getEmployeeById } from "@/api/employee";
+import { useGetEmployeeById } from "@/api/generated/endpoints/employees/employees";
+import { unwrapData } from "@/api/helpers";
 import { EmployeeForm } from "@/components/employee-form";
 import type { Employee } from "@/types";
 
@@ -21,13 +21,11 @@ function Page() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["employee", id],
-    queryFn: () => getEmployeeById(parseInt(id!)),
-    enabled: !!id,
+  const { data, isLoading, error } = useGetEmployeeById(parseInt(id ?? "0"), {
+    query: { enabled: !!id },
   });
 
-  const employee = data?.data;
+  const employee = unwrapData<Employee>(data);
 
   if (isLoading) {
     return (
@@ -101,8 +99,8 @@ function Page() {
               {employee.firstName} {employee.lastName}
             </Text>
             <div className="flex gap-2.5 mt-2.5">
-              <Badge>{employee.position.title}</Badge>
-              <Badge variant="light">{employee.department.title}</Badge>
+              <Badge>{employee.position?.title}</Badge>
+              <Badge variant="light">{employee.department?.title}</Badge>
               <Badge color={employee.status === "REGULAR" ? "green" : "gray"}>
                 {employee.status}
               </Badge>
@@ -162,7 +160,7 @@ function Page() {
                   <Text size="xs" c="dimmed">
                     Position
                   </Text>
-                  <Text>{employee.position.title}</Text>
+                  <Text>{employee.position?.title}</Text>
                 </div>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -170,7 +168,7 @@ function Page() {
                   <Text size="xs" c="dimmed">
                     Department
                   </Text>
-                  <Text>{employee.department.title}</Text>
+                  <Text>{employee.department?.title}</Text>
                 </div>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -181,9 +179,9 @@ function Page() {
                   <Text>
                     {employee.supervisor == null
                       ? "N/A"
-                      : employee.supervisor.firstName +
+                      : employee.supervisor?.firstName +
                         " " +
-                        employee.supervisor.lastName}
+                        employee.supervisor?.lastName}
                   </Text>
                 </div>
               </Grid.Col>

@@ -16,20 +16,20 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import {
-  useQuery,
-  useMutation,
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
 import { BsPlus, BsThreeDotsVertical, BsCheck, BsX } from "react-icons/bs";
 import { MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
 import {
-  getAllOvertimeRequests,
-  createOvertimeRequest,
-  updateOvertimeRequest,
-  updateOvertimeRequestStatus,
-  deleteOvertimeRequest,
-} from "@/api/overtime";
+  useCreateOvertimeRequest,
+  useDeleteOvertimeRequest,
+  useGetOvertimeRequests,
+  useUpdateOvertimeRequest,
+  useUpdateOvertimeRequestStatus,
+} from "@/api/generated/endpoints/overtime-requests/overtime-requests";
+import { useGetAllEmployees } from "@/api/generated/endpoints/employees/employees";
+import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import type {
@@ -37,9 +37,9 @@ import type {
   OvertimeRequestDto,
   RequestStatus,
 } from "@/types";
+import type { EmployeeBasicDto } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import { handleApiError } from "@/utils/error-handler";
-import { getAllEmployees } from "@/api/employee";
 
 const STATUS_COLORS: Record<RequestStatus, string> = {
   PENDING: "yellow",
@@ -76,110 +76,118 @@ function Page() {
     null,
   );
 
-  const { data: employeesData } = useQuery({
-    queryKey: ["employees", "attendance-form"],
-    queryFn: () =>
-      getAllEmployees({
-        pageNo: 0,
-        limit: 100,
-      }),
-  });
+  const { data: employeesData } = useGetAllEmployees(
+    { pageNo: 0, limit: 100 },
+    { query: { queryKey: ["employees", "attendance-form"] as const } },
+  );
 
-  const employeeOptions = employeesData?.data
-    ? employeesData.data.map((employee) => ({
-        value: String(employee.id),
-        label: `${employee.firstName} ${employee.lastName}`,
-      }))
-    : [];
+  const employeeOptions = unwrapPage<EmployeeBasicDto>(employeesData).content
+    .map((employee) => ({
+      value: String(employee.id ?? ""),
+      label: `${employee.firstName ?? ""} ${employee.lastName ?? ""}`,
+    }))
+    .filter((opt) => opt.value);
 
-  const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ["overtimeRequests", "all", page, startDate, endDate],
-    queryFn: () =>
-      getAllOvertimeRequests({
-        pageNo: page,
-        limit: 10,
-        startDate: startDate ? formatDate(startDate) : undefined,
-        endDate: endDate ? formatDate(endDate) : undefined,
-      }),
-    staleTime: 1000 * 60 * 5,
-    placeholderData: keepPreviousData,
-  });
+  const { data, isLoading, isFetching, isError } = useGetOvertimeRequests(
+    {
+      pageNo: page,
+      limit: 10,
+      startDate: startDate ? formatDate(startDate) : undefined,
+      endDate: endDate ? formatDate(endDate) : undefined,
+    },
+    {
+      query: {
+        queryKey: ["overtimeRequests", "all", page, startDate, endDate] as const,
+        staleTime: 1000 * 60 * 5,
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
 
-  const requests = data?.data || [];
-  const meta = data?.meta;
+  const pageData = unwrapPage<OvertimeRequest>(data);
+  const requests = pageData.content;
+  const meta = pageData.meta;
 
   const invalidateList = () =>
-    queryClient.invalidateQueries({ queryKey: ["overtimeRequests", "all"] });
+    queryClient.invalidateQueries({ queryKey: ["/overtime-requests"] });
 
-  const { mutate: createRequest, isPending: isCreating } = useMutation({
-    mutationFn: (dto: OvertimeRequestDto) => createOvertimeRequest(dto),
-    onSuccess: () => {
-      invalidateList();
-      setCreateModalOpen(false);
-      setCreateDate(null);
-      setCreateReason("");
-      setSelectedEmployeeId(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Overtime request created",
-        withBorder: true,
-      });
+  const { mutate: createRequest, isPending: isCreating } = useCreateOvertimeRequest(
+    {
+      mutation: {
+        onSuccess: () => {
+          invalidateList();
+          setCreateModalOpen(false);
+          setCreateDate(null);
+          setCreateReason("");
+          setSelectedEmployeeId(null);
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Overtime request created",
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
     },
-    onError: handleApiError,
-  });
+  );
 
-  const { mutate: updateRequest, isPending: isUpdating } = useMutation({
-    mutationFn: (dto: OvertimeRequestDto) =>
-      updateOvertimeRequest(selectedRequest!.id, dto),
-    onSuccess: () => {
-      invalidateList();
-      setEditModalOpen(false);
-      setSelectedRequest(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Overtime request updated",
-        withBorder: true,
-      });
-    },
-    onError: handleApiError,
-  });
+  const { mutate: updateRequest, isPending: isUpdating } =
+    useUpdateOvertimeRequest({
+      mutation: {
+        onSuccess: () => {
+          invalidateList();
+          setEditModalOpen(false);
+          setSelectedRequest(null);
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Overtime request updated",
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
+    });
 
-  const { mutate: updateStatus, isPending: isUpdatingStatus } = useMutation({
-    mutationFn: (status: RequestStatus) =>
-      updateOvertimeRequestStatus(selectedRequest!.id, status),
-    onSuccess: () => {
-      invalidateList();
-      setConfirmModalOpen(false);
-      setActionType(null);
-      setSelectedRequest(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: `Overtime request ${actionType}d`,
-        withBorder: true,
-      });
-    },
-    onError: handleApiError,
-  });
+  const { mutate: updateStatus, isPending: isUpdatingStatus } =
+    useUpdateOvertimeRequestStatus({
+      mutation: {
+        onSuccess: () => {
+          invalidateList();
+          setConfirmModalOpen(false);
+          setActionType(null);
+          setSelectedRequest(null);
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: `Overtime request ${actionType}d`,
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
+    });
 
-  const { mutate: deleteRequest, isPending: isDeleting } = useMutation({
-    mutationFn: () => deleteOvertimeRequest(selectedRequest!.id),
-    onSuccess: () => {
-      invalidateList();
-      setConfirmModalOpen(false);
-      setActionType(null);
-      setSelectedRequest(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Overtime request deleted",
-        withBorder: true,
-      });
+  const { mutate: deleteRequest, isPending: isDeleting } = useDeleteOvertimeRequest(
+    {
+      mutation: {
+        onSuccess: () => {
+          invalidateList();
+          setConfirmModalOpen(false);
+          setActionType(null);
+          setSelectedRequest(null);
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Overtime request deleted",
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
     },
-    onError: handleApiError,
-  });
+  );
 
   const handleEditClick = (request: OvertimeRequest) => {
     setSelectedRequest(request);
@@ -190,23 +198,31 @@ function Page() {
 
   const handleEditSave = () => {
     updateRequest({
-      date: formatDate(editDate!),
-      ...(editReason && { reason: editReason }),
+      id: selectedRequest?.id ?? "",
+      data: {
+        date: formatDate(editDate!),
+        ...(editReason && { reason: editReason }),
+      } as OvertimeRequestDto,
     });
   };
 
   const handleCreateSave = () => {
     createRequest({
-      date: formatDate(createDate!),
-      employeeId: selectedEmployeeId!,
-      ...(createReason && { reason: createReason }),
+      data: {
+        date: formatDate(createDate!),
+        employeeId: Number(selectedEmployeeId),
+        ...(createReason && { reason: createReason }),
+      } as OvertimeRequestDto,
     });
   };
 
   const handleConfirmAction = () => {
-    if (actionType === "approve") updateStatus("APPROVED");
-    else if (actionType === "reject") updateStatus("REJECTED");
-    else if (actionType === "delete") deleteRequest();
+    if (actionType === "approve")
+      updateStatus({ id: selectedRequest?.id ?? "", params: { status: "APPROVED" } });
+    else if (actionType === "reject")
+      updateStatus({ id: selectedRequest?.id ?? "", params: { status: "REJECTED" } });
+    else if (actionType === "delete")
+      deleteRequest({ id: selectedRequest?.id ?? "" });
   };
 
   const getConfirmationTitle = () => {
@@ -298,13 +314,13 @@ function Page() {
             "Actions",
           ]}
           rows={requests.map((request: OvertimeRequest) => (
-            <Table.Tr key={request.id}>
+            <Table.Tr key={request.id ?? ""}>
               <Table.Td>{request.employeeId}</Table.Td>
               <Table.Td>{request.date}</Table.Td>
               <Table.Td>{request.overtimeHours}</Table.Td>
               <Table.Td>{request.reason || "-"}</Table.Td>
               <Table.Td>
-                <Badge color={STATUS_COLORS[request.status]}>
+                <Badge color={STATUS_COLORS[request.status as RequestStatus]}>
                   {request.status}
                 </Badge>
               </Table.Td>

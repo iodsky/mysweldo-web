@@ -11,17 +11,18 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
 import {
-  createLeaveRequest,
-  getOwnLeaveCredits,
-  getOwnLeaveRequests,
-  updateLeaveRequest,
-  deleteLeaveRequest,
-} from "@/api/leave";
-import type { LeaveRequest, PaginationFilters, LeaveType } from "@/types";
+  useCreateLeaveRequest,
+  useGetMyLeaveRequests,
+  useUpdateLeaveRequest,
+  useDeleteLeaveRequest,
+} from "@/api/generated/endpoints/leave-requests/leave-requests";
+import { useGetMyLeaveCredits } from "@/api/generated/endpoints/leave-credits/leave-credits";
+import { unwrapData, unwrapPage } from "@/api/helpers";
+import type { PaginationFilters, LeaveType, LeaveRequest } from "@/types";
+import type { LeaveCreditDto } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
@@ -29,7 +30,6 @@ import { BsPencil, BsThreeDotsVertical } from "react-icons/bs";
 import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
-  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date | string | null>(null);
@@ -54,92 +54,112 @@ function Page() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data, isFetching, isError } = useQuery({
-    queryKey: ["leaveRequests", user?.employeeId, filters],
-    queryFn: () => getOwnLeaveRequests(filters),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 60, // 1 hour
+  const { data, isFetching, isError } = useGetMyLeaveRequests(filters, {
+    query: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 60, // 1 hour
+    },
   });
 
-  const { data: leaveCredits } = useQuery({
-    queryKey: ["leaveCredits", user?.employeeId],
-    queryFn: getOwnLeaveCredits,
-    staleTime: 1000 * 60 * 30, // 30 minutes
-    gcTime: 1000 * 60 * 60 * 12, // 12 hours
+  const { data: leaveCredits } = useGetMyLeaveCredits({
+    query: {
+      staleTime: 1000 * 60 * 30, // 30 minutes
+      gcTime: 1000 * 60 * 60 * 12, // 12 hours
+    },
   });
 
   const {
-    mutate,
-    isPending,
+    mutate: createLeave,
+    isPending: isCreatePending,
     isError: isErrorSubmitting,
-  } = useMutation({
-    mutationFn: (request: {
-      startDate: string;
-      endDate: string;
-      leaveType: LeaveType;
-      note?: string;
-    }) =>
-      editingId
-        ? updateLeaveRequest(editingId, request)
-        : createLeaveRequest(request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["leaveRequests", user?.employeeId],
-      });
-      setIsModalOpen(false);
-      setEditingId(null);
-      setStartDate(null);
-      setEndDate(null);
-      setLeaveType(null);
-      setNote("");
-      setEditStartDate(null);
-      setEditEndDate(null);
-      setEditLeaveType(null);
-      setEditNote("");
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: editingId
-          ? "Leave request updated"
-          : "Leave request submitted",
-        withBorder: true,
-      });
+  } = useCreateLeaveRequest({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+        queryClient.invalidateQueries({ queryKey: ["/leave-credits"] });
+        setIsModalOpen(false);
+        setEditingId(null);
+        setStartDate(null);
+        setEndDate(null);
+        setLeaveType(null);
+        setNote("");
+        setEditStartDate(null);
+        setEditEndDate(null);
+        setEditLeaveType(null);
+        setEditNote("");
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Leave request submitted",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
-  const { mutate: deleteRequest, isPending: isDeleting } = useMutation({
-    mutationFn: () => deleteLeaveRequest(deletingId!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["leaveRequests", user?.employeeId],
-      });
-      setDeleteConfirmOpen(false);
-      setDeletingId(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Leave request deleted",
-        withBorder: true,
-      });
-    },
-    onError: handleApiError,
-  });
+  const { mutate: updateLeave, isPending: isUpdatePending } =
+    useUpdateLeaveRequest({
+      mutation: {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          setIsModalOpen(false);
+          setEditingId(null);
+          setStartDate(null);
+          setEndDate(null);
+          setLeaveType(null);
+          setNote("");
+          setEditStartDate(null);
+          setEditEndDate(null);
+          setEditLeaveType(null);
+          setEditNote("");
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Leave request updated",
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
+    });
 
-  const rows: LeaveRequest[] = data?.data ? data.data : [];
-  const meta = data?.meta;
-  const credits = leaveCredits?.data || [];
+  const isPending = isCreatePending || isUpdatePending;
+
+  const { mutate: deleteRequest, isPending: isDeleting } = useDeleteLeaveRequest(
+    {
+      mutation: {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          setDeleteConfirmOpen(false);
+          setDeletingId(null);
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Leave request deleted",
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
+    },
+  );
+
+  const pageData = unwrapPage<LeaveRequest>(data);
+  const rows: LeaveRequest[] = pageData.content;
+  const meta = pageData.meta;
+  const credits = unwrapData<LeaveCreditDto[]>(leaveCredits) ?? [];
 
   const leaveTypeOptions = credits.map((credit) => ({
-    value: credit.type,
-    label: credit.type,
+    value: credit.type ?? "",
+    label: credit.type ?? "",
   }));
 
   const handleEditClick = (request: LeaveRequest) => {
-    setEditingId(request.id);
-    setEditStartDate(request.startDate);
-    setEditEndDate(request.endDate);
-    setEditLeaveType(request.leaveType);
+    setEditingId(request.id ?? null);
+    setEditStartDate(request.startDate ?? null);
+    setEditEndDate(request.endDate ?? null);
+    setEditLeaveType(request.leaveType ?? null);
     setEditNote(request.note || "");
     setIsModalOpen(true);
   };
@@ -174,12 +194,18 @@ function Page() {
         return date.toISOString().split("T")[0];
       };
 
-      mutate({
+      const payload = {
         startDate: formatDate(submitStartDate),
         endDate: formatDate(submitEndDate),
         leaveType: submitLeaveType as LeaveType,
         ...(submitNote && { note: submitNote }),
-      });
+      };
+
+      if (editingId) {
+        updateLeave({ id: editingId, data: payload });
+      } else {
+        createLeave({ data: payload });
+      }
     }
   };
 
@@ -293,7 +319,7 @@ function Page() {
                       <Menu.Item
                         leftSection={<BsThreeDotsVertical size={14} />}
                         color="red"
-                        onClick={() => handleDeleteClick(request.id)}
+                        onClick={() => handleDeleteClick(request.id ?? "")}
                       >
                         Delete
                       </Menu.Item>
@@ -376,7 +402,7 @@ function Page() {
         cancelText="Cancel"
         isDangerous={true}
         isLoading={isDeleting}
-        onConfirm={() => deleteRequest()}
+        onConfirm={() => deleteRequest({ id: deletingId! })}
         onCancel={() => {
           setDeleteConfirmOpen(false);
           setDeletingId(null);

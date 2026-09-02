@@ -14,9 +14,9 @@ import { TfiDashboard } from "react-icons/tfi";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import type { IconType } from "react-icons/lib";
-import { logout } from "@/api/auth";
+import { useLogout } from "@/api/generated/endpoints/authentication/authentication";
 import { notifications } from "@mantine/notifications";
 
 interface NavLinkItem {
@@ -31,18 +31,19 @@ function Navbar() {
   const { clearAuth, accessType, user } = useAuth();
   const location = useLocation();
 
-  const { mutate: logutFn } = useMutation({
-    mutationFn: logout,
-    onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ["employee"] });
-      clearAuth();
-      navigate("/login");
-      notifications.show({
-        title: "Success",
-        message: "Logout success!",
-        color: "green",
-        withBorder: true,
-      });
+  const { mutate: logutFn } = useLogout({
+    mutation: {
+      onSuccess: () => {
+        queryClient.removeQueries({ queryKey: ["employee"] });
+        clearAuth();
+        navigate("/login");
+        notifications.show({
+          title: "Success",
+          message: "Logout success!",
+          color: "green",
+          withBorder: true,
+        });
+      },
     },
   });
 

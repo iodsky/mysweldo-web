@@ -15,19 +15,18 @@ import {
   Loader,
 } from "@mantine/core";
 import {
-  useQuery,
-  useMutation,
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
 import { BsPlus, BsThreeDotsVertical } from "react-icons/bs";
 import { MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
 import {
-  getBenefits,
-  createBenefit,
-  updateBenefit,
-  deleteBenefit,
-} from "@/api/benefit";
+  useCreateBenefit,
+  useDeleteBenefit,
+  useGetAllBenefits,
+  useUpdateBenefit,
+} from "@/api/generated/endpoints/benefits/benefits";
+import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import type { Benefit } from "@/types";
@@ -51,15 +50,19 @@ function Page() {
   >("");
   const [editDescription, setEditDescription] = useState("");
 
-  const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ["benefits", page],
-    queryFn: () => getBenefits({ pageNo: page, limit: 10 }),
-    staleTime: 1000 * 60 * 5,
-    placeholderData: keepPreviousData,
-  });
+  const { data, isLoading, isFetching, isError } = useGetAllBenefits(
+    { pageNo: page, limit: 10 },
+    {
+      query: {
+        staleTime: 1000 * 60 * 5,
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
 
-  const benefits = data?.data || [];
-  const meta = data?.meta;
+  const pageData = unwrapPage<Benefit>(data);
+  const benefits = pageData.content;
+  const meta = pageData.meta;
 
   const resetCreateForm = () => {
     setCreateCode("");
@@ -68,58 +71,55 @@ function Page() {
     setCreateNonTaxableLimit("");
   };
 
-  const { mutate: createBft, isPending: isCreating } = useMutation({
-    mutationFn: createBenefit,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["benefits"] });
-      setCreateModalOpen(false);
-      resetCreateForm();
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Benefit created successfully",
-        withBorder: true,
-      });
+  const { mutate: createBft, isPending: isCreating } = useCreateBenefit({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/benefits"] });
+        setCreateModalOpen(false);
+        resetCreateForm();
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Benefit created successfully",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
-  const { mutate: updateBft, isPending: isUpdating } = useMutation({
-    mutationFn: (description: string) =>
-      updateBenefit(selectedBenefit!.code, {
-        code: selectedBenefit!.code,
-        description,
-        taxable: selectedBenefit!.taxable,
-        nonTaxableLimit: selectedBenefit!.nonTaxablelimit,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["benefits"] });
-      setEditModalOpen(false);
-      setSelectedBenefit(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Benefit updated successfully",
-        withBorder: true,
-      });
+  const { mutate: updateBft, isPending: isUpdating } = useUpdateBenefit({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/benefits"] });
+        setEditModalOpen(false);
+        setSelectedBenefit(null);
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Benefit updated successfully",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
-  const { mutate: deleteBft, isPending: isDeleting } = useMutation({
-    mutationFn: () => deleteBenefit(selectedBenefit!.code),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["benefits"] });
-      setDeleteModalOpen(false);
-      setSelectedBenefit(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Benefit deleted successfully",
-        withBorder: true,
-      });
+  const { mutate: deleteBft, isPending: isDeleting } = useDeleteBenefit({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/benefits"] });
+        setDeleteModalOpen(false);
+        setSelectedBenefit(null);
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Benefit deleted successfully",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
   const handleCreateClick = () => {
@@ -144,20 +144,21 @@ function Page() {
     }
 
     createBft({
-      code: createCode.trim(),
-      description: createDescription.trim(),
-      taxable: createTaxable,
-      nonTaxableLimit: createTaxable
-        ? null
-        : createNonTaxableLimit === ""
-          ? null
-          : createNonTaxableLimit,
+      data: {
+        code: createCode.trim(),
+        description: createDescription.trim(),
+        taxable: createTaxable,
+        nonTaxableLimit:
+          createTaxable || createNonTaxableLimit === ""
+            ? undefined
+            : createNonTaxableLimit,
+      },
     });
   };
 
   const handleEditClick = (benefit: Benefit) => {
     setSelectedBenefit(benefit);
-    setEditDescription(benefit.description);
+    setEditDescription(benefit.description ?? "");
     setEditModalOpen(true);
   };
 
@@ -172,7 +173,16 @@ function Page() {
       return;
     }
 
-    updateBft(editDescription.trim());
+    const code = selectedBenefit?.code ?? "";
+    updateBft({
+      id: code,
+      data: {
+        code,
+        description: editDescription.trim(),
+        taxable: selectedBenefit?.taxable,
+        nonTaxableLimit: selectedBenefit?.nonTaxablelimit,
+      },
+    });
   };
 
   const handleDeleteClick = (benefit: Benefit) => {
@@ -180,7 +190,7 @@ function Page() {
     setDeleteModalOpen(true);
   };
 
-  const formatLimit = (value: number | null) =>
+  const formatLimit = (value: number | null | undefined) =>
     value != null ? `₱${value.toFixed(2)}` : "—";
 
   return (
@@ -223,9 +233,9 @@ function Page() {
                   {benefit.taxable ? "Taxable" : "Non-Taxable"}
                 </Badge>
               </Table.Td>
-              <Table.Td>{formatLimit(benefit.nonTaxablelimit)}</Table.Td>
+              <Table.Td>{formatLimit(benefit.nonTaxablelimit ?? null)}</Table.Td>
               <Table.Td>
-                {new Date(benefit.createdAt).toLocaleDateString()}
+                {benefit.createdAt ? new Date(benefit.createdAt).toLocaleDateString() : "-"}
               </Table.Td>
               <Table.Td align="center">
                 <Menu shadow="md" position="bottom-end">
@@ -409,7 +419,7 @@ function Page() {
         confirmText="Delete"
         isDangerous
         isLoading={isDeleting}
-        onConfirm={() => deleteBft()}
+        onConfirm={() => deleteBft({ id: selectedBenefit?.code ?? "" })}
         onCancel={() => {
           setDeleteModalOpen(false);
           setSelectedBenefit(null);

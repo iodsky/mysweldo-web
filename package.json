@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "api:fetch": "curl http://localhost:8001/api/docs -o ./src/docs/openapi/specs.json",
-    "api:generate": "openapi-ts"
+    "api:generate": "orval"
   },
   "dependencies": {
     "@mantine/charts": "^9.0.1",
@@ -40,6 +40,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
+    "orval": "^8.27.0",
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
     "prettier": "3.8.1",

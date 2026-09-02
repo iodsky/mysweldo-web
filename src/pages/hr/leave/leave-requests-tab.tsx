@@ -13,30 +13,28 @@ import {
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import {
-  useQuery,
-  useMutation,
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
 import { BsPlus, BsThreeDotsVertical, BsCheck, BsX } from "react-icons/bs";
 import {
-  getAllLeaveRequest,
-  updateLeaveStatus,
-  updateLeaveRequest,
-  deleteLeaveRequest,
-  createLeaveRequest,
-} from "@/api/leave";
-import { getAllEmployees } from "@/api/employee";
+  useCreateLeaveRequest,
+  useDeleteLeaveRequest,
+  useGetLeaveRequests,
+  useUpdateLeaveRequest,
+  useUpdateLeaveRequestStatus,
+} from "@/api/generated/endpoints/leave-requests/leave-requests";
+import { useGetAllEmployees } from "@/api/generated/endpoints/employees/employees";
+import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import type {
   LeaveRequest,
-  PaginationFilters,
   RequestStatus,
   LeaveType,
   EmployeeBasic,
-  LeaveRequestDto,
 } from "@/types";
+import type { GetLeaveRequestsParams } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import { handleApiError } from "@/utils/error-handler";
 import { MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
@@ -86,105 +84,113 @@ function LeaveRequestsTab() {
   );
   const [createNote, setCreateNote] = useState<string>("");
 
-  const filters: PaginationFilters = {
+  const filters: GetLeaveRequestsParams = {
     pageNo: page,
     limit: 10,
   };
 
-  const { data: employeesData } = useQuery({
-    queryKey: ["employees"],
-    queryFn: () =>
-      getAllEmployees({
-        pageNo: 0,
-        limit: 100,
-      }),
-    staleTime: 1000 * 60 * 30,
-    gcTime: 1000 * 60 * 60,
-  });
-
-  const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ["leaveRequests", page, statusFilter],
-    queryFn: () => getAllLeaveRequest(filters),
-    staleTime: 1000 * 60 * 5,
-    placeholderData: keepPreviousData,
-  });
-
-  const requests = data?.data || [];
-  const meta = data?.meta;
-
-  const { mutate: updateStatus, isPending: isUpdatingStatus } = useMutation({
-    mutationFn: (status: RequestStatus) =>
-      updateLeaveStatus(selectedRequest!.id, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["leaveRequests", "leaveCredits"],
-      });
-      setConfirmModalOpen(false);
-      setActionType(null);
-      setSelectedRequest(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: `Leave request ${actionType}ed successfully`,
-        withBorder: true,
-      });
+  const { data: employeesData } = useGetAllEmployees(
+    { pageNo: 0, limit: 100 },
+    {
+      query: {
+        queryKey: ["employees"] as const,
+        staleTime: 1000 * 60 * 30,
+        gcTime: 1000 * 60 * 60,
+      },
     },
-    onError: handleApiError,
+  );
+
+  const { data, isLoading, isFetching, isError } = useGetLeaveRequests(filters, {
+    query: {
+      queryKey: ["leaveRequests", page, statusFilter] as const,
+      staleTime: 1000 * 60 * 5,
+      placeholderData: keepPreviousData,
+    },
   });
 
-  const { mutate: createRequest, isPending: isCreating } = useMutation({
-    mutationFn: (request: LeaveRequestDto) => createLeaveRequest(request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leaveRequests"] });
-      setCreateModalOpen(false);
-      resetCreateForm();
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Leave request created successfully",
-        withBorder: true,
-      });
-    },
-    onError: handleApiError,
-  });
+  const pageData = unwrapPage<LeaveRequest>(data);
+  const requests = pageData.content;
+  const meta = pageData.meta;
 
-  const { mutate: updateRequest, isPending: isUpdating } = useMutation({
-    mutationFn: (request: {
-      leaveType: LeaveType;
-      startDate: string;
-      endDate: string;
-      note?: string;
-    }) => updateLeaveRequest(selectedRequest!.id, request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leaveRequests"] });
-      setEditModalOpen(false);
-      setSelectedRequest(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Leave request updated successfully",
-        withBorder: true,
-      });
-    },
-    onError: handleApiError,
-  });
+  const { mutate: updateStatus, isPending: isUpdatingStatus } =
+    useUpdateLeaveRequestStatus({
+      mutation: {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["/leave-requests"],
+          });
+          queryClient.invalidateQueries({ queryKey: ["/leave-credits"] });
+          setConfirmModalOpen(false);
+          setActionType(null);
+          setSelectedRequest(null);
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: `Leave request ${actionType}ed successfully`,
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
+    });
 
-  const { mutate: deleteRequest, isPending: isDeleting } = useMutation({
-    mutationFn: () => deleteLeaveRequest(selectedRequest!.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leaveRequests"] });
-      setConfirmModalOpen(false);
-      setActionType(null);
-      setSelectedRequest(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Leave request deleted successfully",
-        withBorder: true,
-      });
+  const { mutate: createRequest, isPending: isCreating } = useCreateLeaveRequest(
+    {
+      mutation: {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          setCreateModalOpen(false);
+          resetCreateForm();
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Leave request created successfully",
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
     },
-    onError: handleApiError,
-  });
+  );
+
+  const { mutate: updateRequest, isPending: isUpdating } = useUpdateLeaveRequest(
+    {
+      mutation: {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          setEditModalOpen(false);
+          setSelectedRequest(null);
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Leave request updated successfully",
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
+    },
+  );
+
+  const { mutate: deleteRequest, isPending: isDeleting } = useDeleteLeaveRequest(
+    {
+      mutation: {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          setConfirmModalOpen(false);
+          setActionType(null);
+          setSelectedRequest(null);
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Leave request deleted successfully",
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
+    },
+  );
 
   const handleEditClick = (request: LeaveRequest) => {
     setSelectedRequest(request);
@@ -215,10 +221,13 @@ function LeaveRequestsTab() {
         : editEndDate;
 
     updateRequest({
-      leaveType: selectedRequest!.leaveType,
-      startDate: startStr,
-      endDate: endStr,
-      note: editNote || undefined,
+      id: selectedRequest?.id ?? "",
+      data: {
+        leaveType: (selectedRequest?.leaveType ?? "VACATION") as LeaveType,
+        startDate: startStr,
+        endDate: endStr,
+        note: editNote || undefined,
+      },
     });
   };
 
@@ -261,11 +270,13 @@ function LeaveRequestsTab() {
         : createEndDate;
 
     createRequest({
-      employeeId: createEmployeeId,
-      leaveType: createLeaveType as LeaveType,
-      startDate: startStr,
-      endDate: endStr,
-      note: createNote || undefined,
+      data: {
+        employeeId: createEmployeeId,
+        leaveType: createLeaveType as LeaveType,
+        startDate: startStr,
+        endDate: endStr,
+        note: createNote || undefined,
+      },
     });
   };
 
@@ -283,22 +294,30 @@ function LeaveRequestsTab() {
 
   const handleConfirmAction = () => {
     if (actionType === "approve" || actionType === "reject") {
-      const status = actionType === "approve" ? "APPROVED" : "REJECTED";
-      updateStatus(status);
+      const status = (actionType === "approve"
+        ? "APPROVED"
+        : "REJECTED") as RequestStatus;
+      updateStatus({ id: selectedRequest?.id ?? "", params: { status } });
     } else if (actionType === "delete") {
-      deleteRequest();
+      deleteRequest({ id: selectedRequest?.id ?? "" });
     }
   };
 
   const rows = requests.map((request: LeaveRequest) => (
-    <Table.Tr key={request.id}>
+    <Table.Tr key={request.id ?? ""}>
       <Table.Td>{request.employeeId}</Table.Td>
-      <Table.Td>{LEAVE_TYPE_MAP[request.leaveType]}</Table.Td>
-      <Table.Td>{new Date(request.startDate).toLocaleDateString()}</Table.Td>
-      <Table.Td>{new Date(request.endDate).toLocaleDateString()}</Table.Td>
+      <Table.Td>{LEAVE_TYPE_MAP[request.leaveType as LeaveType]}</Table.Td>
+      <Table.Td>
+        {request.startDate ? new Date(request.startDate).toLocaleDateString() : "-"}
+      </Table.Td>
+      <Table.Td>
+        {request.endDate ? new Date(request.endDate).toLocaleDateString() : "-"}
+      </Table.Td>
       <Table.Td>{request.note || "-"}</Table.Td>
       <Table.Td>
-        <Badge color={STATUS_COLORS[request.status]}>{request.status}</Badge>
+        <Badge color={STATUS_COLORS[request.status as RequestStatus]}>
+          {request.status}
+        </Badge>
       </Table.Td>
       <Table.Td align="center">
         <Menu shadow="md">
@@ -428,13 +447,17 @@ function LeaveRequestsTab() {
             placeholder="Select employee"
             searchable
             data={
-              employeesData?.data?.map((emp: EmployeeBasic) => ({
-                value: emp.id,
-                label: `${emp.firstName} ${emp.lastName}`,
-              })) || []
+              unwrapPage<EmployeeBasic>(employeesData).content.map(
+                (emp: EmployeeBasic) => ({
+                  value: String(emp.id ?? ""),
+                  label: `${emp.firstName ?? ""} ${emp.lastName ?? ""}`,
+                }),
+              )
             }
-            value={createEmployeeId}
-            onChange={setCreateEmployeeId}
+            value={createEmployeeId?.toString() ?? null}
+            onChange={(value) =>
+              setCreateEmployeeId(value ? Number(value) : null)
+            }
             required
           />
 

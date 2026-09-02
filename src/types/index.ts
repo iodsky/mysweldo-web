@@ -1,21 +1,99 @@
-export type ApiResponse<T> = {
-  success: boolean;
-  message: string;
-  timestamp: string;
-  data: T;
-};
+import type {
+  AttendanceDto as AttendanceRecord,
+  AttendanceRequest,
+  AuthRequest,
+  BenefitDto,
+  BenefitRequest as BenefitRequestDto,
+  CreditSummary as CreditSummaryDto,
+  DepartmentBasicDto,
+  DepartmentDto as DepartmentRecord,
+  DepartmentRequest,
+  DepartmentUpdateRequest,
+  EmployeeBasicDto,
+  EmployeeBenefitDto,
+  EmployeeDto as EmployeeRecord,
+  EmployeeLeaveCreditDto,
+  EmployeeRequest,
+  LeaveCreditDto as LeaveCreditRecord,
+  LeaveCreditRequest,
+  LeaveRequestDto as LeaveRequestRecord,
+  OvertimeRequestDto as OvertimeRequestRecord,
+  PayrollItemDto,
+  PositionBasicDto,
+  PositionDto as PositionRecord,
+  PositionRequest,
+  PositionUpdateRequest,
+  SalaryDto,
+  UserDto,
+} from "@/api/generated/model";
 
-export type PaginationMeta = {
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  first: boolean;
-  last: boolean;
-};
+export type { AuthSession, AuthenticatedUser, PaginationMeta } from "@/api/generated/model";
 
-export type PaginatedApiResponse<T> = ApiResponse<T> & {
-  meta: PaginationMeta;
+export type Attendance = AttendanceRecord;
+export type AttendanceDto = AttendanceRequest;
+export type Benefit = BenefitDto;
+export type BenefitRequest = BenefitRequestDto;
+export type Department = DepartmentRecord;
+export type DepartmentBasic = DepartmentBasicDto;
+export type DepartmentDto = DepartmentRequest;
+export type DepartmentUpdateDto = DepartmentUpdateRequest;
+export type Position = PositionRecord;
+export type PositionBasic = PositionBasicDto;
+export type PositionDto = PositionRequest;
+export type PositionUpdateDto = PositionUpdateRequest;
+export type Employee = EmployeeRecord;
+export type EmployeeBasic = EmployeeBasicDto;
+export type EmployeeDto = EmployeeRequest;
+export type EmployeeBenefit = EmployeeBenefitDto;
+export type LeaveRequest = LeaveRequestRecord;
+export type LeaveRequestDto = LeaveRequestRecord;
+export type LeaveCredit = LeaveCreditRecord;
+export type LeaveCreditDto = LeaveCreditRequest;
+export type EmployeeLeaveCredit = EmployeeLeaveCreditDto;
+export type OvertimeRequest = OvertimeRequestRecord;
+export type OvertimeRequestDto = OvertimeRequestRecord;
+export type Payslip = PayrollItemDto;
+export type Salary = SalaryDto;
+export type User = UserDto;
+export type LoginCredentials = AuthRequest;
+export type CreditSummary = CreditSummaryDto;
+
+export type AccessType = "EMPLOYEE" | "ADMIN";
+export type Role =
+  | "HR"
+  | "EMPLOYEE"
+  | "PAYROLL"
+  | "IT"
+  | "SUPERUSER"
+  | "SUPERVISOR";
+export type RequestStatus = "APPROVED" | "REJECTED" | "PENDING";
+export type EmploymentStatus =
+  | "PROBATIONARY"
+  | "REGULAR"
+  | "TERMINATED"
+  | "RESIGNED";
+export type EmploymentType =
+  | "FULL_TIME"
+  | "PART_TIME"
+  | "CONTRACTUAL"
+  | "INTERN";
+export type LeaveType =
+  | "VACATION"
+  | "SICK"
+  | "MATERNITY"
+  | "PATERNITY"
+  | "SOLO_PARENT"
+  | "BEREAVEMENT";
+export type PayType = "MONTHLY" | "DAILY" | "HOURLY";
+export type PayrollFrequency =
+  | "SEMI_MONTHLY"
+  | "MONTHLY"
+  | "WEEKLY"
+  | "BI_WEEKLY";
+
+export type PaginationFilters = {
+  pageNo: number;
+  limit: number;
 };
 
 type ValidationError = {
@@ -36,303 +114,10 @@ export type ApiError = {
   duplicateField?: DuplicateField;
 };
 
-export type PaginationFilters = {
-  pageNo: number;
-  limit: number;
-};
-
-export type Attendance = {
-  id: string;
-  employeeId: number;
-  employeeFirstName?: string;
-  employeeLastName?: string;
-  date: string;
-  timeIn: string;
-  timeOut: string | null;
-  totalHours: number | null;
-  overtimeHours: number | null;
-};
-
-export type AttendanceDto = Pick<
-  Attendance,
-  "employeeId" | "date" | "timeIn" | "timeOut"
->;
-
-export type Role =
-  | "HR"
-  | "EMPLOYEE"
-  | "PAYROLL"
-  | "IT"
-  | "SUPERUSER"
-  | "SUPERVISOR";
-
-export type User = {
-  id: string;
-  email: string;
-  employeeId: number;
-  role: Role;
-  createdAt: string;
-  updatedAt?: string;
-};
-
-export type AccessType = "EMPLOYEE" | "ADMIN";
-
-export type AuthSession = {
-  user: User;
-  accessType: AccessType;
-};
-
-export type AuthenticatedUser = {
-  user: User;
-  accessType: AccessType;
-};
-
-export type LoginCredentials = {
-  email: string;
-  password: string;
-  accessType: AccessType;
-};
-
-export type RequestStatus = "APPROVED" | "REJECTED" | "PENDING";
-
-export type Department = {
-  id: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type DepartmentDto = Pick<Department, "id" | "title">;
-
-export type DepartmentUpdateDto = Pick<Department, "title">;
-
-export type Position = {
-  id: string;
-  departmentId: string;
-  departmentTitle: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type PositionDto = Pick<Position, "id" | "departmentId" | "title">;
-
-export type PositionUpdateDto = Pick<Position, "departmentId" | "title">;
-
-export type EmployeeBenefit = {
-  benefit: string;
-  amount: number;
-};
-
-export type EmploymentStatus =
-  | "PROBATIONARY"
-  | "REGULAR"
-  | "TERMINATED"
-  | "RESIGNED";
-
-export type EmploymentType =
-  | "FULL_TIME"
-  | "PART_TIME"
-  | "CONTRACTUAL"
-  | "INTERN";
-
-export type PositionBasic = Pick<Position, "id" | "title">;
-
-export type DepartmentBasic = Pick<Department, "id" | "title">;
-
-export type Benefit = {
-  code: string;
-  description: string;
-  taxable: boolean;
-  nonTaxablelimit: number | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type BenefitRequest = {
-  code: string;
-  description: string;
-  taxable: boolean;
-  nonTaxableLimit: number | null;
-};
-
 export type Supervisor = {
   id: number;
   firstName: string;
   lastName: string;
   department: string;
   position: string;
-};
-
-export type Employee = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  birthday: string; // LocalDate as ISO string
-  address: string;
-  phoneNumber: string;
-  sssNumber: string;
-  tinNumber: string;
-  philhealthNumber: string;
-  pagIbigNumber: string;
-  supervisor: EmployeeBasic | null;
-  position: PositionBasic;
-  department: DepartmentBasic;
-  status: EmploymentStatus;
-  type: EmploymentType;
-  startShift: string; // LocalTime as HH:MM:SS
-  endShift: string; // LocalTime as HH:MM:SS
-  salary: Salary; // BigDecimal as string
-  benefits: EmployeeBenefit[];
-};
-
-export type EmployeeBasic = Pick<
-  Employee,
-  | "id"
-  | "firstName"
-  | "lastName"
-  | "department"
-  | "position"
-  | "status"
-  | "type"
->;
-
-export type EmployeeDto = {
-  firstName: string;
-  lastName: string;
-  birthday: string;
-  address: string;
-  phoneNumber: string;
-  governmentId: {
-    sssNumber: string;
-    tinNumber: string;
-    philhealthNumber: string;
-    pagIbigNumber: string;
-  };
-  supervisorId?: number;
-  positionId?: string;
-  departmentId?: string;
-  status: EmploymentStatus;
-  type: EmploymentType;
-  startShift: string;
-  endShift: string;
-  benefits: EmployeeBenefit[];
-  salaryRequest: Salary;
-};
-
-export type PayType = "MONTHLY" | "DAILY" | "HOURLY";
-
-export type PayrollFrequency =
-  | "SEMI_MONTHLY"
-  | "MONTHLY"
-  | "WEEKLY"
-  | "BI_WEEKLY";
-
-export type Salary = {
-  rate: number;
-  payType: PayType;
-  payFrequency: PayrollFrequency;
-};
-
-export type LeaveType =
-  | "VACATION"
-  | "SICK"
-  | "MATERNITY"
-  | "PATERNITY"
-  | "SOLO_PARENT"
-  | "BEREAVEMENT";
-
-export type LeaveCredit = {
-  id: string;
-  employeeId: number;
-  type: LeaveType;
-  credits: number;
-  effectiveDate: string;
-};
-
-export type LeaveCreditDto = {
-  employeeId: number;
-  effectiveDate: string;
-};
-
-export type CreditSummary = {
-  type: string;
-  credits: number;
-};
-
-export type EmployeeLeaveCredit = Pick<
-  EmployeeBasic,
-  "id" | "firstName" | "lastName"
-> & {
-  credits: CreditSummary[];
-};
-
-export type LeaveRequest = {
-  id: string;
-  employeeId: number;
-  leaveType: LeaveType;
-  startDate: string;
-  endDate: string;
-  note?: string;
-  status: RequestStatus;
-};
-
-export type LeaveRequestDto = Omit<
-  LeaveRequest,
-  "id" | "employeeId" | "status"
-> & {
-  employeeId?: number;
-};
-
-export type OvertimeRequest = {
-  id: string;
-  employeeId: number;
-  date: string;
-  overtimeHours: number;
-  reason?: string;
-  status: RequestStatus;
-};
-
-export type OvertimeRequestDto = Pick<OvertimeRequest, "date" | "reason"> & {
-  employeeId?: string;
-};
-
-export type Payslip = {
-  id: string;
-  employeeId: number;
-  employeeName: string;
-  designation: string;
-
-  periodStartDate: string;
-  periodEndDate: string;
-
-  daysWorked: number;
-  absences: number;
-  tardinessMinutes: number;
-  undertimeMinutes: number;
-  overtimeMinutes: number;
-  overtimePay: number;
-
-  monthlyRate: number;
-  semiMonthlyRate: number;
-  dailyRate: number;
-  hourlyRate: number;
-
-  totalBenefits: number;
-  grossPay: number;
-  totalDeductions: number;
-  netPay: number;
-
-  benefits: PayslipBenefit[];
-  deductions: PayslipDeduction[];
-};
-
-type PayslipBenefit = {
-  benefit: string;
-  amount: number;
-};
-
-type PayslipDeduction = {
-  deduction: string;
-  amount: number;
 };

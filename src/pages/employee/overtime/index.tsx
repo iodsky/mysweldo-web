@@ -12,32 +12,31 @@ import {
   ActionIcon,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
 import {
-  createOvertimeRequest,
-  getOwnOvertimeRequests,
-  updateOvertimeRequest,
-  deleteOvertimeRequest,
-} from "@/api/overtime";
+  useCreateOvertimeRequest,
+  useGetMyOvertimeRequests,
+  useUpdateOvertimeRequest,
+  useDeleteOvertimeRequest,
+} from "@/api/generated/endpoints/overtime-requests/overtime-requests";
+import { unwrapPage } from "@/api/helpers";
 import type {
   OvertimeRequest,
   OvertimeRequestDto,
-  PaginationFilters,
 } from "@/types";
+import type { GetMyOvertimeRequestsParams } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import { MdEdit, MdDelete } from "react-icons/md";
 import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
-  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [date, setDate] = useState<Date | string | null>(null);
   const [reason, setReason] = useState<string>("");
-  const [filters, setFilters] = useState<PaginationFilters>({
+  const [filters, setFilters] = useState<GetMyOvertimeRequestsParams>({
     pageNo: 0,
     limit: 10,
   });
@@ -51,60 +50,79 @@ function Page() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data, isFetching, isError } = useQuery({
-    queryKey: ["overtimeRequests", user?.employeeId, filters],
-    queryFn: () => getOwnOvertimeRequests(filters),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 60, // 1 hour
-  });
-
-  const { mutate, isPending } = useMutation({
-    mutationFn: (request: OvertimeRequestDto) =>
-      editingId
-        ? updateOvertimeRequest(editingId, request)
-        : createOvertimeRequest(request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["overtimeRequests", user?.employeeId],
-      });
-      setIsModalOpen(false);
-      setEditingId(null);
-      setDate(null);
-      setEditDate(null);
-      setReason("");
-      setEditReason("");
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: editingId
-          ? "Overtime request updated"
-          : "Overtime request submitted",
-        withBorder: true,
-      });
+  const { data, isFetching, isError } = useGetMyOvertimeRequests(filters, {
+    query: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 60, // 1 hour
     },
-    onError: handleApiError,
   });
 
-  const { mutate: deleteRequest, isPending: isDeleting } = useMutation({
-    mutationFn: () => deleteOvertimeRequest(deletingId!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["overtimeRequests", user?.employeeId],
-      });
-      setDeleteConfirmOpen(false);
-      setDeletingId(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Overtime request deleted",
-        withBorder: true,
-      });
+  const { mutate: submitRequest, isPending } = useCreateOvertimeRequest({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/overtime-requests"] });
+        setIsModalOpen(false);
+        setEditingId(null);
+        setDate(null);
+        setEditDate(null);
+        setReason("");
+        setEditReason("");
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: editingId
+            ? "Overtime request updated"
+            : "Overtime request submitted",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
-  const requests: OvertimeRequest[] = data?.data ? data.data : [];
-  const meta = data?.meta;
+  const { mutate: updateRequest } = useUpdateOvertimeRequest({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/overtime-requests"] });
+        setIsModalOpen(false);
+        setEditingId(null);
+        setDate(null);
+        setEditDate(null);
+        setReason("");
+        setEditReason("");
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Overtime request updated",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
+    },
+  });
+
+  const { mutate: deleteRequest, isPending: isDeleting } = useDeleteOvertimeRequest(
+    {
+      mutation: {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/overtime-requests"] });
+          setDeleteConfirmOpen(false);
+          setDeletingId(null);
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Overtime request deleted",
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
+    },
+  );
+
+  const pageData = unwrapPage<OvertimeRequest>(data);
+  const requests: OvertimeRequest[] = pageData.content;
+  const meta = pageData.meta;
 
   const handleSubmit = () => {
     const submitDate = editingId ? editDate : date;
@@ -116,18 +134,22 @@ function Page() {
         return dateValue.toISOString().split("T")[0];
       };
 
-      const request: OvertimeRequestDto = {
+      const request = {
         date: formatDate(submitDate),
         ...(submitReason && { reason: submitReason }),
-      };
+      } as OvertimeRequestDto;
 
-      mutate(request);
+      if (editingId) {
+        updateRequest({ id: editingId, data: request });
+      } else {
+        submitRequest({ data: request });
+      }
     }
   };
 
   const handleEditClick = (request: OvertimeRequest) => {
-    setEditingId(request.id);
-    setEditDate(request.date);
+    setEditingId(request.id ?? null);
+    setEditDate(request.date ?? null);
     setEditReason(request.reason || "");
     setIsModalOpen(true);
   };
@@ -224,7 +246,7 @@ function Page() {
                       </Text>
                     </Box>
                     <Group gap="xs">
-                      <Badge color={getStatusColor(request.status)} size="lg">
+                      <Badge color={getStatusColor(request.status ?? "")} size="lg">
                         {request.status}
                       </Badge>
                       {request.status === "PENDING" && (
@@ -241,7 +263,7 @@ function Page() {
                             variant="subtle"
                             color="red"
                             size="sm"
-                            onClick={() => handleDeleteClick(request.id)}
+                            onClick={() => handleDeleteClick(request.id ?? "")}
                           >
                             <MdDelete size={16} />
                           </ActionIcon>
@@ -266,30 +288,30 @@ function Page() {
               ))}
 
               {/* Pagination Controls */}
-              {meta && (meta.page > 0 || !meta.last) ? (
+              {meta && ((meta.page ?? 0) > 0 || !(meta.last ?? true)) ? (
                 <Group justify="center" mt="lg">
                   <Button
                     variant="outline"
-                    disabled={meta.first}
+                    disabled={meta.first ?? true}
                     onClick={() =>
                       setFilters((prev) => ({
                         ...prev,
-                        pageNo: prev.pageNo - 1,
+                        pageNo: (prev.pageNo ?? 0) - 1,
                       }))
                     }
                   >
                     Previous
                   </Button>
                   <Text size="sm" c="dimmed">
-                    Page {meta ? meta.page + 1 : 1}
+                    Page {meta ? (meta.page ?? 0) + 1 : 1}
                   </Text>
                   <Button
                     variant="outline"
-                    disabled={meta.last}
+                    disabled={meta.last ?? true}
                     onClick={() =>
                       setFilters((prev) => ({
                         ...prev,
-                        pageNo: prev.pageNo + 1,
+                        pageNo: (prev.pageNo ?? 0) + 1,
                       }))
                     }
                   >
@@ -350,7 +372,7 @@ function Page() {
         cancelText="Cancel"
         isDangerous={true}
         isLoading={isDeleting}
-        onConfirm={() => deleteRequest()}
+        onConfirm={() => deleteRequest({ id: deletingId! })}
         onCancel={() => {
           setDeleteConfirmOpen(false);
           setDeletingId(null);

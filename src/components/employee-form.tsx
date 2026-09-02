@@ -10,10 +10,11 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { createEmployee, updateEmployee } from "@/api/employee";
-import { getAllDepartments } from "@/api/department";
-import { getAllPositions } from "@/api/position";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCreateEmployee, useUpdateEmployee } from "@/api/generated/endpoints/employees/employees";
+import { useGetDepartmentOptions } from "@/api/generated/endpoints/departments/departments";
+import { useGetPositionOptions } from "@/api/generated/endpoints/positions/positions";
+import { unwrapData } from "@/api/helpers";
 import type {
   Employee,
   EmploymentStatus,
@@ -23,6 +24,7 @@ import type {
   EmployeeDto,
   ApiError,
 } from "../types";
+import type { DepartmentDto, PositionDto } from "@/api/generated/model";
 
 interface EmployeeFormProps {
   opened: boolean;
@@ -115,59 +117,61 @@ export function EmployeeForm({
   const queryClient = useQueryClient();
 
   // Fetch departments
-  const { data: departmentsData, isLoading: departmentsLoading } = useQuery({
-    queryKey: ["departments"],
-    queryFn: getAllDepartments,
-    staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours
-  });
+  const { data: departmentsResponse, isLoading: departmentsLoading } =
+    useGetDepartmentOptions({
+      query: {
+        staleTime: 1000 * 60 * 60, // 1 hour
+        gcTime: 1000 * 60 * 60 * 24, // 24 hours
+      },
+    });
 
   // Fetch positions
-  const { data: positionsData, isLoading: positionsLoading } = useQuery({
-    queryKey: ["positions"],
-    queryFn: getAllPositions,
-    staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours
-  });
+  const { data: positionsResponse, isLoading: positionsLoading } =
+    useGetPositionOptions({
+      query: {
+        staleTime: 1000 * 60 * 60, // 1 hour
+        gcTime: 1000 * 60 * 60 * 24, // 24 hours
+      },
+    });
 
   // Transform departments to Select options
-  const departmentOptions = departmentsData?.data
-    ? departmentsData.data.map((dept) => ({
-        value: dept.id,
-        label: dept.title,
-      }))
-    : [];
+  const departmentOptions = (unwrapData<DepartmentDto[]>(departmentsResponse) ??
+    []).map((dept) => ({
+    value: dept.id,
+    label: dept.title,
+  }));
 
   // Transform positions to Select options
-  const positionOptions = positionsData?.data
-    ? positionsData.data.map((pos) => ({
-        value: pos.id,
-        label: pos.title,
-      }))
-    : [];
+  const positionOptions = (unwrapData<PositionDto[]>(positionsResponse) ?? []).map(
+    (pos) => ({
+      value: pos.id,
+      label: pos.title,
+    }),
+  );
 
   const form = useForm<FormValues>({
     initialValues: employee
       ? {
-          firstName: employee.firstName,
-          lastName: employee.lastName,
-          birthday: employee.birthday,
-          address: employee.address,
-          phoneNumber: employee.phoneNumber,
-          sssNumber: employee.sssNumber,
-          tinNumber: employee.tinNumber,
-          philhealthNumber: employee.philhealthNumber,
-          pagibigNumber: employee.pagIbigNumber,
+          firstName: employee.firstName ?? "",
+          lastName: employee.lastName ?? "",
+          birthday: employee.birthday ?? "",
+          address: employee.address ?? "",
+          phoneNumber: employee.phoneNumber ?? "",
+          sssNumber: employee.sssNumber ?? "",
+          tinNumber: employee.tinNumber ?? "",
+          philhealthNumber: employee.philhealthNumber ?? "",
+          pagibigNumber: employee.pagIbigNumber ?? "",
           supervisorId: 0,
-          positionId: employee.position.id,
-          departmetnId: employee.department.id,
-          status: employee.status,
-          type: employee.type,
-          startShift: employee.startShift,
-          endShift: employee.endShift,
-          salaryRate: employee.salary.rate,
-          salaryType: employee.salary.payType,
-          payrollFrequency: employee.salary.payFrequency,
+          positionId: employee.position?.id ?? "",
+          departmetnId: employee.department?.id ?? "",
+          status: (employee.status as EmploymentStatus) ?? "PROBATIONARY",
+          type: (employee.type as EmploymentType) ?? "FULL_TIME",
+          startShift: employee.startShift ?? "",
+          endShift: employee.endShift ?? "",
+          salaryRate: employee.salary?.rate ?? 0,
+          salaryType: (employee.salary?.payType as PayType) ?? "MONTHLY",
+          payrollFrequency: (employee.salary?.payFrequency as PayrollFrequency) ??
+            "MONTHLY",
         }
       : {
           firstName: "",
@@ -203,25 +207,26 @@ export function EmployeeForm({
   useEffect(() => {
     if (opened && employee && isEditing) {
       form.setValues({
-        firstName: employee.firstName,
-        lastName: employee.lastName,
-        birthday: employee.birthday,
-        address: employee.address,
-        phoneNumber: employee.phoneNumber,
-        sssNumber: employee.sssNumber,
-        tinNumber: employee.tinNumber,
-        philhealthNumber: employee.philhealthNumber,
-        pagibigNumber: employee.pagIbigNumber,
+        firstName: employee.firstName ?? "",
+        lastName: employee.lastName ?? "",
+        birthday: employee.birthday ?? "",
+        address: employee.address ?? "",
+        phoneNumber: employee.phoneNumber ?? "",
+        sssNumber: employee.sssNumber ?? "",
+        tinNumber: employee.tinNumber ?? "",
+        philhealthNumber: employee.philhealthNumber ?? "",
+        pagibigNumber: employee.pagIbigNumber ?? "",
         supervisorId: employee.supervisor?.id || 0,
-        positionId: employee.position.id,
-        departmetnId: employee.department.id,
-        status: employee.status,
-        type: employee.type,
-        startShift: employee.startShift,
-        endShift: employee.endShift,
-        salaryRate: employee.salary.rate,
-        salaryType: employee.salary.payType,
-        payrollFrequency: employee.salary.payFrequency,
+        positionId: employee.position?.id ?? "",
+        departmetnId: employee.department?.id ?? "",
+        status: (employee.status as EmploymentStatus) ?? "PROBATIONARY",
+        type: (employee.type as EmploymentType) ?? "FULL_TIME",
+        startShift: employee.startShift ?? "",
+        endShift: employee.endShift ?? "",
+        salaryRate: employee.salary?.rate ?? 0,
+        salaryType: (employee.salary?.payType as PayType) ?? "MONTHLY",
+        payrollFrequency: (employee.salary?.payFrequency as PayrollFrequency) ??
+          "MONTHLY",
       });
     } else if (opened && !isEditing) {
       form.reset();
@@ -229,112 +234,83 @@ export function EmployeeForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened, employee, isEditing]);
 
-  const createMutation = useMutation({
-    mutationFn: (formData: FormValues) => {
-      const baseDto: EmployeeDto = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        birthday: formData.birthday,
-        address: formData.address,
-        phoneNumber: formData.phoneNumber,
-        governmentId: {
-          sssNumber: formData.sssNumber,
-          tinNumber: formData.tinNumber,
-          philhealthNumber: formData.philhealthNumber,
-          pagIbigNumber: formData.pagibigNumber,
-        },
-        supervisorId: formData.supervisorId || undefined,
-        positionId: formData.positionId,
-        departmentId: formData.departmetnId,
-        status: formData.status,
-        type: formData.type,
-        startShift: formData.startShift,
-        endShift: formData.endShift,
-        benefits: [],
-        salaryRequest: {
-          rate: formData.salaryRate,
-          payType: formData.salaryType,
-          payFrequency: formData.payrollFrequency,
-        },
-      };
+  const buildDto = (formData: FormValues): EmployeeDto => ({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      birthday: formData.birthday,
+      address: formData.address,
+      phoneNumber: formData.phoneNumber,
+      governmentId: {
+        sssNumber: formData.sssNumber,
+        tinNumber: formData.tinNumber,
+        philhealthNumber: formData.philhealthNumber,
+        pagIbigNumber: formData.pagibigNumber,
+      },
+      supervisorId: formData.supervisorId || undefined,
+      positionId: formData.positionId,
+      departmentId: formData.departmetnId,
+      status: formData.status,
+      type: formData.type,
+      startShift: formData.startShift,
+      endShift: formData.endShift,
+      benefits: [],
+      salaryRequest: {
+        rate: formData.salaryRate,
+        payType: formData.salaryType,
+        payFrequency: formData.payrollFrequency,
+      },
+    });
 
-      return createEmployee(baseDto);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["employees"] });
-      form.reset();
-      onClose();
-    },
-    onError: (error: unknown) => {
-      const apiError = error as ApiError;
+  const createMutation = useCreateEmployee({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["employees"] });
+        form.reset();
+        onClose();
+      },
+      onError: (error: unknown) => {
+        const apiError = error as ApiError;
 
-      // field errors
-      if (apiError.validationErrors?.length) {
-        apiError.validationErrors.forEach((err) => {
-          form.setFieldError(err.field, err.message);
-        });
-      }
+        // field errors
+        if (apiError.validationErrors?.length) {
+          apiError.validationErrors.forEach((err) => {
+            form.setFieldError(err.field, err.message);
+          });
+        }
+      },
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: (formData: FormValues) => {
-      console.log("FORM DATA:", formData);
-      const baseDto: EmployeeDto = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        birthday: formData.birthday,
-        address: formData.address,
-        phoneNumber: formData.phoneNumber,
-        governmentId: {
-          sssNumber: formData.sssNumber,
-          tinNumber: formData.tinNumber,
-          philhealthNumber: formData.philhealthNumber,
-          pagIbigNumber: formData.pagibigNumber,
-        },
-        supervisorId: formData.supervisorId || undefined,
-        positionId: formData.positionId,
-        departmentId: formData.departmetnId,
-        status: formData.status,
-        type: formData.type,
-        startShift: formData.startShift,
-        endShift: formData.endShift,
-        benefits: [],
-        salaryRequest: {
-          rate: formData.salaryRate,
-          payType: formData.salaryType,
-          payFrequency: formData.payrollFrequency,
-        },
-      };
+  const updateMutation = useUpdateEmployee({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["employees"] });
+        if (employee) {
+          queryClient.invalidateQueries({ queryKey: ["employee", employee.id] });
+        }
+        onClose();
+      },
+      onError: (error: unknown) => {
+        const apiError = error as ApiError;
 
-      return updateEmployee(employee!.id, baseDto);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["employees"] });
-      if (employee) {
-        queryClient.invalidateQueries({ queryKey: ["employee", employee.id] });
-      }
-      onClose();
-    },
-    onError: (error: unknown) => {
-      const apiError = error as ApiError;
-
-      // field errors
-      if (apiError.validationErrors?.length) {
-        apiError.validationErrors.forEach((err) => {
-          form.setFieldError(err.field, err.message);
-        });
-      }
+        // field errors
+        if (apiError.validationErrors?.length) {
+          apiError.validationErrors.forEach((err) => {
+            form.setFieldError(err.field, err.message);
+          });
+        }
+      },
     },
   });
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
   const handleSubmit = (values: FormValues) => {
-    if (isEditing && employee) {
-      updateMutation.mutate(values);
+    const dto = buildDto(values);
+    if (isEditing && employee?.id) {
+      updateMutation.mutate({ id: employee.id, data: dto });
     } else {
-      createMutation.mutate(values);
+      createMutation.mutate({ data: dto });
     }
   };
 

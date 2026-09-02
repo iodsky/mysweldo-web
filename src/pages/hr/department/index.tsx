@@ -12,19 +12,18 @@ import {
   Loader,
 } from "@mantine/core";
 import {
-  useQuery,
-  useMutation,
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
 import { BsPlus, BsThreeDotsVertical } from "react-icons/bs";
 import { MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
 import {
-  getDepartments,
-  createDepartment,
-  updateDepartment,
-  deleteDepartment,
-} from "@/api/department";
+  useCreateDepartment,
+  useDeleteDepartment,
+  useGetAllDepartments,
+  useUpdateDepartment,
+} from "@/api/generated/endpoints/departments/departments";
+import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import type { Department } from "@/types";
@@ -45,68 +44,74 @@ function Page() {
   const [createTitle, setCreateTitle] = useState("");
   const [editTitle, setEditTitle] = useState("");
 
-  const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ["departments", page],
-    queryFn: () => getDepartments({ pageNo: page, limit: 10 }),
-    staleTime: 1000 * 60 * 5,
-    placeholderData: keepPreviousData,
-  });
+  const { data, isLoading, isFetching, isError } = useGetAllDepartments(
+    { pageNo: page, limit: 10 },
+    {
+      query: {
+        staleTime: 1000 * 60 * 5,
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
 
-  const departments = data?.data || [];
-  const meta = data?.meta;
+  const pageData = unwrapPage<Department>(data);
+  const departments = pageData.content;
+  const meta = pageData.meta;
 
   const resetCreateForm = () => {
     setCreateId("");
     setCreateTitle("");
   };
 
-  const { mutate: createDept, isPending: isCreating } = useMutation({
-    mutationFn: createDepartment,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["departments"] });
-      setCreateModalOpen(false);
-      resetCreateForm();
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Department created successfully",
-        withBorder: true,
-      });
+  const { mutate: createDept, isPending: isCreating } = useCreateDepartment({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/departments"] });
+        setCreateModalOpen(false);
+        resetCreateForm();
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Department created successfully",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
-  const { mutate: updateDept, isPending: isUpdating } = useMutation({
-    mutationFn: (title: string) =>
-      updateDepartment(selectedDepartment!.id, { title }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["departments"] });
-      setEditModalOpen(false);
-      setSelectedDepartment(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Department updated successfully",
-        withBorder: true,
-      });
+  const { mutate: updateDept, isPending: isUpdating } = useUpdateDepartment({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/departments"] });
+        setEditModalOpen(false);
+        setSelectedDepartment(null);
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Department updated successfully",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
-  const { mutate: deleteDept, isPending: isDeleting } = useMutation({
-    mutationFn: () => deleteDepartment(selectedDepartment!.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["departments"] });
-      setDeleteModalOpen(false);
-      setSelectedDepartment(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Department deleted successfully",
-        withBorder: true,
-      });
+  const { mutate: deleteDept, isPending: isDeleting } = useDeleteDepartment({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/departments"] });
+        setDeleteModalOpen(false);
+        setSelectedDepartment(null);
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Department deleted successfully",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
   const handleCreateClick = () => {
@@ -125,12 +130,12 @@ function Page() {
       return;
     }
 
-    createDept({ id: createId.trim(), title: createTitle.trim() });
+    createDept({ data: { id: createId.trim(), title: createTitle.trim() } });
   };
 
   const handleEditClick = (department: Department) => {
     setSelectedDepartment(department);
-    setEditTitle(department.title);
+    setEditTitle(department.title ?? "");
     setEditModalOpen(true);
   };
 
@@ -145,7 +150,7 @@ function Page() {
       return;
     }
 
-    updateDept(editTitle.trim());
+    updateDept({ id: selectedDepartment?.id ?? "", data: { title: editTitle.trim() } });
   };
 
   const handleDeleteClick = (department: Department) => {
@@ -182,7 +187,7 @@ function Page() {
               <Table.Td>{department.id}</Table.Td>
               <Table.Td>{department.title}</Table.Td>
               <Table.Td>
-                {new Date(department.createdAt).toLocaleDateString()}
+                {department.createdAt ? new Date(department.createdAt).toLocaleDateString() : "-"}
               </Table.Td>
               <Table.Td align="center">
                 <Menu shadow="md" position="bottom-end">
@@ -322,7 +327,7 @@ function Page() {
         confirmText="Delete"
         isDangerous
         isLoading={isDeleting}
-        onConfirm={() => deleteDept()}
+        onConfirm={() => deleteDept({ id: selectedDepartment?.id ?? "" })}
         onCancel={() => {
           setDeleteModalOpen(false);
           setSelectedDepartment(null);

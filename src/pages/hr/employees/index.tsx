@@ -13,24 +13,24 @@ import {
   Table,
 } from "@mantine/core";
 import {
-  useQuery,
-  useMutation,
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
 import { BsEye, BsPlus, BsThreeDotsVertical } from "react-icons/bs";
 import { TbUserEdit } from "react-icons/tb";
 import {
-  getAllEmployees,
-  updateEmployeeStatus,
-  getEmployeeById,
-} from "@/api/employee";
+  useGetAllEmployees,
+  useUpdateEmployeeStatus,
+  useGetEmployeeById,
+} from "@/api/generated/endpoints/employees/employees";
+import { useGetDepartmentOptions } from "@/api/generated/endpoints/departments/departments";
+import { unwrapData, unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import { EmployeeForm } from "@/components/employee-form";
 import type { EmploymentStatus, EmployeeBasic, Employee } from "@/types";
+import type { DepartmentDto } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import { handleApiError } from "@/utils/error-handler";
-import { getAllDepartments } from "@/api/department";
 
 function Page() {
   const navigate = useNavigate();
@@ -50,55 +50,64 @@ function Page() {
 
   const queryClient = useQueryClient();
 
-  // Fetch positions for filter dropdown
-  const { data: departmentsData, isLoading: departmentsLoading } = useQuery({
-    queryKey: ["departments"],
-    queryFn: getAllDepartments,
-    staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-  });
+  // Fetch departments for filter dropdown
+  const { data: departmentsData, isLoading: departmentsLoading } =
+    useGetDepartmentOptions({
+      query: {
+        queryKey: ["departments"] as const,
+        staleTime: 1000 * 60 * 60, // 1 hour
+        gcTime: 1000 * 60 * 60 * 24, // 24 hours
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+      },
+    });
 
   // Fetch employees list
-  const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ["employees", page, departmentFilter, statusFilter],
-    queryFn: () =>
-      getAllEmployees({
-        pageNo: page,
-        limit: 10,
-        department: departmentFilter || undefined,
-        supervisor: undefined,
-        status: statusFilter || undefined,
-      }),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    placeholderData: keepPreviousData,
-  });
+  const { data, isLoading, isFetching, isError } = useGetAllEmployees(
+    {
+      pageNo: page,
+      limit: 10,
+      department: departmentFilter || undefined,
+      supervisor: undefined,
+      status: statusFilter || undefined,
+    },
+    {
+      query: {
+        queryKey: ["employees", page, departmentFilter, statusFilter] as const,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
 
   // Fetch full employee details for editing
-  const { data: employeeDetail } = useQuery({
-    queryKey: ["employee", editingEmployee?.id],
-    queryFn: () => getEmployeeById(editingEmployee!.id),
-    enabled: !!editingEmployee?.id,
-  });
+  const { data: employeeDetail } = useGetEmployeeById(
+    editingEmployee?.id ?? 0,
+    {
+      query: {
+        queryKey: ["employee", editingEmployee?.id] as const,
+        enabled: !!editingEmployee?.id,
+      },
+    },
+  );
 
   // Delete employee mutation
-  const statusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: EmploymentStatus }) =>
-      updateEmployeeStatus(id, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["employees"] });
-      setDeleteOpened(false);
-      setSelectedEmployee(null);
-      setSelectedStatus(null);
+  const statusMutation = useUpdateEmployeeStatus({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/employees"] });
+        setDeleteOpened(false);
+        setSelectedEmployee(null);
+        setSelectedStatus(null);
 
-      notifications.show({
-        color: "green",
-        title: "Success",
-        message: "Employee status updated successfully",
-      });
+        notifications.show({
+          color: "green",
+          title: "Success",
+          message: "Employee status updated successfully",
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
   const handleViewEmployee = (employee: EmployeeBasic) => {
@@ -116,9 +125,12 @@ function Page() {
   };
 
   const handleConfirmStatusUpdate = async () => {
-    if (!selectedEmployee || !selectedStatus) return;
+    if (!selectedEmployee?.id || !selectedStatus) return;
 
-    statusMutation.mutate({ id: selectedEmployee.id, status: selectedStatus });
+    statusMutation.mutate({
+      id: selectedEmployee.id,
+      params: { status: selectedStatus },
+    });
   };
 
   const handleFormClose = () => {
@@ -132,8 +144,9 @@ function Page() {
     setPage(1);
   };
 
-  const employees = data?.data || [];
-  const meta = data?.meta;
+  const pageData = unwrapPage<EmployeeBasic>(data);
+  const employees = pageData.content;
+  const meta = pageData.meta;
 
   return (
     <>
@@ -170,10 +183,10 @@ function Page() {
             clearable
             disabled={departmentsLoading}
             data={
-              departmentsData?.data.map((dept) => ({
-                value: dept.id,
-                label: dept.title,
-              })) || []
+              (unwrapData<DepartmentDto[]>(departmentsData) ?? []).map((dept) => ({
+                value: dept.id ?? "",
+                label: dept.title ?? "",
+              }))
             }
             value={departmentFilter}
             onChange={setDepartmentFilter}
@@ -229,10 +242,10 @@ function Page() {
                   </Text>
                 </Table.Td>
                 <Table.Td>
-                  <Text size="sm">{String(row.position.title)}</Text>
+                  <Text size="sm">{String(row.position?.title ?? "")}</Text>
                 </Table.Td>
                 <Table.Td>
-                  <Text size="sm">{String(row.department.title)}</Text>
+                  <Text size="sm">{String(row.department?.title ?? "")}</Text>
                 </Table.Td>
                 <Table.Td>
                   <Badge
@@ -287,7 +300,7 @@ function Page() {
       <EmployeeForm
         opened={formOpened}
         onClose={handleFormClose}
-        employee={employeeDetail?.data || undefined}
+        employee={unwrapData<Employee>(employeeDetail) || undefined}
         isEditing={false}
       />
 
