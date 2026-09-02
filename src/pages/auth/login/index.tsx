@@ -8,17 +8,9 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useMutation } from "@tanstack/react-query";
-import { login } from "@/api/auth";
+import { useLogin } from "@/api/generated/endpoints/authentication/authentication";
 import { notifications } from "@mantine/notifications";
-import type {
-  AccessType,
-  ApiError,
-  ApiResponse,
-  AuthSession,
-  LoginCredentials,
-  Role,
-} from "@/types";
+import type { AccessType, Role } from "@/types";
 import { useState } from "react";
 import { useAuth } from "../../../hooks/use-auth";
 import { useNavigate } from "react-router-dom";
@@ -42,30 +34,29 @@ function Page() {
   });
 
   const handleLogin = (email: string, password: string) => {
-    loginFn({ email, password, accessType });
+    loginFn({ data: { email, password, accessType } });
   };
 
-  const { mutate: loginFn, isPending } = useMutation<
-    ApiResponse<AuthSession>,
-    ApiError,
-    LoginCredentials
-  >({
-    mutationFn: login,
-    onSuccess: (response) => {
-      setAuth(response.data);
-      notifications.show({
-        title: "Success",
-        message: "Authentication success!",
-        color: "green",
-        withBorder: true,
-      });
-      const redirectPath = getRedirectPath(
-        response.data.accessType,
-        response.data.user.role,
-      );
-      navigate(redirectPath);
+  const { mutate: loginFn, isPending } = useLogin({
+    mutation: {
+      onSuccess: (response) => {
+        const auth = response.data;
+        if (!auth) return;
+        setAuth(auth);
+        notifications.show({
+          title: "Success",
+          message: "Authentication success!",
+          color: "green",
+          withBorder: true,
+        });
+        const redirectPath = getRedirectPath(
+          auth.accessType ?? "EMPLOYEE",
+          auth.user?.role as Role,
+        );
+        navigate(redirectPath);
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
   const getRedirectPath = (accessType: AccessType, role: Role): string => {

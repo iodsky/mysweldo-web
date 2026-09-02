@@ -17,31 +17,39 @@ import {
   Table,
 } from "@mantine/core";
 import { MonthPickerInput } from "@mantine/dates";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
-import { getEmployeePayslips, type PayslipsFilter } from "@/api/payroll";
-import type { Payslip } from "@/types";
+import { keepPreviousData } from "@tanstack/react-query";
+import { useGetMyPayrollRecords } from "@/api/generated/endpoints/payroll/payroll";
+import { unwrapPage } from "@/api/helpers";
+import type { GetMyPayrollRecordsParams, PayrollItemDto } from "@/api/generated/model";
+
+type PayslipView = Required<PayrollItemDto>;
 
 function Page() {
-  const { user } = useAuth();
-  const [filters, setFilters] = useState<PayslipsFilter>({
+    const [filters, setFilters] = useState<GetMyPayrollRecordsParams>({
     pageNo: 0,
     limit: 10,
   });
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
-  const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
+  const [selectedPayslip, setSelectedPayslip] = useState<PayslipView | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data, isFetching, isError } = useQuery({
-    queryKey: ["payslips", user?.employeeId, filters],
-    queryFn: () => getEmployeePayslips(filters),
-    placeholderData: keepPreviousData,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 60, // 1 hour
+  const { data, isFetching, isError } = useGetMyPayrollRecords(filters, {
+    query: {
+      placeholderData: keepPreviousData,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 60, // 1 hour
+    },
   });
 
-  const payslips: Payslip[] = Array.isArray(data?.data) ? data.data : [];
-  const meta = data?.meta;
+  const pageData = unwrapPage<PayrollItemDto>(data);
+  const payslips: PayslipView[] = pageData.content.map(
+    (p) => ({
+      ...p,
+      benefits: p.benefits ?? [],
+      deductions: p.deductions ?? [],
+    }) as PayslipView,
+  );
+  const meta = pageData.meta;
 
   const handlePeriodChange = (value: string | null) => {
     setSelectedPeriod(value);
@@ -69,7 +77,7 @@ function Page() {
     }));
   };
 
-  const handleViewDetails = (payslip: Payslip) => {
+  const handleViewDetails = (payslip: PayslipView) => {
     setSelectedPayslip(payslip);
     setIsModalOpen(true);
   };
@@ -262,12 +270,12 @@ function Page() {
         )}
 
         {/* Pagination */}
-        {payslips.length > 0 && meta && meta.totalPages > 1 && (
+        {payslips.length > 0 && meta && (meta.totalPages ?? 1) > 1 && (
           <Group justify="center">
             <Pagination
-              value={meta.page + 1}
+              value={(meta.page ?? 0) + 1}
               onChange={handlePageChange}
-              total={meta.totalPages}
+              total={meta.totalPages ?? 1}
               disabled={isFetching}
             />
           </Group>
@@ -411,7 +419,7 @@ function Page() {
                       <Table.Tr key={idx}>
                         <Table.Td>{benefit.benefit}</Table.Td>
                         <Table.Td align="right">
-                          ₱{benefit.amount.toFixed(2)}
+                          ₱{(benefit.amount ?? 0).toFixed(2)}
                         </Table.Td>
                       </Table.Tr>
                     ))}
@@ -439,7 +447,7 @@ function Page() {
                       <Table.Tr key={idx}>
                         <Table.Td>{deduction.deduction}</Table.Td>
                         <Table.Td align="right">
-                          ₱{deduction.amount.toFixed(2)}
+                          ₱{(deduction.amount ?? 0).toFixed(2)}
                         </Table.Td>
                       </Table.Tr>
                     ))}

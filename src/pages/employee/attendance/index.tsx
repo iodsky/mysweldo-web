@@ -3,75 +3,71 @@ import { DateInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import {
   keepPreviousData,
-  useMutation,
-  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import {
-  clockIn,
-  clockOut,
-  getOwnAttendances,
-  type AttendanceFilters,
-} from "@/api/attendance";
+  useClockIn,
+  useClockOut,
+  useGetMyAttendances,
+} from "@/api/generated/endpoints/attendance/attendance";
+import { unwrapPage } from "@/api/helpers";
 import type { Attendance } from "@/types";
+import type { GetMyAttendancesParams } from "@/api/generated/model";
 import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
 import PaginatedTable from "@/components/paginated-table";
 import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
-  const [filters, setFilters] = useState<AttendanceFilters>({
+  const [filters, setFilters] = useState<GetMyAttendancesParams>({
     pageNo: 0,
     limit: 10,
     startDate: undefined,
     endDate: undefined,
   });
 
-  const { data, isError, isFetching } = useQuery({
-    queryKey: ["attendances", user?.employeeId, filters],
-    queryFn: () => getOwnAttendances(filters),
-    placeholderData: keepPreviousData,
-    staleTime: 1000 * 60 * 5, // 5 minutes - attendance changes frequently
-    gcTime: 1000 * 60 * 60, // 1 hour
-  });
-
-  const { mutate: clockInFn, isPending: isClockInPending } = useMutation({
-    mutationFn: clockIn,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["attendances", user?.employeeId],
-      });
-      notifications.show({
-        title: "Success",
-        message: "You have successfully clocked in for the day",
-        color: "green",
-        withBorder: true,
-      });
+  const { data, isError, isFetching } = useGetMyAttendances(filters, {
+    query: {
+      placeholderData: keepPreviousData,
+      staleTime: 1000 * 60 * 5, // 5 minutes - attendance changes frequently
+      gcTime: 1000 * 60 * 60, // 1 hour
     },
-    onError: handleApiError,
   });
 
-  const { mutate: clockOutFn, isPending: isClockOutPending } = useMutation({
-    mutationFn: clockOut,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["attendances", user?.employeeId],
-      });
-      notifications.show({
-        title: "Success",
-        message: "You have successfully clocked out for the day",
-        color: "green",
-        withBorder: true,
-      });
+  const { mutate: clockInFn, isPending: isClockInPending } = useClockIn({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/attendances/me"] });
+        notifications.show({
+          title: "Success",
+          message: "You have successfully clocked in for the day",
+          color: "green",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
-  const rows: Attendance[] = Array.isArray(data?.data) ? data.data : [];
-  const meta = data?.meta;
+  const { mutate: clockOutFn, isPending: isClockOutPending } = useClockOut({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/attendances/me"] });
+        notifications.show({
+          title: "Success",
+          message: "You have successfully clocked out for the day",
+          color: "green",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
+    },
+  });
+
+  const pageData = unwrapPage<Attendance>(data);
+  const rows: Attendance[] = pageData.content;
+  const meta = pageData.meta;
 
   return (
     <div className="flex flex-col gap-4 flex-1">

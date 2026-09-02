@@ -9,19 +9,20 @@ import {
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import {
-  useQuery,
-  useMutation,
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
 import { BsPlus } from "react-icons/bs";
-import { getAllLeaveCredits, createLeaveCredits } from "@/api/leave";
-import { getAllEmployees } from "@/api/employee";
+import {
+  useCreateLeaveCredits,
+  useGetAllLeaveCredits,
+} from "@/api/generated/endpoints/leave-credits/leave-credits";
+import { useGetAllEmployees } from "@/api/generated/endpoints/employees/employees";
+import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import type {
   EmployeeLeaveCredit,
   EmployeeBasic,
-  LeaveCreditDto,
   LeaveType,
 } from "@/types";
 import { notifications } from "@mantine/notifications";
@@ -56,38 +57,49 @@ function LeaveCreditsTab() {
     null,
   );
 
-  const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ["leaveCredits", page],
-    queryFn: () => getAllLeaveCredits({ pageNo: page, limit: 10 }),
-    staleTime: 1000 * 60 * 5,
-    placeholderData: keepPreviousData,
-  });
-
-  const { data: employeesData } = useQuery({
-    queryKey: ["employees"],
-    queryFn: () => getAllEmployees({ pageNo: 0, limit: 100 }),
-    staleTime: 1000 * 60 * 30,
-    gcTime: 1000 * 60 * 60,
-  });
-
-  const credits: EmployeeLeaveCredit[] = data?.data || [];
-  const meta = data?.meta;
-
-  const { mutate: assignCredits, isPending: isAssigning } = useMutation({
-    mutationFn: (dto: LeaveCreditDto) => createLeaveCredits(dto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leaveCredits"] });
-      setModalOpen(false);
-      resetForm();
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Leave credits assigned successfully",
-        withBorder: true,
-      });
+  const { data, isLoading, isFetching, isError } = useGetAllLeaveCredits(
+    { pageNo: page, limit: 10 },
+    {
+      query: {
+        staleTime: 1000 * 60 * 5,
+        placeholderData: keepPreviousData,
+      },
     },
-    onError: handleApiError,
-  });
+  );
+
+  const { data: employeesData } = useGetAllEmployees(
+    { pageNo: 0, limit: 100 },
+    {
+      query: {
+        queryKey: ["employees"] as const,
+        staleTime: 1000 * 60 * 30,
+        gcTime: 1000 * 60 * 60,
+      },
+    },
+  );
+
+  const pageData = unwrapPage<EmployeeLeaveCredit>(data);
+  const credits: EmployeeLeaveCredit[] = pageData.content;
+  const meta = pageData.meta;
+
+  const { mutate: assignCredits, isPending: isAssigning } = useCreateLeaveCredits(
+    {
+      mutation: {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/leave-credits"] });
+          setModalOpen(false);
+          resetForm();
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Leave credits assigned successfully",
+            withBorder: true,
+          });
+        },
+        onError: handleApiError,
+      },
+    },
+  );
 
   const resetForm = () => {
     setSelectedEmployeeId(null);
@@ -111,18 +123,20 @@ function LeaveCreditsTab() {
         : effectiveDate;
 
     assignCredits({
-      employeeId: Number(selectedEmployeeId),
-      effectiveDate: dateStr,
+      data: {
+        employeeId: Number(selectedEmployeeId),
+        effectiveDate: dateStr,
+      },
     });
   };
 
   const rows = credits.map((emp: EmployeeLeaveCredit) => (
-    <Table.Tr key={emp.id}>
+    <Table.Tr key={emp.employeeId ?? ""}>
       <Table.Td>
-        {emp.firstName} {emp.lastName}
+        {emp.firstName ?? ""} {emp.lastName ?? ""}
       </Table.Td>
       {LEAVE_TYPES.map((type) => {
-        const summary = emp.credits.find((c) => c.type === type);
+        const summary = (emp.credits ?? []).find((c) => c.type === type);
         return (
           <Table.Td key={type} ta="center">
             {summary != null ? summary.credits : "0"}
@@ -182,10 +196,12 @@ function LeaveCreditsTab() {
             placeholder="Select employee"
             searchable
             data={
-              employeesData?.data?.map((emp: EmployeeBasic) => ({
-                value: String(emp.id),
-                label: `${emp.firstName} ${emp.lastName}`,
-              })) || []
+              unwrapPage<EmployeeBasic>(employeesData).content.map(
+                (emp: EmployeeBasic) => ({
+                  value: String(emp.id ?? ""),
+                  label: `${emp.firstName ?? ""} ${emp.lastName ?? ""}`,
+                }),
+              )
             }
             value={selectedEmployeeId}
             onChange={setSelectedEmployeeId}

@@ -12,22 +12,21 @@ import {
 import { DateInput, TimeInput } from "@mantine/dates";
 import {
   keepPreviousData,
-  useMutation,
-  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { useState } from "react";
 import { BsPencil, BsPlus, BsThreeDotsVertical } from "react-icons/bs";
 import {
-  createAttendance,
-  getAllAttendances,
-  getEmployeeAttendances,
-  updateAttendance,
-} from "@/api/attendance";
-import type { AttendanceFilters } from "@/api/attendance";
+  useCreateAttendance,
+  useGetAllAttendances,
+  useGetEmployeeAttendances,
+  useUpdateAttendance,
+} from "@/api/generated/endpoints/attendance/attendance";
+import { useGetAllEmployees } from "@/api/generated/endpoints/employees/employees";
+import { unwrapPage } from "@/api/helpers";
 import type { Attendance, AttendanceDto } from "@/types";
+import type { GetAllAttendancesParams, EmployeeBasicDto } from "@/api/generated/model";
 import PaginatedTable from "@/components/paginated-table";
-import { getAllEmployees } from "@/api/employee";
 import { notifications } from "@mantine/notifications";
 import { handleApiError } from "@/utils/error-handler";
 
@@ -35,7 +34,7 @@ function Page() {
   const queryClient = useQueryClient();
 
   // Fetch attendance
-  const [filters, setFilters] = useState<AttendanceFilters>({
+  const [filters, setFilters] = useState<GetAllAttendancesParams>({
     pageNo: 0,
     limit: 10,
     startDate: undefined,
@@ -53,28 +52,33 @@ function Page() {
     null,
   );
 
-  const { data: employeesData } = useQuery({
-    queryKey: ["employees", "attendance-form"],
-    queryFn: () =>
-      getAllEmployees({
-        pageNo: 0,
-        limit: 100,
-      }),
-  });
+  const { data: employeesData } = useGetAllEmployees(
+    { pageNo: 0, limit: 100 },
+    { query: { queryKey: ["employees", "attendance-form"] as const } },
+  );
 
-  const { data, isError, isFetching } = useQuery({
-    queryKey: [
-      "attendances",
-      selectedEmployeeId ? "employee" : "list",
-      selectedEmployeeId,
-      queryFilters,
-    ],
-    queryFn: () =>
-      selectedEmployeeId
-        ? getEmployeeAttendances(Number(selectedEmployeeId), filters)
-        : getAllAttendances(filters),
-    placeholderData: keepPreviousData,
-  });
+  const { data: allData, isError, isFetching } = useGetAllAttendances(
+    queryFilters,
+    {
+      query: {
+        enabled: !selectedEmployeeId,
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
+
+  const { data: empData } = useGetEmployeeAttendances(
+    Number(selectedEmployeeId),
+    queryFilters,
+    {
+      query: {
+        enabled: !!selectedEmployeeId,
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
+
+  const data = selectedEmployeeId ? empData : allData;
 
   // Add/Edit attendance
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,43 +108,44 @@ function Page() {
     setModalMode("edit");
     setIsModalOpen(true);
     setSelectedAttendance(attendance);
-    setEmployeeId(String(attendance.employeeId));
-    setDate(attendance.date);
-    setTimeIn(attendance.timeIn);
+    setEmployeeId(String(attendance.employeeId ?? ""));
+    setDate(attendance.date ?? "");
+    setTimeIn(attendance.timeIn ?? "");
     setTimeOut(attendance.timeOut ?? "");
   };
 
-  const createMutation = useMutation({
-    mutationFn: (payload: AttendanceDto) => createAttendance(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["attendances"] });
-      notifications.show({
-        color: "green",
-        title: "Success",
-        message: "Attendance created successfully",
-        withBorder: true,
-      });
-      setIsModalOpen(false);
-      resetForm();
+  const createMutation = useCreateAttendance({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/attendances"] });
+        notifications.show({
+          color: "green",
+          title: "Success",
+          message: "Attendance created successfully",
+          withBorder: true,
+        });
+        setIsModalOpen(false);
+        resetForm();
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: AttendanceDto }) =>
-      updateAttendance(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["attendances"] });
-      notifications.show({
-        color: "green",
-        title: "Success",
-        message: "Attendance updated successfully",
-        withBorder: true,
-      });
-      setIsModalOpen(false);
-      resetForm();
+  const updateMutation = useUpdateAttendance({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/attendances"] });
+        notifications.show({
+          color: "green",
+          title: "Success",
+          message: "Attendance updated successfully",
+          withBorder: true,
+        });
+        setIsModalOpen(false);
+        resetForm();
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
   const handleUpdate = () => {
@@ -150,31 +155,29 @@ function Page() {
       employeeId: Number(employeeId),
       date,
       timeIn,
-      timeOut: timeOut || null,
+      timeOut: timeOut || undefined,
     };
 
     if (modalMode === "create") {
-      createMutation.mutate(payload);
+      createMutation.mutate({ data: payload });
       return;
     }
 
-    if (!selectedAttendance) return;
+    if (!selectedAttendance?.id) return;
 
-    updateMutation.mutate({
-      id: selectedAttendance.id,
-      payload,
-    });
+    updateMutation.mutate({ id: selectedAttendance.id, data: payload });
   };
 
-  const rows: Attendance[] = Array.isArray(data?.data) ? data.data : [];
-  const meta = data?.meta;
+  const pageData = unwrapPage<Attendance>(data);
+  const rows: Attendance[] = pageData.content;
+  const meta = pageData.meta;
 
-  const employeeOptions = employeesData?.data
-    ? employeesData.data.map((employee) => ({
-        value: String(employee.id),
-        label: `${employee.firstName} ${employee.lastName}`,
-      }))
-    : [];
+  const employeeOptions = unwrapPage<EmployeeBasicDto>(employeesData).content
+    .map((employee) => ({
+      value: String(employee.id ?? ""),
+      label: `${employee.firstName ?? ""} ${employee.lastName ?? ""}`,
+    }))
+    .filter((opt) => opt.value);
 
   return (
     <>

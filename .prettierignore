@@ -5,6 +5,10 @@ node_modules
 dist
 build
 
+# Generated API code
+/src/api/generated
+/src/docs/openapi
+
 # Coverage
 coverage
 

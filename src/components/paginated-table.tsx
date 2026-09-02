@@ -76,8 +76,8 @@ function PaginatedTable({
 
       <div className="flex flex-col items-center">
         <Pagination
-          total={meta.totalPages}
-          value={meta.page + 1}
+          total={meta.totalPages ?? 1}
+          value={(meta.page ?? 0) + 1}
           onChange={onPageChange}
           withEdges
         />

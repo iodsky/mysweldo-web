@@ -13,23 +13,23 @@ import {
   Loader,
 } from "@mantine/core";
 import {
-  useQuery,
-  useMutation,
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
 import { BsPlus, BsThreeDotsVertical } from "react-icons/bs";
 import { MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
 import {
-  getPositions,
-  createPosition,
-  updatePosition,
-  deletePosition,
-} from "@/api/position";
-import { getAllDepartments } from "@/api/department";
+  useCreatePosition,
+  useDeletePosition,
+  useGetAllPositions,
+  useUpdatePosition,
+} from "@/api/generated/endpoints/positions/positions";
+import { useGetDepartmentOptions } from "@/api/generated/endpoints/departments/departments";
+import { unwrapData, unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import type { Position } from "@/types";
+import type { DepartmentDto } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import { handleApiError } from "@/utils/error-handler";
 
@@ -54,27 +54,30 @@ function Page() {
     null,
   );
 
-  const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ["positions", page],
-    queryFn: () => getPositions({ pageNo: page, limit: 10 }),
-    staleTime: 1000 * 60 * 5,
-    placeholderData: keepPreviousData,
+  const { data, isLoading, isFetching, isError } = useGetAllPositions(
+    { pageNo: page, limit: 10 },
+    {
+      query: {
+        staleTime: 1000 * 60 * 5,
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
+
+  const { data: departmentsData } = useGetDepartmentOptions({
+    query: { queryKey: ["departments", "position-form"] as const },
   });
 
-  const { data: departmentsData } = useQuery({
-    queryKey: ["departments", "position-form"],
-    queryFn: getAllDepartments,
-  });
+  const departmentOptions = (unwrapData<DepartmentDto[]>(departmentsData) ?? [])
+    .map((department) => ({
+      value: department.id ?? "",
+      label: department.title ?? "",
+    }))
+    .filter((opt) => opt.value);
 
-  const departmentOptions = departmentsData?.data
-    ? departmentsData.data.map((department) => ({
-        value: department.id,
-        label: department.title,
-      }))
-    : [];
-
-  const positions = data?.data || [];
-  const meta = data?.meta;
+  const pageData = unwrapPage<Position>(data);
+  const positions = pageData.content;
+  const meta = pageData.meta;
 
   const resetCreateForm = () => {
     setCreateId("");
@@ -82,53 +85,55 @@ function Page() {
     setCreateDepartmentId(null);
   };
 
-  const { mutate: createPos, isPending: isCreating } = useMutation({
-    mutationFn: createPosition,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["positions"] });
-      setCreateModalOpen(false);
-      resetCreateForm();
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Position created successfully",
-        withBorder: true,
-      });
+  const { mutate: createPos, isPending: isCreating } = useCreatePosition({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/positions"] });
+        setCreateModalOpen(false);
+        resetCreateForm();
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Position created successfully",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
-  const { mutate: updatePos, isPending: isUpdating } = useMutation({
-    mutationFn: (payload: { departmentId: string; title: string }) =>
-      updatePosition(selectedPosition!.id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["positions"] });
-      setEditModalOpen(false);
-      setSelectedPosition(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Position updated successfully",
-        withBorder: true,
-      });
+  const { mutate: updatePos, isPending: isUpdating } = useUpdatePosition({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/positions"] });
+        setEditModalOpen(false);
+        setSelectedPosition(null);
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Position updated successfully",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
-  const { mutate: deletePos, isPending: isDeleting } = useMutation({
-    mutationFn: () => deletePosition(selectedPosition!.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["positions"] });
-      setDeleteModalOpen(false);
-      setSelectedPosition(null);
-      notifications.show({
-        title: "Success",
-        color: "green",
-        message: "Position deleted successfully",
-        withBorder: true,
-      });
+  const { mutate: deletePos, isPending: isDeleting } = useDeletePosition({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/positions"] });
+        setDeleteModalOpen(false);
+        setSelectedPosition(null);
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Position deleted successfully",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
-    onError: handleApiError,
   });
 
   const handleCreateClick = () => {
@@ -147,17 +152,13 @@ function Page() {
       return;
     }
 
-    createPos({
-      id: createId.trim(),
-      departmentId: createDepartmentId,
-      title: createTitle.trim(),
-    });
+    createPos({ data: { id: createId.trim(), departmentId: createDepartmentId, title: createTitle.trim() } });
   };
 
   const handleEditClick = (position: Position) => {
     setSelectedPosition(position);
-    setEditTitle(position.title);
-    setEditDepartmentId(position.departmentId);
+    setEditTitle(position.title ?? "");
+    setEditDepartmentId(position.departmentId ?? null);
     setEditModalOpen(true);
   };
 
@@ -172,7 +173,7 @@ function Page() {
       return;
     }
 
-    updatePos({ departmentId: editDepartmentId, title: editTitle.trim() });
+    updatePos({ id: selectedPosition?.id ?? "", data: { departmentId: editDepartmentId, title: editTitle.trim() } });
   };
 
   const handleDeleteClick = (position: Position) => {
@@ -210,7 +211,7 @@ function Page() {
               <Table.Td>{position.departmentTitle}</Table.Td>
               <Table.Td>{position.title}</Table.Td>
               <Table.Td>
-                {new Date(position.createdAt).toLocaleDateString()}
+                {position.createdAt ? new Date(position.createdAt).toLocaleDateString() : "-"}
               </Table.Td>
               <Table.Td align="center">
                 <Menu shadow="md" position="bottom-end">
@@ -372,7 +373,7 @@ function Page() {
         confirmText="Delete"
         isDangerous
         isLoading={isDeleting}
-        onConfirm={() => deletePos()}
+        onConfirm={() => deletePos({ id: selectedPosition?.id ?? "" })}
         onCancel={() => {
           setDeleteModalOpen(false);
           setSelectedPosition(null);
