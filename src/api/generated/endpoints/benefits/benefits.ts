@@ -276,7 +276,7 @@ export const getDeleteBenefitUrl = (id: string,) => {
 }
 
 /**
- * Soft delete a benefit. Requires PAYROLL role.
+ * Soft delete a benefit. A soft-deleted code cannot be recreated. Requires PAYROLL role.
  * @summary Delete benefit
  */
 export const deleteBenefit = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<deleteBenefitResponse> => {

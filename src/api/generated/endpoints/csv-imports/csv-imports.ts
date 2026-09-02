@@ -22,9 +22,9 @@ import type {
 
 import type {
   ImportEmployeesBody,
-  ImportUsersBody,
-  JobDetailsResponse,
-  JobLaunchResponse
+  ImportJobDetailsResponse,
+  ImportJobLaunchResponse,
+  ImportUsersBody
 } from '../../model';
 
 import { customInstance } from '../../../mutator';
@@ -50,7 +50,7 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export type importUsersResponse200 = {
-  data: JobLaunchResponse
+  data: ImportJobLaunchResponse
   status: 200
 }
 
@@ -70,7 +70,7 @@ export const getImportUsersUrl = () => {
 }
 
 /**
- * Upload a CSV file to import users via batch job. Returns job execution ID for tracking. Restricted to IT role only.
+ * Upload a CSV file to import users asynchronously. Returns an import job ID for tracking. Restricted to IT role only.
  * @summary Import users from CSV file
  */
 export const importUsers = async (importUsersBody?: ImportUsersBody, options?: Parameters<typeof customInstance>[1]): Promise<importUsersResponse> => {
@@ -140,7 +140,7 @@ export const useImportUsers = <TError = unknown,
       return useMutation(getImportUsersMutationOptions(options), queryClient);
     }
     export type importEmployeesResponse200 = {
-  data: JobLaunchResponse
+  data: ImportJobLaunchResponse
   status: 200
 }
 
@@ -160,7 +160,7 @@ export const getImportEmployeesUrl = () => {
 }
 
 /**
- * Upload a CSV file to import employees via batch job. Returns job execution ID for tracking.
+ * Upload a CSV file to import employees asynchronously. Returns an import job ID for tracking.
  * @summary Import employees from CSV file
  */
 export const importEmployees = async (importEmployeesBody?: ImportEmployeesBody, options?: Parameters<typeof customInstance>[1]): Promise<importEmployeesResponse> => {
@@ -229,33 +229,33 @@ export const useImportEmployees = <TError = unknown,
       > => {
       return useMutation(getImportEmployeesMutationOptions(options), queryClient);
     }
-    export type getJobExecutionDetailsResponse200 = {
-  data: JobDetailsResponse
+    export type getImportJobDetailsResponse200 = {
+  data: ImportJobDetailsResponse
   status: 200
 }
 
-export type getJobExecutionDetailsResponseSuccess = (getJobExecutionDetailsResponse200) & {
+export type getImportJobDetailsResponseSuccess = (getImportJobDetailsResponse200) & {
   headers: Headers;
 };
 ;
 
-export type getJobExecutionDetailsResponse = (getJobExecutionDetailsResponseSuccess)
+export type getImportJobDetailsResponse = (getImportJobDetailsResponseSuccess)
 
-export const getGetJobExecutionDetailsUrl = (jobExecutionId: number,) => {
-
-
+export const getGetImportJobDetailsUrl = (importJobId: string,) => {
 
 
-  return `/jobs/${jobExecutionId}`
+
+
+  return `/jobs/${importJobId}`
 }
 
 /**
- * Retrieve detailed information about a batch job execution including status and metrics.
- * @summary Get job execution details
+ * Retrieve detailed information about an import job including status, counts and per-row failures.
+ * @summary Get import job details
  */
-export const getJobExecutionDetails = async (jobExecutionId: number, options?: Parameters<typeof customInstance>[1]): Promise<getJobExecutionDetailsResponse> => {
+export const getImportJobDetails = async (importJobId: string, options?: Parameters<typeof customInstance>[1]): Promise<getImportJobDetailsResponse> => {
 
-  return customInstance<getJobExecutionDetailsResponse>(getGetJobExecutionDetailsUrl(jobExecutionId),
+  return customInstance<getImportJobDetailsResponse>(getGetImportJobDetailsUrl(importJobId),
   {
     ...options,
     method: 'GET'
@@ -268,69 +268,69 @@ export const getJobExecutionDetails = async (jobExecutionId: number, options?: P
 
 
 
-export const getGetJobExecutionDetailsQueryKey = (jobExecutionId: number,) => {
+export const getGetImportJobDetailsQueryKey = (importJobId: string,) => {
     return [
-    `/jobs/${jobExecutionId}`
+    `/jobs/${importJobId}`
     ] as const;
     }
 
 
-export const getGetJobExecutionDetailsQueryOptions = <TData = Awaited<ReturnType<typeof getJobExecutionDetails>>, TError = unknown>(jobExecutionId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJobExecutionDetails>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetImportJobDetailsQueryOptions = <TData = Awaited<ReturnType<typeof getImportJobDetails>>, TError = unknown>(importJobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobDetails>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetJobExecutionDetailsQueryKey(jobExecutionId);
+  const queryKey =  queryOptions?.queryKey ?? getGetImportJobDetailsQueryKey(importJobId);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJobExecutionDetails>>> = ({ signal }) => getJobExecutionDetails(jobExecutionId, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobDetails>>> = ({ signal }) => getImportJobDetails(importJobId, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: jobExecutionId !== null && jobExecutionId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getJobExecutionDetails>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: importJobId !== null && importJobId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportJobDetails>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetJobExecutionDetailsQueryResult = NonNullable<Awaited<ReturnType<typeof getJobExecutionDetails>>>
-export type GetJobExecutionDetailsQueryError = unknown
+export type GetImportJobDetailsQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobDetails>>>
+export type GetImportJobDetailsQueryError = unknown
 
 
-export function useGetJobExecutionDetails<TData = Awaited<ReturnType<typeof getJobExecutionDetails>>, TError = unknown>(
- jobExecutionId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJobExecutionDetails>>, TError, TData>> & Pick<
+export function useGetImportJobDetails<TData = Awaited<ReturnType<typeof getImportJobDetails>>, TError = unknown>(
+ importJobId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobDetails>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getJobExecutionDetails>>,
+          Awaited<ReturnType<typeof getImportJobDetails>>,
           TError,
-          Awaited<ReturnType<typeof getJobExecutionDetails>>
+          Awaited<ReturnType<typeof getImportJobDetails>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetJobExecutionDetails<TData = Awaited<ReturnType<typeof getJobExecutionDetails>>, TError = unknown>(
- jobExecutionId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJobExecutionDetails>>, TError, TData>> & Pick<
+export function useGetImportJobDetails<TData = Awaited<ReturnType<typeof getImportJobDetails>>, TError = unknown>(
+ importJobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobDetails>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getJobExecutionDetails>>,
+          Awaited<ReturnType<typeof getImportJobDetails>>,
           TError,
-          Awaited<ReturnType<typeof getJobExecutionDetails>>
+          Awaited<ReturnType<typeof getImportJobDetails>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetJobExecutionDetails<TData = Awaited<ReturnType<typeof getJobExecutionDetails>>, TError = unknown>(
- jobExecutionId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJobExecutionDetails>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetImportJobDetails<TData = Awaited<ReturnType<typeof getImportJobDetails>>, TError = unknown>(
+ importJobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobDetails>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get job execution details
+ * @summary Get import job details
  */
 
-export function useGetJobExecutionDetails<TData = Awaited<ReturnType<typeof getJobExecutionDetails>>, TError = unknown>(
- jobExecutionId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getJobExecutionDetails>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useGetImportJobDetails<TData = Awaited<ReturnType<typeof getImportJobDetails>>, TError = unknown>(
+ importJobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobDetails>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetJobExecutionDetailsQueryOptions(jobExecutionId,options)
+  const queryOptions = getGetImportJobDetailsQueryOptions(importJobId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

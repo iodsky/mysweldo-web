@@ -276,7 +276,7 @@ export const getDeleteContributionUrl = (id: string,) => {
 }
 
 /**
- * Soft delete a contribution. Requires PAYROLL role.
+ * Soft delete a contribution. A soft-deleted code cannot be recreated. Requires PAYROLL role.
  * @summary Delete contribution
  */
 export const deleteContribution = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<deleteContributionResponse> => {

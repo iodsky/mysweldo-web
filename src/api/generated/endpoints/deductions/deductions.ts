@@ -276,7 +276,7 @@ export const getDeleteDeductionUrl = (code: string,) => {
 }
 
 /**
- * Soft delete a deduction. Requires PAYROLL role.
+ * Soft delete a deduction. A soft-deleted code cannot be recreated. Requires PAYROLL role.
  * @summary Delete deduction
  */
 export const deleteDeduction = async (code: string, options?: Parameters<typeof customInstance>[1]): Promise<deleteDeductionResponse> => {
