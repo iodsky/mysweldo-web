@@ -1,4 +1,4 @@
-import { Modal, Button, Group, Text, Badge, Table, Stack } from "@mantine/core";
+import { Drawer, Button, Group, Text, Badge, Table, Stack } from "@mantine/core";
 import { useGetImportJobDetails } from "@/api/generated/endpoints/csv-imports/csv-imports";
 import { unwrapData } from "@/api/helpers";
 import type { ImportJobDetailsResponse } from "@/api/generated/model";
@@ -44,11 +44,11 @@ function DetailsModal({ jobId, onClose }: DetailsModalProps) {
   const failures = job?.failures ?? [];
 
   return (
-    <Modal
+    <Drawer
       opened={!!jobId}
       onClose={onClose}
       title="Import job details"
-      centered
+      position="right"
       size="lg"
     >
       <Stack gap="md">
@@ -124,7 +124,7 @@ function DetailsModal({ jobId, onClose }: DetailsModalProps) {
           </Button>
         </Group>
       </Stack>
-    </Modal>
+    </Drawer>
   );
 }
 

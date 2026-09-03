@@ -1,5 +1,5 @@
 import {
-  Modal,
+  Drawer,
   Button,
   Stack,
   TextInput,
@@ -320,15 +320,23 @@ export function EmployeeForm({
   };
 
   return (
-    <Modal
+    <Drawer
       opened={opened}
       onClose={handleClose}
       title={isEditing ? "Edit Employee" : "Create New Employee"}
+      position="right"
       size="lg"
+      styles={{
+        body: { flex: 1, display: "flex", flexDirection: "column" },
+      }}
     >
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack gap="md">
-          <Grid>
+      <form
+        onSubmit={form.onSubmit(handleSubmit)}
+        className="flex flex-col flex-1"
+      >
+        <Stack gap="md" className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <Grid>
             <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="First Name"
@@ -483,8 +491,9 @@ export function EmployeeForm({
               />
             </Grid.Col>
           </Grid>
+          </div>
 
-          <Group justify="flex-end" mt="lg">
+          <Group justify="flex-end" mt="lg" className="border-t border-gray-200 pt-4">
             <Button
               variant="outline"
               onClick={handleClose}
@@ -498,6 +507,6 @@ export function EmployeeForm({
           </Group>
         </Stack>
       </form>
-    </Modal>
+    </Drawer>
   );
 }
