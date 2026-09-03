@@ -4,7 +4,11 @@ import type {
   AuthRequest,
   BenefitDto,
   BenefitRequest as BenefitRequestDto,
+  ContributionDto as ContributionRecord,
+  ContributionRequest as ContributionRequestDto,
   CreditSummary as CreditSummaryDto,
+  DeductionDto as DeductionRecord,
+  DeductionRequest as DeductionRequestDto,
   DepartmentBasicDto,
   DepartmentDto as DepartmentRecord,
   DepartmentRequest,
@@ -19,13 +23,30 @@ import type {
   LeaveCreditRequest,
   LeaveRequestDto as LeaveRequestRecord,
   OvertimeRequestDto as OvertimeRequestRecord,
+  PagibigRateDto as PagibigRateRecord,
+  PagibigRateRequest as PagibigRateRequestDto,
   PayrollItemDto,
+  PayrollRunDto as PayrollRunRecord,
+  PayrollRunDtoStatus,
+  PayrollRunDtoType,
+  PayrollRunRequest as PayrollRunRequestDto,
+  PhilhealthRateDto as PhilhealthRateRecord,
+  PhilhealthRateRequest as PhilhealthRateRequestDto,
   PositionBasicDto,
   PositionDto as PositionRecord,
   PositionRequest,
   PositionUpdateRequest,
+  RoleDto as UserRoleRecord,
+  RoleRequest as RoleRequestDto,
   SalaryDto,
+  SalaryBracketDto as SalaryBracketRecord,
+  SalaryBracketRequest as SalaryBracketRequestDto,
+  SssRateDto as SssRateRecord,
+  SssRateRequest as SssRateRequestDto,
+  TaxBracketDto as TaxBracketRecord,
+  TaxBracketRequest as TaxBracketRequestDto,
   UserDto,
+  UserRequest as UserRequestDto,
 } from "@/api/generated/model";
 
 export type { AuthSession, AuthenticatedUser, PaginationMeta } from "@/api/generated/model";
@@ -56,6 +77,7 @@ export type OvertimeRequestDto = OvertimeRequestRecord;
 export type Payslip = PayrollItemDto;
 export type Salary = SalaryDto;
 export type User = UserDto;
+export type UserRequest = UserRequestDto;
 export type ImportJobSummary = ImportJobSummaryDto;
 export type ImportType = "EMPLOYEE" | "USER";
 export type ImportStatus =
@@ -65,6 +87,27 @@ export type ImportStatus =
   | "FAILED";
 export type LoginCredentials = AuthRequest;
 export type CreditSummary = CreditSummaryDto;
+
+export type PayrollRun = PayrollRunRecord;
+export type PayrollRunRequest = PayrollRunRequestDto;
+export type PayrollRunType = PayrollRunDtoType;
+export type PayrollRunStatus = PayrollRunDtoStatus;
+export type Contribution = ContributionRecord;
+export type ContributionRequest = ContributionRequestDto;
+export type Deduction = DeductionRecord;
+export type DeductionRequest = DeductionRequestDto;
+export type TaxBracket = TaxBracketRecord;
+export type TaxBracketRequest = TaxBracketRequestDto;
+export type SssRate = SssRateRecord;
+export type SssRateRequest = SssRateRequestDto;
+export type PhilhealthRate = PhilhealthRateRecord;
+export type PhilhealthRateRequest = PhilhealthRateRequestDto;
+export type PagibigRate = PagibigRateRecord;
+export type PagibigRateRequest = PagibigRateRequestDto;
+export type SalaryBracket = SalaryBracketRecord;
+export type SalaryBracketRequest = SalaryBracketRequestDto;
+export type UserRole = UserRoleRecord;
+export type RoleRequest = RoleRequestDto;
 
 export type AccessType = "EMPLOYEE" | "ADMIN";
 export type Role =

@@ -1,14 +1,21 @@
 import { NavLink, Stack } from "@mantine/core";
 import {
+  IconArrowDownRight,
   IconBeach,
   IconBriefcase,
+  IconBuildingBank,
   IconCalendarCheck,
   IconCash,
   IconClockPlus,
   IconGift,
   IconFileImport,
+  IconHeartbeat,
+  IconHome,
   IconLayoutDashboard,
   IconLogout,
+  IconPercentage,
+  IconReportMoney,
+  IconShieldLock,
   IconSitemap,
   IconUser,
   IconUsers,
@@ -63,11 +70,18 @@ function Navbar() {
 
   const itLinks: NavLinkItem[] = [
     { label: "Users", path: "/it/users", icon: IconUsers },
+    { label: "Roles", path: "/it/roles", icon: IconShieldLock },
     { label: "Import", path: "/imports", icon: IconFileImport },
   ];
 
   const payrollLinks: NavLinkItem[] = [
     { label: "Payroll Run", path: "/payroll/runs", icon: IconCash },
+    { label: "Contributions", path: "/payroll/contributions", icon: IconReportMoney },
+    { label: "Deductions", path: "/payroll/deductions", icon: IconArrowDownRight },
+    { label: "Income Tax", path: "/payroll/tax-brackets", icon: IconPercentage },
+    { label: "SSS Rates", path: "/payroll/sss-rates", icon: IconBuildingBank },
+    { label: "PhilHealth", path: "/payroll/philhealth-rates", icon: IconHeartbeat },
+    { label: "Pag-IBIG", path: "/payroll/pagibig-rates", icon: IconHome },
   ];
 
   const employeeLinks: NavLinkItem[] = [
@@ -90,11 +104,19 @@ function Navbar() {
     },
   ];
 
+  const superuserLinks = [
+    ...hrLinks,
+    ...payrollLinks,
+    ...itLinks,
+  ].filter(
+    (link, index, self) => self.findIndex((l) => l.path === link.path) === index,
+  );
+
   const roleLinksMap: Record<string, NavLinkItem[]> = {
     HR: hrLinks,
     IT: itLinks,
     PAYROLL: payrollLinks,
-    SUPERUSER: itLinks,
+    SUPERUSER: superuserLinks,
   };
 
   const links: NavLinkItem[] =

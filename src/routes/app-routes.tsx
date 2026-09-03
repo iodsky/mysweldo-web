@@ -17,6 +17,17 @@ import HRPosition from "@/pages/hr/position";
 import HRDepartment from "@/pages/hr/department";
 import HRBenefit from "@/pages/hr/benefit";
 import Imports from "@/pages/imports";
+import ITUsers from "@/pages/it/users";
+import ITRoles from "@/pages/it/roles";
+import PayrollRuns from "@/pages/payroll/runs";
+import PayrollRunDetail from "@/pages/payroll/runs/[id]";
+import PayrollContributions from "@/pages/payroll/contributions";
+import PayrollDeductions from "@/pages/payroll/deductions";
+import PayrollTaxBrackets from "@/pages/payroll/tax-brackets";
+import PayrollSssRates from "@/pages/payroll/sss-rates";
+import PayrollPhilhealthRates from "@/pages/payroll/philhealth-rates";
+import PayrollPagibigRates from "@/pages/payroll/pagibig-rates";
+import RoleRoute from "./role-route";
 import NotFound from "@/pages/not-found";
 
 export const AppRoutes = createBrowserRouter([
@@ -44,6 +55,27 @@ export const AppRoutes = createBrowserRouter([
           { path: "/hr/department", element: <HRDepartment /> },
           { path: "/hr/benefit", element: <HRBenefit /> },
           { path: "/imports", element: <Imports /> },
+
+          {
+            element: <RoleRoute allowedRoles={["PAYROLL"]} />,
+            children: [
+              { path: "/payroll/runs", element: <PayrollRuns /> },
+              { path: "/payroll/runs/:id", element: <PayrollRunDetail /> },
+              { path: "/payroll/contributions", element: <PayrollContributions /> },
+              { path: "/payroll/deductions", element: <PayrollDeductions /> },
+              { path: "/payroll/tax-brackets", element: <PayrollTaxBrackets /> },
+              { path: "/payroll/sss-rates", element: <PayrollSssRates /> },
+              { path: "/payroll/philhealth-rates", element: <PayrollPhilhealthRates /> },
+              { path: "/payroll/pagibig-rates", element: <PayrollPagibigRates /> },
+            ],
+          },
+          {
+            element: <RoleRoute allowedRoles={["IT"]} />,
+            children: [
+              { path: "/it/users", element: <ITUsers /> },
+              { path: "/it/roles", element: <ITRoles /> },
+            ],
+          },
         ],
       },
     ],
