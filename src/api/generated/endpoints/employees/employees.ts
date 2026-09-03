@@ -24,6 +24,7 @@ import type {
   EmployeeDto,
   EmployeeRequest,
   GetAllEmployeesParams,
+  GetSubordinatesParams,
   PageDtoEmployeeBasicDto,
   SalaryHistoryDto,
   UpdateEmployeeStatusParams
@@ -779,6 +780,126 @@ export function useGetAuthenticatedEmployee<TData = Awaited<ReturnType<typeof ge
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetAuthenticatedEmployeeQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type getSubordinatesResponse200 = {
+  data: PageDtoEmployeeBasicDto
+  status: 200
+}
+
+export type getSubordinatesResponseSuccess = (getSubordinatesResponse200) & {
+  headers: Headers;
+};
+;
+
+export type getSubordinatesResponse = (getSubordinatesResponseSuccess)
+
+export const getGetSubordinatesUrl = (params?: GetSubordinatesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/employees/subordinates?${stringifiedParams}` : `/employees/subordinates`
+}
+
+/**
+ * Retrieve a paginated list of employees supervised by the authenticated user. Requires SUPERVISOR role.
+ * @summary Get subordinates
+ */
+export const getSubordinates = async (params?: GetSubordinatesParams, options?: Parameters<typeof customInstance>[1]): Promise<getSubordinatesResponse> => {
+
+  return customInstance<getSubordinatesResponse>(getGetSubordinatesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSubordinatesQueryKey = (params?: GetSubordinatesParams,) => {
+    return [
+    `/employees/subordinates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetSubordinatesQueryOptions = <TData = Awaited<ReturnType<typeof getSubordinates>>, TError = unknown>(params?: GetSubordinatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubordinates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSubordinatesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSubordinates>>> = ({ signal }) => getSubordinates(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSubordinates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetSubordinatesQueryResult = NonNullable<Awaited<ReturnType<typeof getSubordinates>>>
+export type GetSubordinatesQueryError = unknown
+
+
+export function useGetSubordinates<TData = Awaited<ReturnType<typeof getSubordinates>>, TError = unknown>(
+ params: undefined |  GetSubordinatesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubordinates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSubordinates>>,
+          TError,
+          Awaited<ReturnType<typeof getSubordinates>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSubordinates<TData = Awaited<ReturnType<typeof getSubordinates>>, TError = unknown>(
+ params?: GetSubordinatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubordinates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSubordinates>>,
+          TError,
+          Awaited<ReturnType<typeof getSubordinates>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSubordinates<TData = Awaited<ReturnType<typeof getSubordinates>>, TError = unknown>(
+ params?: GetSubordinatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubordinates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get subordinates
+ */
+
+export function useGetSubordinates<TData = Awaited<ReturnType<typeof getSubordinates>>, TError = unknown>(
+ params?: GetSubordinatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubordinates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetSubordinatesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

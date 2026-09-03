@@ -10,6 +10,8 @@ export const getRedirectPath = (accessType: AccessType, role: Role): string => {
         return "/payroll/dashboard";
       case "IT":
         return "/it/dashboard";
+      case "SUPERVISOR":
+        return "/supervisor/team";
       default:
         return "/hr/dashboard";
     }

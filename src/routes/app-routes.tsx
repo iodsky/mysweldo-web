@@ -27,6 +27,7 @@ import PayrollTaxBrackets from "@/pages/payroll/tax-brackets";
 import PayrollSssRates from "@/pages/payroll/sss-rates";
 import PayrollPhilhealthRates from "@/pages/payroll/philhealth-rates";
 import PayrollPagibigRates from "@/pages/payroll/pagibig-rates";
+import SupervisorTeam from "@/pages/supervisor/team";
 import RoleRoute from "./role-route";
 import NotFound from "@/pages/not-found";
 
@@ -74,6 +75,12 @@ export const AppRoutes = createBrowserRouter([
             children: [
               { path: "/it/users", element: <ITUsers /> },
               { path: "/it/roles", element: <ITRoles /> },
+            ],
+          },
+          {
+            element: <RoleRoute allowedRoles={["SUPERVISOR"]} />,
+            children: [
+              { path: "/supervisor/team", element: <SupervisorTeam /> },
             ],
           },
         ],

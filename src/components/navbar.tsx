@@ -104,6 +104,10 @@ function Navbar() {
     },
   ];
 
+  const supervisorLinks: NavLinkItem[] = [
+    { label: "Team", path: "/supervisor/team", icon: IconUsers },
+  ];
+
   const superuserLinks = [
     ...hrLinks,
     ...payrollLinks,
@@ -117,6 +121,7 @@ function Navbar() {
     IT: itLinks,
     PAYROLL: payrollLinks,
     SUPERUSER: superuserLinks,
+    SUPERVISOR: supervisorLinks,
   };
 
   const links: NavLinkItem[] =
