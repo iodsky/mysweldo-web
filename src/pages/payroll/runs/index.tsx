@@ -49,6 +49,7 @@ function Page() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [startDateFilter, setStartDateFilter] = useState<string | null>(null);
@@ -66,7 +67,7 @@ function Page() {
   const { data, isLoading, isFetching, isError } = useGetAllPayrollRuns(
     {
       pageNo: page,
-      limit: 10,
+      limit: pageSize,
       type: (typeFilter as GetAllPayrollRunsType) ?? undefined,
       status: (statusFilter as GetAllPayrollRunsStatus) ?? undefined,
       periodStartDate: startDateFilter ?? undefined,
@@ -280,6 +281,11 @@ function Page() {
             </Table.Tr>
           ))}
           meta={meta}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPage(0);
+            setPageSize(size);
+          }}
           onPageChange={(p) => setPage(p - 1)}
           isFetching={isFetching}
           isError={isError}

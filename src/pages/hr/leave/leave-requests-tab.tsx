@@ -57,6 +57,7 @@ const LEAVE_TYPE_MAP: Record<LeaveType, string> = {
 function LeaveRequestsTab() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [statusFilter, setStatusFilter] = useState<RequestStatus | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -86,7 +87,7 @@ function LeaveRequestsTab() {
 
   const filters: GetLeaveRequestsParams = {
     pageNo: page,
-    limit: 10,
+    limit: pageSize,
   };
 
   const { data: employeesData } = useGetAllEmployees(
@@ -102,7 +103,7 @@ function LeaveRequestsTab() {
 
   const { data, isLoading, isFetching, isError } = useGetLeaveRequests(filters, {
     query: {
-      queryKey: ["leaveRequests", page, statusFilter] as const,
+      queryKey: ["leaveRequests", page, pageSize, statusFilter] as const,
       staleTime: 1000 * 60 * 5,
       placeholderData: keepPreviousData,
     },
@@ -419,6 +420,11 @@ function LeaveRequestsTab() {
           ]}
           rows={rows}
           meta={meta}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPage(0);
+            setPageSize(size);
+          }}
           onPageChange={(p) => setPage(p - 1)}
           isFetching={isFetching}
           isError={isError}

@@ -20,9 +20,11 @@ import { handleApiError } from "@/utils/error-handler";
 function Page() {
   const queryClient = useQueryClient();
 
+  const [pageSize, setPageSize] = useState(10);
+
   const [filters, setFilters] = useState<GetMyAttendancesParams>({
     pageNo: 0,
-    limit: 10,
+    limit: pageSize,
     startDate: undefined,
     endDate: undefined,
   });
@@ -119,7 +121,7 @@ function Page() {
           onClick={() =>
             setFilters({
               pageNo: 0,
-              limit: 10,
+              limit: pageSize,
               startDate: undefined,
               endDate: undefined,
             })
@@ -137,6 +139,11 @@ function Page() {
           errorMessage="Failed to load your attendance records. Please try again."
           isFetching={isFetching}
           meta={meta} 
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setFilters((prev) => ({ ...prev, limit: size, pageNo: 0 }));
+          }}
           onPageChange={(newPage) =>
             setFilters((prev) => ({
               ...prev,

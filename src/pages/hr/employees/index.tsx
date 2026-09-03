@@ -34,6 +34,7 @@ import { handleApiError } from "@/utils/error-handler";
 function Page() {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [formOpened, setFormOpened] = useState(false);
   const [deleteOpened, setDeleteOpened] = useState(false);
   const [selectedEmployee, setSelectedEmployee] =
@@ -65,14 +66,14 @@ function Page() {
   const { data, isLoading, isFetching, isError } = useGetAllEmployees(
     {
       pageNo: page,
-      limit: 10,
+      limit: pageSize,
       department: departmentFilter || undefined,
       supervisor: undefined,
       status: statusFilter || undefined,
     },
     {
       query: {
-        queryKey: ["employees", page, departmentFilter, statusFilter] as const,
+        queryKey: ["employees", page, pageSize, departmentFilter, statusFilter] as const,
         staleTime: 1000 * 60 * 5, // 5 minutes
         placeholderData: keepPreviousData,
       },
@@ -229,6 +230,11 @@ function Page() {
             errorMessage="Failed to load employees. Please try again or contact support."
             isFetching={isFetching}
             meta={meta}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPage(0);
+              setPageSize(size);
+            }}
             onPageChange={(pageNum) => setPage(pageNum - 1)}
             rows={employees.map((row: EmployeeBasic) => (
               <Table.Tr key={String(row.id)}>

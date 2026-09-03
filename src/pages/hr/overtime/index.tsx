@@ -53,6 +53,7 @@ function Page() {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
 
@@ -90,13 +91,13 @@ function Page() {
   const { data, isLoading, isFetching, isError } = useGetOvertimeRequests(
     {
       pageNo: page,
-      limit: 10,
+      limit: pageSize,
       startDate: startDate ? formatDate(startDate) : undefined,
       endDate: endDate ? formatDate(endDate) : undefined,
     },
     {
       query: {
-        queryKey: ["overtimeRequests", "all", page, startDate, endDate] as const,
+        queryKey: ["overtimeRequests", "all", page, pageSize, startDate, endDate] as const,
         staleTime: 1000 * 60 * 5,
         placeholderData: keepPreviousData,
       },
@@ -378,6 +379,11 @@ function Page() {
             </Table.Tr>
           ))}
           meta={meta}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPage(0);
+            setPageSize(size);
+          }}
           onPageChange={(p) => setPage(p - 1)}
           isFetching={isFetching}
           isError={isError}

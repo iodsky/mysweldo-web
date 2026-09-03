@@ -1,5 +1,6 @@
 import {
   Pagination,
+  Select,
   Table,
   Text,
   Loader,
@@ -13,6 +14,8 @@ interface PaginatedTableProps {
   heading: string[];
   meta: PaginationMeta;
   onPageChange?: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
   tableProps?: TableProps;
   emptyMessage?: string;
   isFetching?: boolean;
@@ -20,11 +23,18 @@ interface PaginatedTableProps {
   errorMessage?: string;
 }
 
+const PAGE_SIZE_OPTIONS = ["10", "20", "50", "100"].map((value) => ({
+  value,
+  label: value,
+}));
+
 function PaginatedTable({
   rows,
   meta,
   heading,
   onPageChange,
+  pageSize,
+  onPageSizeChange,
   tableProps,
   emptyMessage,
   isFetching,
@@ -32,14 +42,14 @@ function PaginatedTable({
   errorMessage,
 }: PaginatedTableProps) {
   return (
-    <div className="flex flex-col flex-1 gap-4">
+    <div className="flex flex-col flex-1 gap-4 min-h-0">
       {isError && (
         <Text c="red" fw={500}>
           {errorMessage || "Failed to load data"}
         </Text>
       )}
 
-      <div className="relative">
+      <div className="relative flex-1 min-h-0 overflow-y-auto">
         {isFetching && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50">
             <Loader size="lg" />
@@ -49,6 +59,7 @@ function PaginatedTable({
           highlightOnHover
           withTableBorder={true}
           withColumnBorders={true}
+          stickyHeader
           {...tableProps}
         >
           <Table.Thead>
@@ -74,7 +85,20 @@ function PaginatedTable({
         </Table>
       </div>
 
-      <div className="flex flex-col items-center">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <Text size="sm" c="dimmed">
+            Rows per page
+          </Text>
+          <Select
+            size="sm"
+            w={80}
+            aria-label="Rows per page"
+            data={PAGE_SIZE_OPTIONS}
+            value={String(pageSize ?? 10)}
+            onChange={(value) => onPageSizeChange?.(Number(value))}
+          />
+        </div>
         <Pagination
           total={meta.totalPages ?? 1}
           value={(meta.page ?? 0) + 1}

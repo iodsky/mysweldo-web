@@ -32,6 +32,7 @@ import { handleApiError } from "@/utils/error-handler";
 function Page() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [roleFilter, setRoleFilter] = useState<string | null>(null);
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -45,7 +46,7 @@ function Page() {
   const [editRole, setEditRole] = useState<string | null>(null);
 
   const { data, isLoading, isFetching, isError } = useGetUsers(
-    { pageNo: page, limit: 10, roleName: roleFilter ?? undefined },
+    { pageNo: page, limit: pageSize, roleName: roleFilter ?? undefined },
     {
       query: {
         staleTime: 1000 * 60 * 5,
@@ -232,6 +233,11 @@ function Page() {
             </Table.Tr>
           ))}
           meta={meta}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPage(0);
+            setPageSize(size);
+          }}
           onPageChange={(p) => setPage(p - 1)}
           isFetching={isFetching}
           isError={isError}

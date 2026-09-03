@@ -29,6 +29,7 @@ import { handleApiError } from "@/utils/error-handler";
 function Page() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -41,7 +42,7 @@ function Page() {
   const [editDescription, setEditDescription] = useState("");
 
   const { data, isLoading, isFetching, isError } = useGetAllRoles(
-    { pageNo: page, limit: 10 },
+    { pageNo: page, limit: pageSize },
     {
       query: {
         staleTime: 1000 * 60 * 5,
@@ -227,6 +228,11 @@ function Page() {
             </Table.Tr>
           ))}
           meta={meta}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPage(0);
+            setPageSize(size);
+          }}
           onPageChange={(p) => setPage(p - 1)}
           isFetching={isFetching}
           isError={isError}

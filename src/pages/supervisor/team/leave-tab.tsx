@@ -35,15 +35,16 @@ interface LeaveTabProps {
 function LeaveTab({ roster }: LeaveTabProps) {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
   const [selected, setSelected] = useState<LeaveRequest | null>(null);
 
   const { data, isLoading, isFetching, isError } = useGetSubordinatesLeaveRequests(
-    { pageNo: page, limit: 10 },
+    { pageNo: page, limit: pageSize },
     {
       query: {
-        queryKey: ["subordinates", "leave", page] as const,
+        queryKey: ["subordinates", "leave", page, pageSize] as const,
         staleTime: 1000 * 60 * 5,
         placeholderData: keepPreviousData,
       },
@@ -170,6 +171,11 @@ function LeaveTab({ roster }: LeaveTabProps) {
               </Table.Tr>
             ))}
             meta={meta}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPage(0);
+              setPageSize(size);
+            }}
             onPageChange={(p) => setPage(p - 1)}
             isFetching={isFetching}
             isError={isError}

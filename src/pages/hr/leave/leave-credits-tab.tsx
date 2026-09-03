@@ -49,6 +49,7 @@ const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
 function LeaveCreditsTab() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
     null,
@@ -58,7 +59,7 @@ function LeaveCreditsTab() {
   );
 
   const { data, isLoading, isFetching, isError } = useGetAllLeaveCredits(
-    { pageNo: page, limit: 10 },
+    { pageNo: page, limit: pageSize },
     {
       query: {
         staleTime: 1000 * 60 * 5,
@@ -168,6 +169,11 @@ function LeaveCreditsTab() {
           ]}
           rows={rows}
           meta={meta}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPage(0);
+            setPageSize(size);
+          }}
           onPageChange={(p) => setPage(p - 1)}
           isFetching={isFetching}
           isError={isError}

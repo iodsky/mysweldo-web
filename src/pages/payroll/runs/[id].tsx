@@ -137,6 +137,7 @@ function Page() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
 
   const [generateModalOpen, setGenerateModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -156,7 +157,7 @@ function Page() {
     isLoading: itemsLoading,
     isFetching: itemsFetching,
     isError: itemsError,
-  } = useGetPayrollItems(id ?? "", { pageNo: page, limit: 10 }, {
+  } = useGetPayrollItems(id ?? "", { pageNo: page, limit: pageSize }, {
     query: { enabled: !!id, placeholderData: (prev) => prev },
   });
   const { content: items, meta } = unwrapPage<PayrollItemDto>(itemsData);
@@ -168,7 +169,7 @@ function Page() {
 
   const invalidateItems = () => {
     queryClient.invalidateQueries({
-      queryKey: getGetPayrollItemsQueryKey(id ?? "", { pageNo: page, limit: 10 }),
+      queryKey: getGetPayrollItemsQueryKey(id ?? "", { pageNo: page, limit: pageSize }),
     });
   };
 
@@ -525,6 +526,11 @@ function Page() {
               </Table.Tr>
             ))}
             meta={meta}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPage(0);
+              setPageSize(size);
+            }}
             onPageChange={(p) => setPage(p - 1)}
             isFetching={itemsFetching}
             isError={itemsError}

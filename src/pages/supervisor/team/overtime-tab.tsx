@@ -26,16 +26,17 @@ interface OvertimeTabProps {
 function OvertimeTab({ roster }: OvertimeTabProps) {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
   const [selected, setSelected] = useState<OvertimeRequest | null>(null);
 
   const { data, isLoading, isFetching, isError } =
     useGetSubordinatesOvertimeRequests(
-      { pageNo: page, limit: 10 },
+      { pageNo: page, limit: pageSize },
       {
         query: {
-          queryKey: ["subordinates", "overtime", page] as const,
+          queryKey: ["subordinates", "overtime", page, pageSize] as const,
           staleTime: 1000 * 60 * 5,
           placeholderData: keepPreviousData,
         },
@@ -141,6 +142,11 @@ function OvertimeTab({ roster }: OvertimeTabProps) {
               </Table.Tr>
             ))}
             meta={meta}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPage(0);
+              setPageSize(size);
+            }}
             onPageChange={(p) => setPage(p - 1)}
             isFetching={isFetching}
             isError={isError}

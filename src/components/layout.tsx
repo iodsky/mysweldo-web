@@ -41,7 +41,7 @@ function Layout() {
           fluid
           className="flex flex-col"
           style={{
-            minHeight:
+            height:
               "calc(100dvh - var(--app-shell-header-height, 60px) - 2 * var(--mantine-spacing-md, 1rem))",
           }}
         >

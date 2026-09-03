@@ -10,12 +10,13 @@ import type { GetSubordinatesAttendancesParams } from "@/api/generated/model";
 
 function AttendanceTab() {
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
 
   const params: GetSubordinatesAttendancesParams = {
     pageNo: page,
-    limit: 10,
+    limit: pageSize,
     startDate: startDate ?? undefined,
     endDate: endDate ?? undefined,
   };
@@ -24,7 +25,7 @@ function AttendanceTab() {
     params,
     {
       query: {
-        queryKey: ["subordinates", "attendances", page, startDate, endDate] as const,
+        queryKey: ["subordinates", "attendances", page, pageSize, startDate, endDate] as const,
         staleTime: 1000 * 60 * 5,
         placeholderData: keepPreviousData,
       },
@@ -105,6 +106,11 @@ function AttendanceTab() {
               </Table.Tr>
             ))}
             meta={meta}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPage(0);
+              setPageSize(size);
+            }}
             onPageChange={(p) => setPage(p - 1)}
             isFetching={isFetching}
             isError={isError}

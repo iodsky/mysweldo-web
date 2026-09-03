@@ -54,6 +54,7 @@ function Page() {
   const canLaunchUsers = ["IT", "SUPERUSER"].includes(role);
 
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [typeFilter, setTypeFilter] = useState<ImportTypeValue | null>(null);
   const [statusFilter, setStatusFilter] = useState<GetAllImportJobsStatus | null>(
     null,
@@ -71,7 +72,7 @@ function Page() {
   const { data, isLoading, isFetching, isError } = useGetAllImportJobs(
     {
       pageNo: page,
-      limit: 10,
+      limit: pageSize,
       type: typeFilter ?? undefined,
       status: statusFilter ?? undefined,
     },
@@ -182,6 +183,11 @@ function Page() {
             errorMessage="Failed to load imports. Please try again or contact support."
             isFetching={isFetching}
             meta={meta}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPage(0);
+              setPageSize(size);
+            }}
             onPageChange={(pageNum) => setPage(pageNum - 1)}
             emptyMessage="No import jobs found"
             rows={content.map((row: ImportJobSummaryDto) => (

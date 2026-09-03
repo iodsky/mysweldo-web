@@ -36,9 +36,10 @@ function Page() {
   const [endDate, setEndDate] = useState<Date | string | null>(null);
   const [leaveType, setLeaveType] = useState<string | null>(null);
   const [note, setNote] = useState<string>("");
+  const [pageSize, setPageSize] = useState(10);
   const [filters, setFilters] = useState<PaginationFilters>({
     pageNo: 0,
-    limit: 10,
+    limit: pageSize,
   });
 
   // Edit state
@@ -279,6 +280,11 @@ function Page() {
             errorMessage="Failed to load your leave requests. Please try again."
             isFetching={isFetching}
             meta={meta}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setFilters((prev) => ({ ...prev, limit: size, pageNo: 0 }));
+            }}
             onPageChange={(page) =>
               setFilters((prev) => ({
                 ...prev,
