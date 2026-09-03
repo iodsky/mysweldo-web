@@ -14,6 +14,7 @@ import type {
   EmployeeDto as EmployeeRecord,
   EmployeeLeaveCreditDto,
   EmployeeRequest,
+  ImportJobSummaryDto,
   LeaveCreditDto as LeaveCreditRecord,
   LeaveCreditRequest,
   LeaveRequestDto as LeaveRequestRecord,
@@ -55,6 +56,13 @@ export type OvertimeRequestDto = OvertimeRequestRecord;
 export type Payslip = PayrollItemDto;
 export type Salary = SalaryDto;
 export type User = UserDto;
+export type ImportJobSummary = ImportJobSummaryDto;
+export type ImportType = "EMPLOYEE" | "USER";
+export type ImportStatus =
+  | "PENDING"
+  | "RUNNING"
+  | "COMPLETED"
+  | "FAILED";
 export type LoginCredentials = AuthRequest;
 export type CreditSummary = CreditSummaryDto;
 

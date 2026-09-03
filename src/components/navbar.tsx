@@ -6,6 +6,7 @@ import {
   IconCash,
   IconClockPlus,
   IconGift,
+  IconFileImport,
   IconLayoutDashboard,
   IconLogout,
   IconSitemap,
@@ -57,10 +58,12 @@ function Navbar() {
     { label: "Department", path: "/hr/department", icon: IconSitemap },
     { label: "Position", path: "/hr/position", icon: IconBriefcase },
     { label: "Benefit", path: "/hr/benefit", icon: IconGift },
+    { label: "Import", path: "/imports", icon: IconFileImport },
   ];
 
   const itLinks: NavLinkItem[] = [
     { label: "Users", path: "/it/users", icon: IconUsers },
+    { label: "Import", path: "/imports", icon: IconFileImport },
   ];
 
   const payrollLinks: NavLinkItem[] = [
@@ -91,6 +94,7 @@ function Navbar() {
     HR: hrLinks,
     IT: itLinks,
     PAYROLL: payrollLinks,
+    SUPERUSER: itLinks,
   };
 
   const links: NavLinkItem[] =

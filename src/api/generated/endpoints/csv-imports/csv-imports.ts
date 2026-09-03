@@ -21,10 +21,12 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  GetAllImportJobsParams,
   ImportEmployeesBody,
   ImportJobDetailsResponse,
   ImportJobLaunchResponse,
-  ImportUsersBody
+  ImportUsersBody,
+  PageDtoImportJobSummaryDto
 } from '../../model';
 
 import { customInstance } from '../../../mutator';
@@ -229,7 +231,127 @@ export const useImportEmployees = <TError = unknown,
       > => {
       return useMutation(getImportEmployeesMutationOptions(options), queryClient);
     }
-    export type getImportJobDetailsResponse200 = {
+    export type getAllImportJobsResponse200 = {
+  data: PageDtoImportJobSummaryDto
+  status: 200
+}
+
+export type getAllImportJobsResponseSuccess = (getAllImportJobsResponse200) & {
+  headers: Headers;
+};
+;
+
+export type getAllImportJobsResponse = (getAllImportJobsResponseSuccess)
+
+export const getGetAllImportJobsUrl = (params?: GetAllImportJobsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/jobs?${stringifiedParams}` : `/jobs`
+}
+
+/**
+ * Retrieve a paginated list of import jobs, newest first, optionally filtered by type and/or status. Requires HR, IT, PAYROLL, or SUPERUSER role.
+ * @summary List import jobs
+ */
+export const getAllImportJobs = async (params?: GetAllImportJobsParams, options?: Parameters<typeof customInstance>[1]): Promise<getAllImportJobsResponse> => {
+
+  return customInstance<getAllImportJobsResponse>(getGetAllImportJobsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAllImportJobsQueryKey = (params?: GetAllImportJobsParams,) => {
+    return [
+    `/jobs`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetAllImportJobsQueryOptions = <TData = Awaited<ReturnType<typeof getAllImportJobs>>, TError = unknown>(params?: GetAllImportJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllImportJobs>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAllImportJobsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllImportJobs>>> = ({ signal }) => getAllImportJobs(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllImportJobs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAllImportJobsQueryResult = NonNullable<Awaited<ReturnType<typeof getAllImportJobs>>>
+export type GetAllImportJobsQueryError = unknown
+
+
+export function useGetAllImportJobs<TData = Awaited<ReturnType<typeof getAllImportJobs>>, TError = unknown>(
+ params: undefined |  GetAllImportJobsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllImportJobs>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAllImportJobs>>,
+          TError,
+          Awaited<ReturnType<typeof getAllImportJobs>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAllImportJobs<TData = Awaited<ReturnType<typeof getAllImportJobs>>, TError = unknown>(
+ params?: GetAllImportJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllImportJobs>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAllImportJobs>>,
+          TError,
+          Awaited<ReturnType<typeof getAllImportJobs>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAllImportJobs<TData = Awaited<ReturnType<typeof getAllImportJobs>>, TError = unknown>(
+ params?: GetAllImportJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllImportJobs>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List import jobs
+ */
+
+export function useGetAllImportJobs<TData = Awaited<ReturnType<typeof getAllImportJobs>>, TError = unknown>(
+ params?: GetAllImportJobsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllImportJobs>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAllImportJobsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type getImportJobDetailsResponse200 = {
   data: ImportJobDetailsResponse
   status: 200
 }
