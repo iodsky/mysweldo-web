@@ -69,12 +69,14 @@ function Navbar() {
   ];
 
   const itLinks: NavLinkItem[] = [
+    { label: "Dashboard", path: "/it/dashboard", icon: IconLayoutDashboard },
     { label: "Users", path: "/it/users", icon: IconUsers },
     { label: "Roles", path: "/it/roles", icon: IconShieldLock },
     { label: "Import", path: "/imports", icon: IconFileImport },
   ];
 
   const payrollLinks: NavLinkItem[] = [
+    { label: "Dashboard", path: "/payroll/dashboard", icon: IconLayoutDashboard },
     { label: "Payroll Run", path: "/payroll/runs", icon: IconCash },
     { label: "Contributions", path: "/payroll/contributions", icon: IconReportMoney },
     { label: "Deductions", path: "/payroll/deductions", icon: IconArrowDownRight },
@@ -85,6 +87,7 @@ function Navbar() {
   ];
 
   const employeeLinks: NavLinkItem[] = [
+    { label: "Dashboard", path: "/employee/dashboard", icon: IconLayoutDashboard },
     { label: "Profile", path: "/employee/profile", icon: IconUser },
     { label: "Attendance", path: "/employee/attendance", icon: IconCalendarCheck },
     {
@@ -105,13 +108,15 @@ function Navbar() {
   ];
 
   const supervisorLinks: NavLinkItem[] = [
+    { label: "Dashboard", path: "/supervisor/dashboard", icon: IconLayoutDashboard },
     { label: "Team", path: "/supervisor/team", icon: IconUsers },
   ];
 
   const superuserLinks = [
-    ...hrLinks,
-    ...payrollLinks,
-    ...itLinks,
+    { label: "Dashboard", path: "/superuser/dashboard", icon: IconLayoutDashboard },
+    ...hrLinks.filter((l) => l.label !== "Dashboard"),
+    ...payrollLinks.filter((l) => l.label !== "Dashboard"),
+    ...itLinks.filter((l) => l.label !== "Dashboard"),
   ].filter(
     (link, index, self) => self.findIndex((l) => l.path === link.path) === index,
   );

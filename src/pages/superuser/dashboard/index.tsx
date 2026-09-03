@@ -1,9 +1,9 @@
 import { Breadcrumbs, SimpleGrid, Text } from "@mantine/core";
-import { BarChart, DonutChart } from "@mantine/charts";
+import { BarChart, LineChart } from "@mantine/charts";
 import {
   IconBeach,
-  IconBuilding,
-  IconClockPlus,
+  IconCash,
+  IconShieldLock,
   IconUsers,
 } from "@tabler/icons-react";
 import StatCard from "@/components/dashboard/stat-card";
@@ -18,11 +18,13 @@ const DEPARTMENT_HEADCOUNT = [
   { department: "Support", headcount: 15 },
 ];
 
-const EMPLOYMENT_STATUS = [
-  { name: "Regular", value: 95, color: "green" },
-  { name: "Probationary", value: 25, color: "yellow" },
-  { name: "Contractual", value: 10, color: "blue" },
-  { name: "Resigned", value: 5, color: "gray" },
+const PAYROLL_TREND = [
+  { month: "Apr", gross: 1_420_000, net: 1_160_000 },
+  { month: "May", gross: 1_385_000, net: 1_132_000 },
+  { month: "Jun", gross: 1_510_000, net: 1_238_000 },
+  { month: "Jul", gross: 1_468_000, net: 1_205_000 },
+  { month: "Aug", gross: 1_554_000, net: 1_274_000 },
+  { month: "Sep", gross: 1_582_000, net: 1_298_000 },
 ];
 
 const TOTAL_EMPLOYEES = DEPARTMENT_HEADCOUNT.reduce(
@@ -30,20 +32,23 @@ const TOTAL_EMPLOYEES = DEPARTMENT_HEADCOUNT.reduce(
   0,
 );
 
+const formatMoney = (value: number) =>
+  `₱${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+
 function Page() {
   return (
     <div className="flex flex-col flex-1 gap-5 p-5">
       <Breadcrumbs>
-        <Text size="sm">HR</Text>
+        <Text size="sm">Superuser</Text>
         <Text size="sm">Dashboard</Text>
       </Breadcrumbs>
 
       <div>
         <Text size="lg" fw={700}>
-          HR Dashboard
+          System Overview
         </Text>
         <Text size="sm" c="dimmed">
-          Workforce overview and pending approvals
+          High-level summary across the organization
         </Text>
       </div>
 
@@ -56,22 +61,23 @@ function Page() {
           deltaColor="green"
         />
         <StatCard
-          label="Active Departments"
-          value={DEPARTMENT_HEADCOUNT.length}
-          icon={IconBuilding}
+          label="Active Users"
+          value={151}
+          icon={IconShieldLock}
+          delta="6 admin roles"
         />
         <StatCard
-          label="Pending Leave"
-          value={12}
+          label="Latest Payroll Net"
+          value={formatMoney(1_298_000)}
+          icon={IconCash}
+          delta="Sep 01–15"
+          deltaColor="green"
+        />
+        <StatCard
+          label="Pending Requests"
+          value={20}
           icon={IconBeach}
-          delta="5 need review today"
-          deltaColor="yellow"
-        />
-        <StatCard
-          label="Pending Overtime"
-          value={8}
-          icon={IconClockPlus}
-          delta="3 approvals due"
+          delta="Leave + overtime"
           deltaColor="yellow"
         />
       </SimpleGrid>
@@ -85,12 +91,16 @@ function Page() {
             series={[{ name: "headcount", color: "blue" }]}
           />
         </ChartCard>
-        <ChartCard title="Employees by Employment Status">
-          <DonutChart
+        <ChartCard title="Gross vs Net (Last 6 Months)">
+          <LineChart
             h={260}
-            data={EMPLOYMENT_STATUS}
-            withLabelsLine
-            withLabels
+            data={PAYROLL_TREND}
+            dataKey="month"
+            series={[
+              { name: "gross", color: "blue" },
+              { name: "net", color: "green" },
+            ]}
+            curveType="natural"
           />
         </ChartCard>
       </SimpleGrid>

@@ -7,6 +7,7 @@ import EmployeeAttendance from "@/pages/employee/attendance";
 import EmployeeLeave from "@/pages/employee/leave";
 import EmployeeOvertime from "@/pages/employee/overtime";
 import EmployeePayslip from "@/pages/employee/payslip";
+import EmployeeDashboard from "@/pages/employee/dashboard";
 import HRDashboard from "@/pages/hr/dashboard";
 import HREmployees from "@/pages/hr/employees";
 import HREmployeeDetail from "@/pages/hr/employees/[id]";
@@ -28,6 +29,10 @@ import PayrollSssRates from "@/pages/payroll/sss-rates";
 import PayrollPhilhealthRates from "@/pages/payroll/philhealth-rates";
 import PayrollPagibigRates from "@/pages/payroll/pagibig-rates";
 import SupervisorTeam from "@/pages/supervisor/team";
+import SupervisorDashboard from "@/pages/supervisor/dashboard";
+import PayrollDashboard from "@/pages/payroll/dashboard";
+import ITDashboard from "@/pages/it/dashboard";
+import SuperuserDashboard from "@/pages/superuser/dashboard";
 import RoleRoute from "./role-route";
 import NotFound from "@/pages/not-found";
 
@@ -41,6 +46,7 @@ export const AppRoutes = createBrowserRouter([
         element: <Layout />,
         children: [
           { path: "/employee/profile", element: <EmployeeProfile /> },
+          { path: "/employee/dashboard", element: <EmployeeDashboard /> },
           { path: "/employee/attendance", element: <EmployeeAttendance /> },
           { path: "/employee/leave", element: <EmployeeLeave /> },
           { path: "/employee/overtime", element: <EmployeeOvertime /> },
@@ -60,6 +66,7 @@ export const AppRoutes = createBrowserRouter([
           {
             element: <RoleRoute allowedRoles={["PAYROLL"]} />,
             children: [
+              { path: "/payroll/dashboard", element: <PayrollDashboard /> },
               { path: "/payroll/runs", element: <PayrollRuns /> },
               { path: "/payroll/runs/:id", element: <PayrollRunDetail /> },
               { path: "/payroll/contributions", element: <PayrollContributions /> },
@@ -73,6 +80,7 @@ export const AppRoutes = createBrowserRouter([
           {
             element: <RoleRoute allowedRoles={["IT"]} />,
             children: [
+              { path: "/it/dashboard", element: <ITDashboard /> },
               { path: "/it/users", element: <ITUsers /> },
               { path: "/it/roles", element: <ITRoles /> },
             ],
@@ -80,7 +88,14 @@ export const AppRoutes = createBrowserRouter([
           {
             element: <RoleRoute allowedRoles={["SUPERVISOR"]} />,
             children: [
+              { path: "/supervisor/dashboard", element: <SupervisorDashboard /> },
               { path: "/supervisor/team", element: <SupervisorTeam /> },
+            ],
+          },
+          {
+            element: <RoleRoute allowedRoles={["SUPERUSER"]} />,
+            children: [
+              { path: "/superuser/dashboard", element: <SuperuserDashboard /> },
             ],
           },
         ],
