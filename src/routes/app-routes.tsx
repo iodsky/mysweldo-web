@@ -1,40 +1,40 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import Login from "@/pages/auth/login";
-import EmployeeProfile from "@/pages/employee/profile";
+import Login from "@/features/auth/login";
+import EmployeeProfile from "@/features/profile/employee-profile";
 import ProtectedRoute from "./protected-route";
 import Layout from "@/components/layout";
-import EmployeeAttendance from "@/pages/employee/attendance";
-import EmployeeLeave from "@/pages/employee/leave";
-import EmployeeOvertime from "@/pages/employee/overtime";
-import EmployeePayslip from "@/pages/employee/payslip";
-import EmployeeDashboard from "@/pages/employee/dashboard";
-import HRDashboard from "@/pages/hr/dashboard";
-import HREmployees from "@/pages/hr/employees";
-import HREmployeeDetail from "@/pages/hr/employees/[id]";
-import HRAttendance from "@/pages/hr/attendance";
-import HRLeave from "@/pages/hr/leave";
-import HROvertime from "@/pages/hr/overtime";
-import HRPosition from "@/pages/hr/position";
-import HRDepartment from "@/pages/hr/department";
-import HRBenefit from "@/pages/hr/benefit";
-import Imports from "@/pages/imports";
-import ITUsers from "@/pages/it/users";
-import ITRoles from "@/pages/it/roles";
-import PayrollRuns from "@/pages/payroll/runs";
-import PayrollRunDetail from "@/pages/payroll/runs/[id]";
-import PayrollContributions from "@/pages/payroll/contributions";
-import PayrollDeductions from "@/pages/payroll/deductions";
-import PayrollTaxBrackets from "@/pages/payroll/tax-brackets";
-import PayrollSssRates from "@/pages/payroll/sss-rates";
-import PayrollPhilhealthRates from "@/pages/payroll/philhealth-rates";
-import PayrollPagibigRates from "@/pages/payroll/pagibig-rates";
-import SupervisorTeam from "@/pages/supervisor/team";
-import SupervisorDashboard from "@/pages/supervisor/dashboard";
-import PayrollDashboard from "@/pages/payroll/dashboard";
-import ITDashboard from "@/pages/it/dashboard";
-import SuperuserDashboard from "@/pages/superuser/dashboard";
+import EmployeeAttendance from "@/features/attendance/employee-attendance";
+import EmployeeLeave from "@/features/leave/employee-leave";
+import EmployeeOvertime from "@/features/overtime/employee-overtime";
+import EmployeePayslip from "@/features/payslip/employee-payslip";
+import EmployeeDashboard from "@/features/dashboard/employee-dashboard";
+import HRDashboard from "@/features/dashboard/hr-dashboard";
+import HREmployees from "@/features/employees/employees-list";
+import HREmployeeDetail from "@/features/employees/employee-detail";
+import HRAttendance from "@/features/attendance/hr-attendance";
+import HRLeave from "@/features/leave/hr-leave";
+import HROvertime from "@/features/overtime/hr-overtime";
+import HRPosition from "@/features/position/hr-position";
+import HRDepartment from "@/features/department/hr-department";
+import HRBenefit from "@/features/benefit/hr-benefit";
+import Imports from "@/features/imports/imports";
+import ITUsers from "@/features/users/it-users";
+import ITRoles from "@/features/roles/it-roles";
+import PayrollRuns from "@/features/payroll/payroll-runs";
+import PayrollRunDetail from "@/features/payroll/payroll-run-detail";
+import PayrollContributions from "@/features/payroll/payroll-contributions";
+import PayrollDeductions from "@/features/payroll/payroll-deductions";
+import PayrollTaxBrackets from "@/features/payroll/tax-brackets";
+import PayrollSssRates from "@/features/payroll/sss-rates";
+import PayrollPhilhealthRates from "@/features/payroll/philhealth-rates";
+import PayrollPagibigRates from "@/features/payroll/pagibig-rates";
+import SupervisorTeam from "@/features/team/team";
+import SupervisorDashboard from "@/features/dashboard/supervisor-dashboard";
+import PayrollDashboard from "@/features/dashboard/payroll-dashboard";
+import ITDashboard from "@/features/dashboard/it-dashboard";
+import SuperuserDashboard from "@/features/dashboard/superuser-dashboard";
 import RoleRoute from "./role-route";
-import NotFound from "@/pages/not-found";
+import NotFound from "@/features/misc/not-found";
 
 export const AppRoutes = createBrowserRouter([
   { path: "/", element: <Navigate to="login" replace /> },
@@ -45,22 +45,32 @@ export const AppRoutes = createBrowserRouter([
       {
         element: <Layout />,
         children: [
-          { path: "/employee/profile", element: <EmployeeProfile /> },
-          { path: "/employee/dashboard", element: <EmployeeDashboard /> },
-          { path: "/employee/attendance", element: <EmployeeAttendance /> },
-          { path: "/employee/leave", element: <EmployeeLeave /> },
-          { path: "/employee/overtime", element: <EmployeeOvertime /> },
-          { path: "/employee/payslip", element: <EmployeePayslip /> },
+          {
+            element: <RoleRoute allowedRoles={["EMPLOYEE"]} />,
+            children: [
+              { path: "/employee/profile", element: <EmployeeProfile /> },
+              { path: "/employee/dashboard", element: <EmployeeDashboard /> },
+              { path: "/employee/attendance", element: <EmployeeAttendance /> },
+              { path: "/employee/leave", element: <EmployeeLeave /> },
+              { path: "/employee/overtime", element: <EmployeeOvertime /> },
+              { path: "/employee/payslip", element: <EmployeePayslip /> },
+            ],
+          },
 
-          { path: "/hr/dashboard", element: <HRDashboard /> },
-          { path: "/hr/employees", element: <HREmployees /> },
-          { path: "/hr/employees/:id", element: <HREmployeeDetail /> },
-          { path: "/hr/attendance", element: <HRAttendance /> },
-          { path: "/hr/leave", element: <HRLeave /> },
-          { path: "/hr/overtime", element: <HROvertime /> },
-          { path: "/hr/position", element: <HRPosition /> },
-          { path: "/hr/department", element: <HRDepartment /> },
-          { path: "/hr/benefit", element: <HRBenefit /> },
+          {
+            element: <RoleRoute allowedRoles={["HR"]} />,
+            children: [
+              { path: "/hr/dashboard", element: <HRDashboard /> },
+              { path: "/hr/employees", element: <HREmployees /> },
+              { path: "/hr/employees/:id", element: <HREmployeeDetail /> },
+              { path: "/hr/attendance", element: <HRAttendance /> },
+              { path: "/hr/leave", element: <HRLeave /> },
+              { path: "/hr/overtime", element: <HROvertime /> },
+              { path: "/hr/position", element: <HRPosition /> },
+              { path: "/hr/department", element: <HRDepartment /> },
+              { path: "/hr/benefit", element: <HRBenefit /> },
+            ],
+          },
           { path: "/imports", element: <Imports /> },
 
           {
