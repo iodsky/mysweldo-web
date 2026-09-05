@@ -21,7 +21,7 @@ function RoleRoute({ allowedRoles }: RoleRouteProps) {
   const isAllowed =
     accessType === "ADMIN"
       ? role === "SUPERUSER" || allowedRoles.includes(role ?? "")
-      : allowedRoles.includes(role ?? "");
+      : allowedRoles.includes("EMPLOYEE");
 
   return isAllowed ? <Outlet /> : <Navigate to="/" replace />;
 }
