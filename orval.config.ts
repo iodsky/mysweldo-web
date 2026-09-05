@@ -25,6 +25,7 @@ export default defineConfig({
  * ${info.title} ${info.version}
  */`,
       },
+      namingConvention: 'kebab-case'
     },
   },
 });

@@ -26,6 +26,27 @@ export const refreshAccessToken = (): Promise<void> => {
   return refreshPromise;
 };
 
+let onSessionExpiredHandler: (() => void) | null = null;
+
+export const setOnSessionExpired = (handler: () => void): (() => void) => {
+  onSessionExpiredHandler = handler;
+  return () => {
+    onSessionExpiredHandler = null;
+  };
+};
+
+const SESSION_EXPIRED = Symbol("sessionExpired");
+type SessionExpiredMarked = { [SESSION_EXPIRED]?: boolean };
+
+const markSessionExpired = (error: unknown): void => {
+  if (error && typeof error === "object") {
+    (error as SessionExpiredMarked)[SESSION_EXPIRED] = true;
+  }
+};
+
+export const isSessionExpiredError = (error: unknown): boolean =>
+  !!(error && typeof error === "object" && (error as SessionExpiredMarked)[SESSION_EXPIRED] === true);
+
 client.interceptors.response.use(
   (response) => response, // Directly return successful responses.
   async (error) => {
@@ -50,6 +71,8 @@ client.interceptors.response.use(
         await refreshAccessToken();
         return client(originalRequest); // Retry the original request with the new access token cookie.
       } catch (refreshError) {
+        markSessionExpired(refreshError);
+        onSessionExpiredHandler?.();
         console.error("Token refresh failed:", refreshError);
         return Promise.reject(refreshError);
       }

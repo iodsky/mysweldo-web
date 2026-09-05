@@ -147,12 +147,12 @@ export type PaginationFilters = {
   limit: number;
 };
 
-type ValidationError = {
+export type ValidationError = {
   field: string;
   message: string;
 };
 
-type DuplicateField = {
+export type DuplicateField = {
   field: string;
   value: string;
 };
@@ -161,6 +161,7 @@ export type ApiError = {
   timestamp: string;
   status: number;
   message: string;
+  path?: string;
   validationErrors?: ValidationError[];
   duplicateField?: DuplicateField;
 };
