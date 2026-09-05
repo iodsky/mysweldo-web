@@ -24,7 +24,6 @@ import {
   useUpdateLeaveRequest,
   useUpdateLeaveRequestStatus,
 } from "@/api/generated/endpoints/leave-requests/leave-requests";
-import { useGetAllEmployees } from "@/api/generated/endpoints/employees/employees";
 import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
@@ -32,26 +31,15 @@ import type {
   LeaveRequest,
   RequestStatus,
   LeaveType,
-  EmployeeBasic,
 } from "@/types";
 import type { GetLeaveRequestsParams } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import { IconTrash, IconPencil } from "@tabler/icons-react";
-
-const STATUS_COLORS: Record<RequestStatus, string> = {
-  PENDING: "yellow",
-  APPROVED: "green",
-  REJECTED: "red",
-};
-
-const LEAVE_TYPE_MAP: Record<LeaveType, string> = {
-  VACATION: "Vacation",
-  SICK: "Sick",
-  MATERNITY: "Maternity",
-  PATERNITY: "Paternity",
-  SOLO_PARENT: "Solo Parent",
-  BEREAVEMENT: "Bereavement",
-};
+import { REQUEST_STATUS_COLORS } from "@/features/shared/request-status";
+import { LEAVE_TYPE_LABELS, LEAVE_TYPE_OPTIONS } from "@/features/leave/leave-types";
+import { formatDate } from "@/utils/date";
+import { useEmployeeOptions } from "@/hooks/use-employee-options";
+import { useRequestApproval } from "@/features/shared/use-request-approval";
 
 function LeaveRequestsTab() {
   const queryClient = useQueryClient();
@@ -60,18 +48,19 @@ function LeaveRequestsTab() {
   const [statusFilter, setStatusFilter] = useState<RequestStatus | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [actionType, setActionType] = useState<
-    "approve" | "reject" | "delete" | null
-  >(null);
-  const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(
-    null,
-  );
+  const {
+    openConfirm,
+    closeConfirm,
+    confirm,
+    actionType,
+    confirmModalProps,
+  } = useRequestApproval<LeaveRequest>({ noun: "leave request" });
   const [editStartDate, setEditStartDate] = useState<Date | string | null>(
     null,
   );
   const [editEndDate, setEditEndDate] = useState<Date | string | null>(null);
   const [editNote, setEditNote] = useState<string>("");
+  const [editRequest, setEditRequest] = useState<LeaveRequest | null>(null);
 
   // Create form state
   const [createEmployeeId, setCreateEmployeeId] = useState<number | null>(null);
@@ -89,16 +78,11 @@ function LeaveRequestsTab() {
     limit: pageSize,
   };
 
-  const { data: employeesData } = useGetAllEmployees(
-    { pageNo: 0, limit: 100 },
-    {
-      query: {
-        queryKey: ["employees"] as const,
-        staleTime: 1000 * 60 * 30,
-        gcTime: 1000 * 60 * 60,
-      },
-    },
-  );
+  const { options: employeeOptions } = useEmployeeOptions({
+    queryKey: ["employees"],
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+  });
 
   const { data, isLoading, isFetching, isError } = useGetLeaveRequests(filters, {
     query: {
@@ -120,9 +104,7 @@ function LeaveRequestsTab() {
             queryKey: ["/leave-requests"],
           });
           queryClient.invalidateQueries({ queryKey: ["/leave-credits"] });
-          setConfirmModalOpen(false);
-          setActionType(null);
-          setSelectedRequest(null);
+          closeConfirm();
           notifications.show({
             title: "Success",
             color: "green",
@@ -157,7 +139,7 @@ function LeaveRequestsTab() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
           setEditModalOpen(false);
-          setSelectedRequest(null);
+          setEditRequest(null);
           notifications.show({
             title: "Success",
             color: "green",
@@ -174,9 +156,7 @@ function LeaveRequestsTab() {
       mutation: {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
-          setConfirmModalOpen(false);
-          setActionType(null);
-          setSelectedRequest(null);
+          closeConfirm();
           notifications.show({
             title: "Success",
             color: "green",
@@ -189,7 +169,7 @@ function LeaveRequestsTab() {
   );
 
   const handleEditClick = (request: LeaveRequest) => {
-    setSelectedRequest(request);
+    setEditRequest(request);
     setEditStartDate(new Date(request.startDate));
     setEditEndDate(new Date(request.endDate));
     setEditNote(request.note || "");
@@ -207,19 +187,13 @@ function LeaveRequestsTab() {
       return;
     }
 
-    const startStr =
-      editStartDate instanceof Date
-        ? editStartDate.toISOString().split("T")[0]
-        : editStartDate;
-    const endStr =
-      editEndDate instanceof Date
-        ? editEndDate.toISOString().split("T")[0]
-        : editEndDate;
+    const startStr = formatDate(editStartDate);
+    const endStr = formatDate(editEndDate);
 
     updateRequest({
-      id: selectedRequest?.id ?? "",
+      id: editRequest?.id ?? "",
       data: {
-        leaveType: (selectedRequest?.leaveType ?? "VACATION") as LeaveType,
+        leaveType: (editRequest?.leaveType ?? "VACATION") as LeaveType,
         startDate: startStr,
         endDate: endStr,
         note: editNote || undefined,
@@ -256,14 +230,8 @@ function LeaveRequestsTab() {
       return;
     }
 
-    const startStr =
-      createStartDate instanceof Date
-        ? createStartDate.toISOString().split("T")[0]
-        : createStartDate;
-    const endStr =
-      createEndDate instanceof Date
-        ? createEndDate.toISOString().split("T")[0]
-        : createEndDate;
+    const startStr = formatDate(createStartDate);
+    const endStr = formatDate(createEndDate);
 
     createRequest({
       data: {
@@ -277,32 +245,21 @@ function LeaveRequestsTab() {
   };
 
   const handleStatusAction = (request: LeaveRequest, action: RequestStatus) => {
-    setSelectedRequest(request);
-    setActionType(action === "APPROVED" ? "approve" : "reject");
-    setConfirmModalOpen(true);
+    openConfirm(request, action === "APPROVED" ? "approve" : "reject");
   };
 
   const handleDeleteClick = (request: LeaveRequest) => {
-    setSelectedRequest(request);
-    setActionType("delete");
-    setConfirmModalOpen(true);
+    openConfirm(request, "delete");
   };
 
   const handleConfirmAction = () => {
-    if (actionType === "approve" || actionType === "reject") {
-      const status = (actionType === "approve"
-        ? "APPROVED"
-        : "REJECTED") as RequestStatus;
-      updateStatus({ id: selectedRequest?.id ?? "", params: { status } });
-    } else if (actionType === "delete") {
-      deleteRequest({ id: selectedRequest?.id ?? "" });
-    }
+    confirm(updateStatus, deleteRequest);
   };
 
   const rows = requests.map((request: LeaveRequest) => (
     <Table.Tr key={request.id ?? ""}>
       <Table.Td>{request.employeeId}</Table.Td>
-      <Table.Td>{LEAVE_TYPE_MAP[request.leaveType as LeaveType]}</Table.Td>
+      <Table.Td>{LEAVE_TYPE_LABELS[request.leaveType as LeaveType]}</Table.Td>
       <Table.Td>
         {request.startDate ? new Date(request.startDate).toLocaleDateString() : "-"}
       </Table.Td>
@@ -311,7 +268,7 @@ function LeaveRequestsTab() {
       </Table.Td>
       <Table.Td>{request.note || "-"}</Table.Td>
       <Table.Td>
-        <Badge color={STATUS_COLORS[request.status as RequestStatus]}>
+        <Badge color={REQUEST_STATUS_COLORS[request.status as RequestStatus]}>
           {request.status}
         </Badge>
       </Table.Td>
@@ -361,20 +318,6 @@ function LeaveRequestsTab() {
       </Table.Td>
     </Table.Tr>
   ));
-
-  const getConfirmationMessage = () => {
-    if (actionType === "approve")
-      return "Are you sure you want to approve this leave request?";
-    if (actionType === "reject")
-      return "Are you sure you want to reject this leave request?";
-    return "Are you sure you want to delete this leave request?";
-  };
-
-  const getConfirmationTitle = () => {
-    if (actionType === "approve") return "Approve Leave Request";
-    if (actionType === "reject") return "Reject Leave Request";
-    return "Delete Leave Request";
-  };
 
   return (
     <div className="flex flex-col gap-6 flex-1">
@@ -447,14 +390,7 @@ function LeaveRequestsTab() {
             label="Employee"
             placeholder="Select employee"
             searchable
-            data={
-              unwrapPage<EmployeeBasic>(employeesData).content.map(
-                (emp: EmployeeBasic) => ({
-                  value: String(emp.id ?? ""),
-                  label: `${emp.firstName ?? ""} ${emp.lastName ?? ""}`,
-                }),
-              )
-            }
+            data={employeeOptions}
             value={createEmployeeId?.toString() ?? null}
             onChange={(value) =>
               setCreateEmployeeId(value ? Number(value) : null)
@@ -465,14 +401,7 @@ function LeaveRequestsTab() {
           <Select
             label="Leave Type"
             placeholder="Select leave type"
-            data={[
-              { value: "VACATION", label: "Vacation" },
-              { value: "SICK", label: "Sick" },
-              { value: "MATERNITY", label: "Maternity" },
-              { value: "PATERNITY", label: "Paternity" },
-              { value: "SOLO_PARENT", label: "Solo Parent" },
-              { value: "BEREAVEMENT", label: "Bereavement" },
-            ]}
+            data={LEAVE_TYPE_OPTIONS}
             value={createLeaveType}
             onChange={setCreateLeaveType}
             required
@@ -527,7 +456,7 @@ function LeaveRequestsTab() {
         opened={editModalOpen}
         onClose={() => {
           setEditModalOpen(false);
-          setSelectedRequest(null);
+          setEditRequest(null);
         }}
         title="Edit Leave Request"
         size="sm"
@@ -537,7 +466,7 @@ function LeaveRequestsTab() {
             <Text size="sm" fw={500} mb="xs">
               Employee ID
             </Text>
-            <Text>{selectedRequest?.employeeId}</Text>
+            <Text>{editRequest?.employeeId}</Text>
           </div>
 
           <DatePickerInput
@@ -567,7 +496,7 @@ function LeaveRequestsTab() {
               variant="outline"
               onClick={() => {
                 setEditModalOpen(false);
-                setSelectedRequest(null);
+                setEditRequest(null);
               }}
               disabled={isUpdating}
             >
@@ -582,24 +511,9 @@ function LeaveRequestsTab() {
 
       {/* Confirmation Modal */}
       <ConfirmationModal
-        opened={confirmModalOpen}
-        title={getConfirmationTitle()}
-        message={getConfirmationMessage()}
-        confirmText={
-          actionType === "approve"
-            ? "Approve"
-            : actionType === "reject"
-              ? "Reject"
-              : "Delete"
-        }
-        isDangerous={actionType === "delete" || actionType === "reject"}
+        {...confirmModalProps}
         isLoading={isUpdatingStatus || isDeleting}
         onConfirm={handleConfirmAction}
-        onCancel={() => {
-          setConfirmModalOpen(false);
-          setActionType(null);
-          setSelectedRequest(null);
-        }}
       />
     </div>
   );

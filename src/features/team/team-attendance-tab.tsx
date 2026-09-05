@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Button, Loader, Table, Text } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
+import { Loader } from "@mantine/core";
 import { keepPreviousData } from "@tanstack/react-query";
 import { useGetSubordinatesAttendances } from "@/api/generated/endpoints/attendance/attendance";
 import { unwrapPage } from "@/api/helpers";
-import PaginatedTable from "@/components/paginated-table";
+import { DateRangeFilter } from "@/components/date-range-filter";
+import { AttendanceTable } from "@/features/attendance/attendance-table";
 import type { Attendance } from "@/types";
 import type { GetSubordinatesAttendancesParams } from "@/api/generated/model";
 
@@ -36,42 +36,24 @@ function AttendanceTab() {
 
   return (
     <div className="flex flex-col gap-5 flex-1">
-      <div className="flex items-end gap-2">
-        <DateInput
-          label="Start Date"
-          placeholder="Pick start date"
-          value={startDate}
-          valueFormat="YYYY-MM-DD"
-          onChange={(d) => {
-            setStartDate(d);
-            setPage(0);
-          }}
-          clearable
-          highlightToday
-        />
-        <DateInput
-          label="End Date"
-          placeholder="Pick end date"
-          value={endDate}
-          valueFormat="YYYY-MM-DD"
-          onChange={(d) => {
-            setEndDate(d);
-            setPage(0);
-          }}
-          clearable
-          highlightToday
-        />
-        <Button
-          variant="light"
-          onClick={() => {
-            setStartDate(null);
-            setEndDate(null);
-            setPage(0);
-          }}
-        >
-          Clear
-        </Button>
-      </div>
+      <DateRangeFilter
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={(d) => {
+          setStartDate(d);
+          setPage(0);
+        }}
+        onEndDateChange={(d) => {
+          setEndDate(d);
+          setPage(0);
+        }}
+        onClear={() => {
+          setStartDate(null);
+          setEndDate(null);
+          setPage(0);
+        }}
+        clearLabel="Clear"
+      />
 
       {isLoading ? (
         <div className="flex justify-center py-8">
@@ -79,32 +61,8 @@ function AttendanceTab() {
         </div>
       ) : (
         meta && (
-          <PaginatedTable
-            heading={["Employee", "Date", "Time In", "Time Out", "Total Hours"]}
-            rows={rows.map((row: Attendance) => (
-              <Table.Tr key={String(row.id)}>
-                <Table.Td>
-                  <Text size="sm">
-                    {`${row.employeeFirstName ?? ""} ${row.employeeLastName ?? ""}`.trim() ||
-                      "-"}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="sm">{row.timeIn?.slice(0, 10) ?? "-"}</Text>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="sm">{row.timeIn?.slice(11, 16) ?? "-"}</Text>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="sm">{row.timeOut?.slice(11, 16) ?? "-"}</Text>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="sm">
-                    {typeof row.totalHours === "number" ? row.totalHours : "-"}
-                  </Text>
-                </Table.Td>
-              </Table.Tr>
-            ))}
+          <AttendanceTable
+            rows={rows}
             meta={meta}
             pageSize={pageSize}
             onPageSizeChange={(size) => {
@@ -115,6 +73,7 @@ function AttendanceTab() {
             isFetching={isFetching}
             isError={isError}
             emptyMessage="No attendance records found"
+            showEmployee
           />
         )
       )}

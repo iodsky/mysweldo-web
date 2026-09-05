@@ -27,6 +27,7 @@ import { notifications } from "@mantine/notifications";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import { IconPencil, IconDotsVertical, IconTrash } from "@tabler/icons-react";
+import { formatDate } from "@/utils/date";
 
 function Page() {
   const queryClient = useQueryClient();
@@ -186,11 +187,6 @@ function Page() {
     const submitNote = editingId ? editNote : note;
 
     if (submitStartDate && submitEndDate && submitLeaveType) {
-      const formatDate = (date: Date | string) => {
-        if (typeof date === "string") return date;
-        return date.toISOString().split("T")[0];
-      };
-
       const payload = {
         startDate: formatDate(submitStartDate),
         endDate: formatDate(submitEndDate),

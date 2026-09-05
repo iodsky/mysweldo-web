@@ -11,12 +11,8 @@ import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import type { OvertimeRequest, RequestStatus } from "@/types";
 import { notifications } from "@mantine/notifications";
-
-const STATUS_COLORS: Record<RequestStatus, string> = {
-  PENDING: "yellow",
-  APPROVED: "green",
-  REJECTED: "red",
-};
+import { REQUEST_STATUS_COLORS } from "@/features/shared/request-status";
+import { useRequestApproval } from "@/features/shared/use-request-approval";
 
 interface OvertimeTabProps {
   roster: Map<number, string>;
@@ -26,9 +22,13 @@ function OvertimeTab({ roster }: OvertimeTabProps) {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
-  const [selected, setSelected] = useState<OvertimeRequest | null>(null);
+  const {
+    openConfirm,
+    closeConfirm,
+    confirm,
+    actionType,
+    confirmModalProps,
+  } = useRequestApproval<OvertimeRequest>({ noun: "overtime request" });
 
   const { data, isLoading, isFetching, isError } =
     useGetSubordinatesOvertimeRequests(
@@ -49,9 +49,7 @@ function OvertimeTab({ roster }: OvertimeTabProps) {
       mutation: {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["/overtime-requests"] });
-          setConfirmOpen(false);
-          setActionType(null);
-          setSelected(null);
+          closeConfirm();
           notifications.show({
             title: "Success",
             color: "green",
@@ -62,18 +60,8 @@ function OvertimeTab({ roster }: OvertimeTabProps) {
       },
     });
 
-  const openConfirm = (req: OvertimeRequest, action: "approve" | "reject") => {
-    setSelected(req);
-    setActionType(action);
-    setConfirmOpen(true);
-  };
-
   const handleConfirm = () => {
-    if (!selected) return;
-    updateStatus({
-      id: selected.id,
-      params: { status: actionType === "approve" ? "APPROVED" : "REJECTED" },
-    });
+    confirm(updateStatus);
   };
 
   return (
@@ -105,7 +93,7 @@ function OvertimeTab({ roster }: OvertimeTabProps) {
                   <Text size="sm">{req.reason || "-"}</Text>
                 </Table.Td>
                 <Table.Td>
-                  <Badge color={STATUS_COLORS[req.status as RequestStatus]}>
+                  <Badge color={REQUEST_STATUS_COLORS[req.status as RequestStatus]}>
                     {req.status}
                   </Badge>
                 </Table.Td>
@@ -154,26 +142,9 @@ function OvertimeTab({ roster }: OvertimeTabProps) {
       )}
 
       <ConfirmationModal
-        opened={confirmOpen}
-        title={
-          actionType === "approve"
-            ? "Approve Overtime Request"
-            : "Reject Overtime Request"
-        }
-        message={
-          actionType === "approve"
-            ? "Are you sure you want to approve this overtime request?"
-            : "Are you sure you want to reject this overtime request?"
-        }
-        confirmText={actionType === "approve" ? "Approve" : "Reject"}
-        isDangerous={actionType === "reject"}
+        {...confirmModalProps}
         isLoading={isUpdatingStatus}
         onConfirm={handleConfirm}
-        onCancel={() => {
-          setConfirmOpen(false);
-          setActionType(null);
-          setSelected(null);
-        }}
       />
     </div>
   );

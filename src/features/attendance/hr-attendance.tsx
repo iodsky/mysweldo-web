@@ -6,10 +6,9 @@ import {
   Menu,
   Modal,
   Select,
-  Table,
   Text,
 } from "@mantine/core";
-import { DateInput, DateTimePicker } from "@mantine/dates";
+import { DateTimePicker } from "@mantine/dates";
 import {
   keepPreviousData,
   useQueryClient,
@@ -22,12 +21,17 @@ import {
   useGetEmployeeAttendances,
   useUpdateAttendance,
 } from "@/api/generated/endpoints/attendance/attendance";
-import { useGetAllEmployees } from "@/api/generated/endpoints/employees/employees";
 import { unwrapPage } from "@/api/helpers";
 import type { Attendance, AttendanceDto } from "@/types";
-import type { GetAllAttendancesParams, EmployeeBasicDto } from "@/api/generated/model";
-import PaginatedTable from "@/components/paginated-table";
+import type { GetAllAttendancesParams } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
+import {
+  formatDateTimePickerValue,
+  toIsoDateTime,
+} from "@/utils/date";
+import { useEmployeeOptions } from "@/hooks/use-employee-options";
+import { DateRangeFilter } from "@/components/date-range-filter";
+import { AttendanceTable } from "@/features/attendance/attendance-table";
 
 function Page() {
   const queryClient = useQueryClient();
@@ -53,10 +57,9 @@ function Page() {
     null,
   );
 
-  const { data: employeesData } = useGetAllEmployees(
-    { pageNo: 0, limit: 100 },
-    { query: { queryKey: ["employees", "attendance-form"] as const } },
-  );
+  const { options: employeeOptions } = useEmployeeOptions({
+    queryKey: ["employees", "attendance-form"],
+  });
 
   const { data: allData, isError, isFetching } = useGetAllAttendances(
     queryFilters,
@@ -103,25 +106,14 @@ function Page() {
     setIsModalOpen(true);
   };
 
-  const formatPickerValue = (iso: string) => {
-    const date = new Date(iso);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-      date.getDate(),
-    )} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  };
-
-  const toIsoDateTime = (pickerValue: string) =>
-    `${pickerValue.replace(" ", "T")}:00`;
-
   const handleEditAttendance = (attendance: Attendance) => {
     setModalMode("edit");
     setIsModalOpen(true);
     setSelectedAttendance(attendance);
     setEmployeeId(String(attendance.employeeId ?? ""));
-    setTimeIn(attendance.timeIn ? formatPickerValue(attendance.timeIn) : null);
+    setTimeIn(attendance.timeIn ? formatDateTimePickerValue(attendance.timeIn) : null);
     setTimeOut(
-      attendance.timeOut ? formatPickerValue(attendance.timeOut) : null,
+      attendance.timeOut ? formatDateTimePickerValue(attendance.timeOut) : null,
     );
   };
 
@@ -180,13 +172,6 @@ function Page() {
   const rows: Attendance[] = pageData.content;
   const meta = pageData.meta;
 
-  const employeeOptions = unwrapPage<EmployeeBasicDto>(employeesData).content
-    .map((employee) => ({
-      value: String(employee.id ?? ""),
-      label: `${employee.firstName ?? ""} ${employee.lastName ?? ""}`,
-    }))
-    .filter((opt) => opt.value);
-
   return (
     <>
       <div className="flex flex-col flex-1 gap-5 p-5">
@@ -226,39 +211,24 @@ function Page() {
               clearable
               w={280}
             />
-            <DateInput
-              label="Start Date"
-              placeholder="Pick start date"
-              value={filters.startDate ? new Date(filters.startDate) : null}
-              valueFormat="YYYY-MM-DD"
-              onChange={(date) =>
+            <DateRangeFilter
+              startDate={filters.startDate ?? null}
+              endDate={filters.endDate ?? null}
+              onStartDateChange={(date) =>
                 setFilters((prev) => ({
                   ...prev,
-                  startDate: date ? date.split("T")[0] : undefined,
+                  startDate: date ?? undefined,
                   pageNo: 0,
                 }))
               }
-              highlightToday
-              clearable
-            />
-            <DateInput
-              label="End Date"
-              placeholder="Pick end date"
-              value={filters.endDate ? new Date(filters.endDate) : null}
-              valueFormat="YYYY-MM-DD"
-              onChange={(date) =>
+              onEndDateChange={(date) =>
                 setFilters((prev) => ({
                   ...prev,
-                  endDate: date ? date.split("T")[0] : undefined,
+                  endDate: date ?? undefined,
                   pageNo: 0,
                 }))
               }
-              highlightToday
-              clearable
-            />
-            <Button
-              variant="light"
-              onClick={() =>
+              onClear={() =>
                 setFilters({
                   pageNo: 0,
                   limit: pageSize,
@@ -266,25 +236,16 @@ function Page() {
                   endDate: undefined,
                 })
               }
-            >
-              Clear Filters
-            </Button>
+            />
           </div>
 
           {meta && (
-            <PaginatedTable
-              heading={[
-                "Employee",
-                "Date",
-                "Time In",
-                "Time Out",
-                "Total hours",
-                "Actions",
-              ]}
+            <AttendanceTable
+              rows={rows}
+              meta={meta}
+              isFetching={isFetching}
               isError={isError}
               errorMessage="Failed to load attendance records. Please try again or contact support."
-              isFetching={isFetching}
-              meta={meta}
               pageSize={pageSize}
               onPageSizeChange={(size) => {
                 setPageSize(size);
@@ -296,49 +257,24 @@ function Page() {
                   pageNo: page - 1,
                 }))
               }
-              rows={rows.map((row: Attendance) => (
-                <Table.Tr key={String(row.id)}>
-                  <Table.Td>
-                    <Text size="sm">
-                      {`${row.employeeFirstName ?? ""} ${row.employeeLastName ?? ""}`.trim() ||
-                        "-"}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm">{row.timeIn?.slice(0, 10) ?? "-"}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm">{row.timeIn?.slice(11, 16) ?? "-"}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm">{row.timeOut?.slice(11, 16) ?? "-"}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm">
-                      {typeof row.totalHours === "number"
-                        ? row.totalHours
-                        : "-"}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Menu shadow="md" position="bottom-end">
-                      <Menu.Target>
-                        <ActionIcon variant="subtle" color="gray" size="sm">
-                          <IconDotsVertical size={16} />
-                        </ActionIcon>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item
-                          leftSection={<IconPencil size={14} />}
-                          onClick={() => handleEditAttendance(row)}
-                        >
-                          Edit
-                        </Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
+              showEmployee
+              renderActions={(row) => (
+                <Menu shadow="md" position="bottom-end">
+                  <Menu.Target>
+                    <ActionIcon variant="subtle" color="gray" size="sm">
+                      <IconDotsVertical size={16} />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      leftSection={<IconPencil size={14} />}
+                      onClick={() => handleEditAttendance(row)}
+                    >
+                      Edit
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              )}
             />
           )}
       </div>

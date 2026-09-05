@@ -17,33 +17,15 @@ import {
   useCreateLeaveCredits,
   useGetAllLeaveCredits,
 } from "@/api/generated/endpoints/leave-credits/leave-credits";
-import { useGetAllEmployees } from "@/api/generated/endpoints/employees/employees";
 import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import type {
   EmployeeLeaveCredit,
-  EmployeeBasic,
-  LeaveType,
 } from "@/types";
 import { notifications } from "@mantine/notifications";
-
-const LEAVE_TYPES: LeaveType[] = [
-  "VACATION",
-  "SICK",
-  "MATERNITY",
-  "PATERNITY",
-  "SOLO_PARENT",
-  "BEREAVEMENT",
-];
-
-const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
-  VACATION: "Vacation",
-  SICK: "Sick",
-  MATERNITY: "Maternity",
-  PATERNITY: "Paternity",
-  SOLO_PARENT: "Solo Parent",
-  BEREAVEMENT: "Bereavement",
-};
+import { LEAVE_TYPES, LEAVE_TYPE_LABELS } from "@/features/leave/leave-types";
+import { formatDate } from "@/utils/date";
+import { useEmployeeOptions } from "@/hooks/use-employee-options";
 
 function LeaveCreditsTab() {
   const queryClient = useQueryClient();
@@ -67,16 +49,11 @@ function LeaveCreditsTab() {
     },
   );
 
-  const { data: employeesData } = useGetAllEmployees(
-    { pageNo: 0, limit: 100 },
-    {
-      query: {
-        queryKey: ["employees"] as const,
-        staleTime: 1000 * 60 * 30,
-        gcTime: 1000 * 60 * 60,
-      },
-    },
-  );
+  const { options: employeeOptions } = useEmployeeOptions({
+    queryKey: ["employees"],
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+  });
 
   const pageData = unwrapPage<EmployeeLeaveCredit>(data);
   const credits: EmployeeLeaveCredit[] = pageData.content;
@@ -116,10 +93,7 @@ function LeaveCreditsTab() {
       return;
     }
 
-    const dateStr =
-      effectiveDate instanceof Date
-        ? effectiveDate.toISOString().split("T")[0]
-        : effectiveDate;
+    const dateStr = formatDate(effectiveDate);
 
     assignCredits({
       data: {
@@ -199,14 +173,7 @@ function LeaveCreditsTab() {
             label="Employee"
             placeholder="Select employee"
             searchable
-            data={
-              unwrapPage<EmployeeBasic>(employeesData).content.map(
-                (emp: EmployeeBasic) => ({
-                  value: String(emp.id ?? ""),
-                  label: `${emp.firstName ?? ""} ${emp.lastName ?? ""}`,
-                }),
-              )
-            }
+            data={employeeOptions}
             value={selectedEmployeeId}
             onChange={setSelectedEmployeeId}
             required

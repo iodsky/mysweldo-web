@@ -27,7 +27,6 @@ import {
   useUpdateOvertimeRequest,
   useUpdateOvertimeRequestStatus,
 } from "@/api/generated/endpoints/overtime-requests/overtime-requests";
-import { useGetAllEmployees } from "@/api/generated/endpoints/employees/employees";
 import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
@@ -36,17 +35,12 @@ import type {
   OvertimeRequestDto,
   RequestStatus,
 } from "@/types";
-import type { EmployeeBasicDto } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
-
-const STATUS_COLORS: Record<RequestStatus, string> = {
-  PENDING: "yellow",
-  APPROVED: "green",
-  REJECTED: "red",
-};
-
-const formatDate = (d: Date | string) =>
-  typeof d === "string" ? d : d.toISOString().split("T")[0];
+import { REQUEST_STATUS_COLORS } from "@/features/shared/request-status";
+import { formatDate } from "@/utils/date";
+import { useEmployeeOptions } from "@/hooks/use-employee-options";
+import { DateRangeFilter } from "@/components/date-range-filter";
+import { useRequestApproval } from "@/features/shared/use-request-approval";
 
 function Page() {
   const queryClient = useQueryClient();
@@ -63,29 +57,23 @@ function Page() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editDate, setEditDate] = useState<string | null>(null);
   const [editReason, setEditReason] = useState("");
+  const [editRequest, setEditRequest] = useState<OvertimeRequest | null>(null);
 
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [actionType, setActionType] = useState<
-    "approve" | "reject" | "delete" | null
-  >(null);
-  const [selectedRequest, setSelectedRequest] =
-    useState<OvertimeRequest | null>(null);
+  const {
+    openConfirm,
+    closeConfirm,
+    confirm,
+    actionType,
+    confirmModalProps,
+  } = useRequestApproval<OvertimeRequest>({ noun: "overtime request" });
 
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
     null,
   );
 
-  const { data: employeesData } = useGetAllEmployees(
-    { pageNo: 0, limit: 100 },
-    { query: { queryKey: ["employees", "attendance-form"] as const } },
-  );
-
-  const employeeOptions = unwrapPage<EmployeeBasicDto>(employeesData).content
-    .map((employee) => ({
-      value: String(employee.id ?? ""),
-      label: `${employee.firstName ?? ""} ${employee.lastName ?? ""}`,
-    }))
-    .filter((opt) => opt.value);
+  const { options: employeeOptions } = useEmployeeOptions({
+    queryKey: ["employees", "attendance-form"],
+  });
 
   const { data, isLoading, isFetching, isError } = useGetOvertimeRequests(
     {
@@ -136,7 +124,7 @@ function Page() {
         onSuccess: () => {
           invalidateList();
           setEditModalOpen(false);
-          setSelectedRequest(null);
+          setEditRequest(null);
           notifications.show({
             title: "Success",
             color: "green",
@@ -152,9 +140,7 @@ function Page() {
       mutation: {
         onSuccess: () => {
           invalidateList();
-          setConfirmModalOpen(false);
-          setActionType(null);
-          setSelectedRequest(null);
+          closeConfirm();
           notifications.show({
             title: "Success",
             color: "green",
@@ -170,9 +156,7 @@ function Page() {
       mutation: {
         onSuccess: () => {
           invalidateList();
-          setConfirmModalOpen(false);
-          setActionType(null);
-          setSelectedRequest(null);
+          closeConfirm();
           notifications.show({
             title: "Success",
             color: "green",
@@ -185,7 +169,7 @@ function Page() {
   );
 
   const handleEditClick = (request: OvertimeRequest) => {
-    setSelectedRequest(request);
+    setEditRequest(request);
     setEditDate(request.date);
     setEditReason(request.reason || "");
     setEditModalOpen(true);
@@ -193,7 +177,7 @@ function Page() {
 
   const handleEditSave = () => {
     updateRequest({
-      id: selectedRequest?.id ?? "",
+      id: editRequest?.id ?? "",
       data: {
         date: formatDate(editDate!),
         ...(editReason && { reason: editReason }),
@@ -212,26 +196,7 @@ function Page() {
   };
 
   const handleConfirmAction = () => {
-    if (actionType === "approve")
-      updateStatus({ id: selectedRequest?.id ?? "", params: { status: "APPROVED" } });
-    else if (actionType === "reject")
-      updateStatus({ id: selectedRequest?.id ?? "", params: { status: "REJECTED" } });
-    else if (actionType === "delete")
-      deleteRequest({ id: selectedRequest?.id ?? "" });
-  };
-
-  const getConfirmationTitle = () => {
-    if (actionType === "approve") return "Approve Overtime Request";
-    if (actionType === "reject") return "Reject Overtime Request";
-    return "Delete Overtime Request";
-  };
-
-  const getConfirmationMessage = () => {
-    if (actionType === "approve")
-      return "Are you sure you want to approve this overtime request?";
-    if (actionType === "reject")
-      return "Are you sure you want to reject this overtime request?";
-    return "Are you sure you want to delete this overtime request?";
+    confirm(updateStatus, deleteRequest);
   };
 
   return (
@@ -264,32 +229,23 @@ function Page() {
       </div>
 
       <div className="flex justify-between items-end">
-        <div className="flex items-end gap-2">
-          <DateInput
-            label="Start Date"
-            placeholder="Pick start date"
-            value={startDate}
-            valueFormat="YYYY-MM-DD"
-            onChange={(d) => {
-              setStartDate(d);
-              setPage(0);
-            }}
-            clearable
-            highlightToday
-          />
-          <DateInput
-            label="End date"
-            placeholder="Pick end date"
-            value={endDate}
-            valueFormat="YYYY-MM-DD"
-            onChange={(d) => {
-              setEndDate(d);
-              setPage(0);
-            }}
-            clearable
-            highlightToday
-          />
-        </div>
+        <DateRangeFilter
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={(d) => {
+            setStartDate(d);
+            setPage(0);
+          }}
+          onEndDateChange={(d) => {
+            setEndDate(d);
+            setPage(0);
+          }}
+          onClear={() => {
+            setStartDate(null);
+            setEndDate(null);
+            setPage(0);
+          }}
+        />
       </div>
 
       {isError && (
@@ -315,7 +271,7 @@ function Page() {
               <Table.Td>{request.overtimeHours}</Table.Td>
               <Table.Td>{request.reason || "-"}</Table.Td>
               <Table.Td>
-                <Badge color={STATUS_COLORS[request.status as RequestStatus]}>
+                <Badge color={REQUEST_STATUS_COLORS[request.status as RequestStatus]}>
                   {request.status}
                 </Badge>
               </Table.Td>
@@ -339,32 +295,20 @@ function Page() {
                     </Menu.Item>
                     <Menu.Item
                       leftSection={<IconCheck />}
-                      onClick={() => {
-                        setSelectedRequest(request);
-                        setActionType("approve");
-                        setConfirmModalOpen(true);
-                      }}
+                      onClick={() => openConfirm(request, "approve")}
                     >
                       Approve
                     </Menu.Item>
                     <Menu.Item
                       leftSection={<IconX />}
-                      onClick={() => {
-                        setSelectedRequest(request);
-                        setActionType("reject");
-                        setConfirmModalOpen(true);
-                      }}
+                      onClick={() => openConfirm(request, "reject")}
                     >
                       Reject
                     </Menu.Item>
                     <Menu.Item
                       leftSection={<IconTrash />}
                       color="red"
-                      onClick={() => {
-                        setSelectedRequest(request);
-                        setActionType("delete");
-                        setConfirmModalOpen(true);
-                      }}
+                      onClick={() => openConfirm(request, "delete")}
                     >
                       Delete
                     </Menu.Item>
@@ -457,7 +401,7 @@ function Page() {
         opened={editModalOpen}
         onClose={() => {
           setEditModalOpen(false);
-          setSelectedRequest(null);
+          setEditRequest(null);
         }}
         title="Edit Overtime Request"
         size="sm"
@@ -467,7 +411,7 @@ function Page() {
             <Text size="sm" fw={500} mb="xs">
               Employee ID
             </Text>
-            <Text>{selectedRequest?.employeeId}</Text>
+            <Text>{editRequest?.employeeId}</Text>
           </div>
           <DateInput
             label="Date"
@@ -488,7 +432,7 @@ function Page() {
               variant="outline"
               onClick={() => {
                 setEditModalOpen(false);
-                setSelectedRequest(null);
+                setEditRequest(null);
               }}
               disabled={isUpdating}
             >
@@ -507,24 +451,9 @@ function Page() {
 
       {/* Confirmation Modal */}
       <ConfirmationModal
-        opened={confirmModalOpen}
-        title={getConfirmationTitle()}
-        message={getConfirmationMessage()}
-        confirmText={
-          actionType === "approve"
-            ? "Approve"
-            : actionType === "reject"
-              ? "Reject"
-              : "Delete"
-        }
-        isDangerous={actionType === "delete" || actionType === "reject"}
+        {...confirmModalProps}
         isLoading={isUpdatingStatus || isDeleting}
         onConfirm={handleConfirmAction}
-        onCancel={() => {
-          setConfirmModalOpen(false);
-          setActionType(null);
-          setSelectedRequest(null);
-        }}
       />
     </div>
   );
