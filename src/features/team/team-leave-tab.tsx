@@ -11,21 +11,9 @@ import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import type { LeaveRequest, LeaveType, RequestStatus } from "@/types";
 import { notifications } from "@mantine/notifications";
-
-const STATUS_COLORS: Record<RequestStatus, string> = {
-  PENDING: "yellow",
-  APPROVED: "green",
-  REJECTED: "red",
-};
-
-const LEAVE_TYPE_MAP: Record<LeaveType, string> = {
-  VACATION: "Vacation",
-  SICK: "Sick",
-  MATERNITY: "Maternity",
-  PATERNITY: "Paternity",
-  SOLO_PARENT: "Solo Parent",
-  BEREAVEMENT: "Bereavement",
-};
+import { REQUEST_STATUS_COLORS } from "@/features/shared/request-status";
+import { LEAVE_TYPE_LABELS } from "@/features/leave/leave-types";
+import { useRequestApproval } from "@/features/shared/use-request-approval";
 
 interface LeaveTabProps {
   roster: Map<number, string>;
@@ -35,9 +23,13 @@ function LeaveTab({ roster }: LeaveTabProps) {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
-  const [selected, setSelected] = useState<LeaveRequest | null>(null);
+  const {
+    openConfirm,
+    closeConfirm,
+    confirm,
+    actionType,
+    confirmModalProps,
+  } = useRequestApproval<LeaveRequest>({ noun: "leave request" });
 
   const { data, isLoading, isFetching, isError } = useGetSubordinatesLeaveRequests(
     { pageNo: page, limit: pageSize },
@@ -57,9 +49,7 @@ function LeaveTab({ roster }: LeaveTabProps) {
       mutation: {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
-          setConfirmOpen(false);
-          setActionType(null);
-          setSelected(null);
+          closeConfirm();
           notifications.show({
             title: "Success",
             color: "green",
@@ -70,18 +60,8 @@ function LeaveTab({ roster }: LeaveTabProps) {
       },
     });
 
-  const openConfirm = (req: LeaveRequest, action: "approve" | "reject") => {
-    setSelected(req);
-    setActionType(action);
-    setConfirmOpen(true);
-  };
-
   const handleConfirm = () => {
-    if (!selected) return;
-    updateStatus({
-      id: selected.id,
-      params: { status: actionType === "approve" ? "APPROVED" : "REJECTED" },
-    });
+    confirm(updateStatus);
   };
 
   return (
@@ -113,7 +93,7 @@ function LeaveTab({ roster }: LeaveTabProps) {
                 </Table.Td>
                 <Table.Td>
                   <Text size="sm">
-                    {LEAVE_TYPE_MAP[req.leaveType as LeaveType] ?? req.leaveType}
+                    {LEAVE_TYPE_LABELS[req.leaveType as LeaveType] ?? req.leaveType}
                   </Text>
                 </Table.Td>
                 <Table.Td>
@@ -134,7 +114,7 @@ function LeaveTab({ roster }: LeaveTabProps) {
                   <Text size="sm">{req.note || "-"}</Text>
                 </Table.Td>
                 <Table.Td>
-                  <Badge color={STATUS_COLORS[req.status as RequestStatus]}>
+                  <Badge color={REQUEST_STATUS_COLORS[req.status as RequestStatus]}>
                     {req.status}
                   </Badge>
                 </Table.Td>
@@ -183,26 +163,9 @@ function LeaveTab({ roster }: LeaveTabProps) {
       )}
 
       <ConfirmationModal
-        opened={confirmOpen}
-        title={
-          actionType === "approve"
-            ? "Approve Leave Request"
-            : "Reject Leave Request"
-        }
-        message={
-          actionType === "approve"
-            ? "Are you sure you want to approve this leave request?"
-            : "Are you sure you want to reject this leave request?"
-        }
-        confirmText={actionType === "approve" ? "Approve" : "Reject"}
-        isDangerous={actionType === "reject"}
+        {...confirmModalProps}
         isLoading={isUpdatingStatus}
         onConfirm={handleConfirm}
-        onCancel={() => {
-          setConfirmOpen(false);
-          setActionType(null);
-          setSelected(null);
-        }}
       />
     </div>
   );

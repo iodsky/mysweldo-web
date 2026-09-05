@@ -29,6 +29,9 @@ import type { GetMyOvertimeRequestsParams } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import { IconPencil, IconTrash } from "@tabler/icons-react";
+import { REQUEST_STATUS_COLORS } from "@/features/shared/request-status";
+import { formatDate } from "@/utils/date";
+import type { RequestStatus } from "@/types";
 
 function Page() {
   const queryClient = useQueryClient();
@@ -125,11 +128,6 @@ function Page() {
     const submitReason = editingId ? editReason : reason;
 
     if (submitDate) {
-      const formatDate = (dateValue: Date | string) => {
-        if (typeof dateValue === "string") return dateValue;
-        return dateValue.toISOString().split("T")[0];
-      };
-
       const request = {
         date: formatDate(submitDate),
         ...(submitReason && { reason: submitReason }),
@@ -164,18 +162,8 @@ function Page() {
     setEditReason("");
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "APPROVED":
-        return "green";
-      case "REJECTED":
-        return "red";
-      case "PENDING":
-        return "yellow";
-      default:
-        return "gray";
-    }
-  };
+  const getStatusColor = (status: string) =>
+    REQUEST_STATUS_COLORS[status as RequestStatus] ?? "gray";
 
   return (
     <>
