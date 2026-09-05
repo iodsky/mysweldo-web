@@ -14,7 +14,6 @@ import type { AccessType, Role } from "@/types";
 import { useState } from "react";
 import { useAuth } from "../../hooks/use-auth";
 import { useNavigate } from "react-router-dom";
-import { handleApiError } from "../../utils/error-handler";
 import { getRedirectPath } from "@/utils/redirect";
 
 function Page() {
@@ -56,7 +55,6 @@ function Page() {
         );
         navigate(redirectPath);
       },
-      onError: handleApiError,
     },
   });
 

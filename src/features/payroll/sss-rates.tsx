@@ -24,7 +24,6 @@ import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import type { SalaryBracket, SalaryBracketRequest, SssRate } from "@/types";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 type NumberOrEmpty = number | "";
 
@@ -105,7 +104,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
@@ -122,7 +120,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 

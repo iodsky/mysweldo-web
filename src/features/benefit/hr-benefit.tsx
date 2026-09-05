@@ -30,7 +30,6 @@ import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import type { Benefit } from "@/types";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const queryClient = useQueryClient();
@@ -84,7 +83,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
@@ -101,7 +99,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
@@ -118,7 +115,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 

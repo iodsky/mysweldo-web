@@ -15,7 +15,6 @@ import type { Attendance } from "@/types";
 import type { GetMyAttendancesParams } from "@/api/generated/model";
 import { useState } from "react";
 import PaginatedTable from "@/components/paginated-table";
-import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const queryClient = useQueryClient();
@@ -48,7 +47,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
@@ -63,7 +61,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 

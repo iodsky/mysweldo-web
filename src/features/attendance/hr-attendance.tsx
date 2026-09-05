@@ -28,7 +28,6 @@ import type { Attendance, AttendanceDto } from "@/types";
 import type { GetAllAttendancesParams, EmployeeBasicDto } from "@/api/generated/model";
 import PaginatedTable from "@/components/paginated-table";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const queryClient = useQueryClient();
@@ -139,7 +138,6 @@ function Page() {
         setIsModalOpen(false);
         resetForm();
       },
-      onError: handleApiError,
     },
   });
 
@@ -156,7 +154,6 @@ function Page() {
         setIsModalOpen(false);
         resetForm();
       },
-      onError: handleApiError,
     },
   });
 

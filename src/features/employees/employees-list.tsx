@@ -29,7 +29,6 @@ import { EmployeeForm } from "@/features/employees/employee-form-modal";
 import type { EmploymentStatus, EmployeeBasic, Employee } from "@/types";
 import type { DepartmentDto } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const navigate = useNavigate();
@@ -106,7 +105,6 @@ function Page() {
           message: "Employee status updated successfully",
         });
       },
-      onError: handleApiError,
     },
   });
 

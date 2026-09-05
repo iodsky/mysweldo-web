@@ -11,7 +11,6 @@ import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import type { OvertimeRequest, RequestStatus } from "@/types";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 const STATUS_COLORS: Record<RequestStatus, string> = {
   PENDING: "yellow",
@@ -60,7 +59,6 @@ function OvertimeTab({ roster }: OvertimeTabProps) {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     });
 

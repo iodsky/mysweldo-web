@@ -26,7 +26,6 @@ import type {
   LeaveType,
 } from "@/types";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 const LEAVE_TYPES: LeaveType[] = [
   "VACATION",
@@ -97,7 +96,6 @@ function LeaveCreditsTab() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     },
   );

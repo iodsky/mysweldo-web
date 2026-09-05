@@ -29,7 +29,6 @@ import type { GetMyOvertimeRequestsParams } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 import { IconPencil, IconTrash } from "@tabler/icons-react";
-import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const queryClient = useQueryClient();
@@ -76,7 +75,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
@@ -97,7 +95,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
@@ -115,7 +112,6 @@ function Page() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     },
   );

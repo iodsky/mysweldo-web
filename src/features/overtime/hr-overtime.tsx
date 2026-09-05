@@ -38,7 +38,6 @@ import type {
 } from "@/types";
 import type { EmployeeBasicDto } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 const STATUS_COLORS: Record<RequestStatus, string> = {
   PENDING: "yellow",
@@ -127,7 +126,6 @@ function Page() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     },
   );
@@ -146,7 +144,6 @@ function Page() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     });
 
@@ -165,7 +162,6 @@ function Page() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     });
 
@@ -184,7 +180,6 @@ function Page() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     },
   );

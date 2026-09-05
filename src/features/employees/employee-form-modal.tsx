@@ -22,8 +22,8 @@ import type {
   PayType,
   PayrollFrequency,
   EmployeeDto,
-  ApiError,
 } from "../../types";
+import { getFieldErrors } from "@/utils/error-handler";
 import type { DepartmentDto, PositionDto } from "@/api/generated/model";
 
 interface EmployeeFormProps {
@@ -269,14 +269,9 @@ export function EmployeeForm({
         onClose();
       },
       onError: (error: unknown) => {
-        const apiError = error as ApiError;
-
-        // field errors
-        if (apiError.validationErrors?.length) {
-          apiError.validationErrors.forEach((err) => {
-            form.setFieldError(err.field, err.message);
-          });
-        }
+        getFieldErrors(error).forEach((err) => {
+          form.setFieldError(err.field, err.message);
+        });
       },
     },
   });
@@ -291,14 +286,9 @@ export function EmployeeForm({
         onClose();
       },
       onError: (error: unknown) => {
-        const apiError = error as ApiError;
-
-        // field errors
-        if (apiError.validationErrors?.length) {
-          apiError.validationErrors.forEach((err) => {
-            form.setFieldError(err.field, err.message);
-          });
-        }
+        getFieldErrors(error).forEach((err) => {
+          form.setFieldError(err.field, err.message);
+        });
       },
     },
   });

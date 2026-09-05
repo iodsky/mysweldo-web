@@ -17,7 +17,6 @@ import {
   type importUsersResponse,
 } from "@/api/generated/endpoints/csv-imports/csv-imports";
 import { unwrapData } from "@/api/helpers";
-import { handleApiError } from "@/utils/error-handler";
 import { notifications } from "@mantine/notifications";
 import { downloadCsv } from "@/utils/csv";
 import { EMPLOYEE_COLUMNS, USER_COLUMNS } from "./columns";
@@ -58,14 +57,12 @@ function ImportModal({ opened, onClose, allowedTypes }: ImportModalProps) {
   const employeesMutation = useImportEmployees({
     mutation: {
       onSuccess: handleImported,
-      onError: handleApiError,
     },
   });
 
   const usersMutation = useImportUsers({
     mutation: {
       onSuccess: handleImported,
-      onError: handleApiError,
     },
   });
 

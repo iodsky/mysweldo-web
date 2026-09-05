@@ -36,7 +36,6 @@ import type {
 } from "@/types";
 import type { GetLeaveRequestsParams } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 import { IconTrash, IconPencil } from "@tabler/icons-react";
 
 const STATUS_COLORS: Record<RequestStatus, string> = {
@@ -131,7 +130,6 @@ function LeaveRequestsTab() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     });
 
@@ -149,7 +147,6 @@ function LeaveRequestsTab() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     },
   );
@@ -168,7 +165,6 @@ function LeaveRequestsTab() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     },
   );
@@ -188,7 +184,6 @@ function LeaveRequestsTab() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     },
   );

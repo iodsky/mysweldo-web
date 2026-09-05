@@ -30,7 +30,6 @@ import { ConfirmationModal } from "@/components/confirmation-modal";
 import type { Position } from "@/types";
 import type { DepartmentDto } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const queryClient = useQueryClient();
@@ -98,7 +97,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
@@ -115,7 +113,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
@@ -132,7 +129,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 

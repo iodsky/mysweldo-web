@@ -26,7 +26,6 @@ import PaginatedTable from "@/components/paginated-table";
 import type { GetAllPayrollRunsStatus, GetAllPayrollRunsType } from "@/api/generated/model";
 import type { PayrollRun, PayrollRunRequest } from "@/types";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 const TYPE_OPTIONS = ["REGULAR", "OFF_CYCLE", "ADJUSTMENT"].map((value) => ({
   value,
@@ -106,7 +105,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 

@@ -35,7 +35,6 @@ import { ConfirmationModal } from "@/components/confirmation-modal";
 import type { LineItemRequest, PayrollItemDto } from "@/api/generated/model";
 import type { PayrollRun } from "@/types";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 interface LineItemRow {
   code: string;
@@ -190,7 +189,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
@@ -206,7 +204,6 @@ function Page() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     });
 
@@ -223,7 +220,6 @@ function Page() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     });
 
@@ -240,7 +236,6 @@ function Page() {
             withBorder: true,
           });
         },
-        onError: handleApiError,
       },
     });
 
@@ -257,7 +252,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 

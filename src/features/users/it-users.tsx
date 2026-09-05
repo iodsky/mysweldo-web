@@ -27,7 +27,6 @@ import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import type { User, UserRole } from "@/types";
 import { notifications } from "@mantine/notifications";
-import { handleApiError } from "@/utils/error-handler";
 
 function Page() {
   const queryClient = useQueryClient();
@@ -90,7 +89,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
@@ -107,7 +105,6 @@ function Page() {
           withBorder: true,
         });
       },
-      onError: handleApiError,
     },
   });
 
