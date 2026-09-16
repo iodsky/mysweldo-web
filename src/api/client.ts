@@ -5,9 +5,6 @@ const baseURL = import.meta.env.VITE_API_BASE_URL;
 const client = axios.create({
   baseURL: baseURL,
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 // Single-flight refresh: concurrent 401s share one in-flight /auth/refresh call
