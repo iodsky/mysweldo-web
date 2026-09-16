@@ -43,6 +43,14 @@ export function formatEnum(value?: string | null): string {
     .join(" ");
 }
 
+export function formatBenefitName(value?: string | null): string {
+  if (!value) return "—";
+  if (value === value.toUpperCase() && value.includes("_")) {
+    return formatEnum(value);
+  }
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 export function fullName(employee: Employee): string {
   return `${employee.firstName} ${employee.lastName}`.trim();
 }

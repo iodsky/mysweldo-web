@@ -10,6 +10,7 @@ import PersonalInfoCard from "@/features/employees/components/personal-info-card
 import GovernmentIdsCard from "@/features/employees/components/government-ids-card";
 import EmploymentCard from "@/features/employees/components/employment-card";
 import CompensationCard from "@/features/employees/components/compensation-card";
+import BenefitsCard from "@/features/employees/components/benefits-card";
 import type { Employee } from "@/types";
 
 function Page() {
@@ -102,6 +103,7 @@ function Page() {
           <EmploymentCard employee={employee} />
           <CompensationCard employee={employee} />
         </div>
+        <BenefitsCard employee={employee} />
       </div>
 
       <EmployeeForm

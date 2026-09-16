@@ -5,12 +5,23 @@ import type { TablerIcon } from "@tabler/icons-react";
 interface ProfileCardProps {
   title: string;
   icon?: TablerIcon;
+  fullHeight?: boolean;
   children: ReactNode;
 }
 
-function ProfileCard({ title, icon: Icon, children }: ProfileCardProps) {
+function ProfileCard({
+  title,
+  icon: Icon,
+  fullHeight = true,
+  children,
+}: ProfileCardProps) {
   return (
-    <Card withBorder shadow="sm" radius="md" className="h-full">
+    <Card
+      withBorder
+      shadow="sm"
+      radius="md"
+      className={fullHeight ? "h-full" : undefined}
+    >
       <Group gap="xs" mb="md">
         {Icon && <Icon size={18} stroke={1.5} className="text-gray-500" />}
         <Text size="sm" fw={700}>

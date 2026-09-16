@@ -1,4 +1,4 @@
-import { Divider, Grid, Group, Stack, Text } from "@mantine/core";
+import { Grid } from "@mantine/core";
 import { IconWallet } from "@tabler/icons-react";
 import type { Employee } from "@/types";
 import ProfileCard from "./profile-card";
@@ -10,8 +10,6 @@ interface CompensationCardProps {
 }
 
 function CompensationCard({ employee }: CompensationCardProps) {
-  const benefits = employee.benefits ?? [];
-
   return (
     <ProfileCard title="Compensation" icon={IconWallet}>
       <Grid>
@@ -34,31 +32,6 @@ function CompensationCard({ employee }: CompensationCardProps) {
           />
         </Grid.Col>
       </Grid>
-
-      <Divider my="md" />
-
-      <Text size="xs" fw={700} tt="uppercase" c="dimmed">
-        Benefits
-      </Text>
-
-      {benefits.length > 0 ? (
-        <Stack gap="xs" mt="sm">
-          {benefits.map((benefit, index) => (
-            <Group key={index} justify="space-between">
-              <Text size="sm" tt="capitalize">
-                {benefit.benefit}
-              </Text>
-              <Text size="sm" fw={500}>
-                {formatCurrency(benefit.amount)}
-              </Text>
-            </Group>
-          ))}
-        </Stack>
-      ) : (
-        <Text size="sm" c="dimmed" mt="sm">
-          No benefits assigned
-        </Text>
-      )}
     </ProfileCard>
   );
 }
