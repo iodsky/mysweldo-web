@@ -9,9 +9,10 @@ import {
   Textarea,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCreateEmployee, useUpdateEmployee } from "@/api/generated/endpoints/employees/employees";
+import { getGetAllEmployeesQueryKey, getGetEmployeeByIdQueryKey, useCreateEmployee, useUpdateEmployee } from "@/api/generated/endpoints/employees/employees";
 import { useGetDepartmentOptions } from "@/api/generated/endpoints/departments/departments";
 import { useGetPositionOptions } from "@/api/generated/endpoints/positions/positions";
 import { useEmployeeOptions } from "@/hooks/use-employee-options";
@@ -290,7 +291,7 @@ export function EmployeeForm({
   const createMutation = useCreateEmployee({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["employees"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllEmployeesQueryKey() });
         form.reset();
         onClose();
       },
@@ -305,11 +306,16 @@ export function EmployeeForm({
   const updateMutation = useUpdateEmployee({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["employees"] });
-        if (employee) {
-          queryClient.invalidateQueries({ queryKey: ["employee", employee.id] });
+        queryClient.invalidateQueries({ queryKey: getGetAllEmployeesQueryKey() });
+        if (employee?.id != null) {
+          queryClient.invalidateQueries({ queryKey: getGetEmployeeByIdQueryKey(employee.id) });
         }
         onClose();
+        notifications.show({
+          color: "green",
+          title: "Success",
+          message: "Employee updated successfully",
+        });
       },
       onError: (error: unknown) => {
         getFieldErrors(error).forEach((err) => {

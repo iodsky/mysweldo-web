@@ -25,7 +25,6 @@ function AttendanceTab() {
     params,
     {
       query: {
-        queryKey: ["subordinates", "attendances", page, pageSize, startDate, endDate] as const,
         staleTime: 1000 * 60 * 5,
         placeholderData: keepPreviousData,
       },

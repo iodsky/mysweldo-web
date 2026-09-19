@@ -18,6 +18,7 @@ import {
 import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconPencil } from "@tabler/icons-react";
 import {
+  getGetUsersQueryKey,
   useCreateUser,
   useGetUsers,
   useUpdateUserRole,
@@ -57,7 +58,12 @@ function Page() {
   const { data: rolesData } = useGetAllRoles(
     { pageNo: 0, limit: 100 },
     {
-      query: { queryKey: ["roles", "user-form"] as const },
+      query: {
+        staleTime: 1000 * 60 * 60,
+        gcTime: 1000 * 60 * 60 * 24,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+      },
     },
   );
 
@@ -79,7 +85,7 @@ function Page() {
   const { mutate: createUser, isPending: isCreating } = useCreateUser({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/users"] });
+        queryClient.invalidateQueries({ queryKey: getGetUsersQueryKey() });
         setCreateModalOpen(false);
         resetCreateForm();
         notifications.show({
@@ -95,7 +101,7 @@ function Page() {
   const { mutate: updateRole, isPending: isUpdating } = useUpdateUserRole({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/users"] });
+        queryClient.invalidateQueries({ queryKey: getGetUsersQueryKey() });
         setEditModalOpen(false);
         setSelectedUser(null);
         notifications.show({

@@ -11,7 +11,6 @@ function Page() {
     { pageNo: 0, limit: 100 },
     {
       query: {
-        queryKey: ["subordinates", "roster"] as const,
         staleTime: 1000 * 60 * 30,
         gcTime: 1000 * 60 * 60,
       },

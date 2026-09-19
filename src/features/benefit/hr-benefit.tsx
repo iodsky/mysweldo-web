@@ -20,6 +20,7 @@ import {
 } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconTrash, IconPencil } from "@tabler/icons-react";
 import {
+  getGetAllBenefitsQueryKey,
   useCreateBenefit,
   useDeleteBenefit,
   useGetAllBenefits,
@@ -73,7 +74,7 @@ function Page() {
   const { mutate: createBft, isPending: isCreating } = useCreateBenefit({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/benefits"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllBenefitsQueryKey() });
         setCreateModalOpen(false);
         resetCreateForm();
         notifications.show({
@@ -89,7 +90,7 @@ function Page() {
   const { mutate: updateBft, isPending: isUpdating } = useUpdateBenefit({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/benefits"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllBenefitsQueryKey() });
         setEditModalOpen(false);
         setSelectedBenefit(null);
         notifications.show({
@@ -105,7 +106,7 @@ function Page() {
   const { mutate: deleteBft, isPending: isDeleting } = useDeleteBenefit({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/benefits"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllBenefitsQueryKey() });
         setDeleteModalOpen(false);
         setSelectedBenefit(null);
         notifications.show({

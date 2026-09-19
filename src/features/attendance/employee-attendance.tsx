@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
+  getGetMyAttendancesQueryKey,
   useClockIn,
   useClockOut,
   useGetMyAttendances,
@@ -39,7 +40,7 @@ function Page() {
   const { mutate: clockInFn, isPending: isClockInPending } = useClockIn({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/attendances/me"] });
+        queryClient.invalidateQueries({ queryKey: getGetMyAttendancesQueryKey() });
         notifications.show({
           title: "Success",
           message: "You have successfully clocked in for the day",
@@ -53,7 +54,7 @@ function Page() {
   const { mutate: clockOutFn, isPending: isClockOutPending } = useClockOut({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/attendances/me"] });
+        queryClient.invalidateQueries({ queryKey: getGetMyAttendancesQueryKey() });
         notifications.show({
           title: "Success",
           message: "You have successfully clocked out for the day",

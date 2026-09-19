@@ -16,6 +16,7 @@ import {
 import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconTrash, IconPencil } from "@tabler/icons-react";
 import {
+  getGetAllDeductionsQueryKey,
   useCreateDeduction,
   useDeleteDeduction,
   useGetAllDeductions,
@@ -69,7 +70,7 @@ function Page() {
     useCreateDeduction({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/deductions"] });
+          queryClient.invalidateQueries({ queryKey: getGetAllDeductionsQueryKey() });
           setCreateModalOpen(false);
           resetCreateForm();
           notifications.show({
@@ -86,7 +87,7 @@ function Page() {
     useUpdateDeduction({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/deductions"] });
+          queryClient.invalidateQueries({ queryKey: getGetAllDeductionsQueryKey() });
           setEditModalOpen(false);
           setSelectedDeduction(null);
           notifications.show({
@@ -103,7 +104,7 @@ function Page() {
     useDeleteDeduction({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/deductions"] });
+          queryClient.invalidateQueries({ queryKey: getGetAllDeductionsQueryKey() });
           setDeleteModalOpen(false);
           setSelectedDeduction(null);
           notifications.show({

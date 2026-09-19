@@ -18,12 +18,19 @@ import {
 } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconCheck, IconX } from "@tabler/icons-react";
 import {
+  getGetLeaveRequestsQueryKey,
+  getGetMyLeaveRequestsQueryKey,
+  getGetSubordinatesLeaveRequestsQueryKey,
   useCreateLeaveRequest,
   useDeleteLeaveRequest,
   useGetLeaveRequests,
   useUpdateLeaveRequest,
   useUpdateLeaveRequestStatus,
 } from "@/api/generated/endpoints/leave-requests/leave-requests";
+import {
+  getGetAllLeaveCreditsQueryKey,
+  getGetMyLeaveCreditsQueryKey,
+} from "@/api/generated/endpoints/leave-credits/leave-credits";
 import { unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
@@ -79,14 +86,12 @@ function LeaveRequestsTab() {
   };
 
   const { options: employeeOptions } = useEmployeeOptions({
-    queryKey: ["employees"],
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60,
   });
 
   const { data, isLoading, isFetching, isError } = useGetLeaveRequests(filters, {
     query: {
-      queryKey: ["leaveRequests", page, pageSize, statusFilter] as const,
       staleTime: 1000 * 60 * 5,
       placeholderData: keepPreviousData,
     },
@@ -96,14 +101,27 @@ function LeaveRequestsTab() {
   const requests = pageData.content;
   const meta = pageData.meta;
 
+  const invalidateLeaveRequests = () => {
+    queryClient.invalidateQueries({ queryKey: getGetLeaveRequestsQueryKey() });
+    queryClient.invalidateQueries({
+      queryKey: getGetMyLeaveRequestsQueryKey(),
+    });
+    queryClient.invalidateQueries({
+      queryKey: getGetSubordinatesLeaveRequestsQueryKey(),
+    });
+  };
+
+  const invalidateLeaveCredits = () => {
+    queryClient.invalidateQueries({ queryKey: getGetMyLeaveCreditsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetAllLeaveCreditsQueryKey() });
+  };
+
   const { mutate: updateStatus, isPending: isUpdatingStatus } =
     useUpdateLeaveRequestStatus({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["/leave-requests"],
-          });
-          queryClient.invalidateQueries({ queryKey: ["/leave-credits"] });
+          invalidateLeaveRequests();
+          invalidateLeaveCredits();
           closeConfirm();
           notifications.show({
             title: "Success",
@@ -119,7 +137,7 @@ function LeaveRequestsTab() {
     {
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          invalidateLeaveRequests();
           setCreateModalOpen(false);
           resetCreateForm();
           notifications.show({
@@ -137,7 +155,7 @@ function LeaveRequestsTab() {
     {
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          invalidateLeaveRequests();
           setEditModalOpen(false);
           setEditRequest(null);
           notifications.show({
@@ -155,7 +173,7 @@ function LeaveRequestsTab() {
     {
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          invalidateLeaveRequests();
           closeConfirm();
           notifications.show({
             title: "Success",

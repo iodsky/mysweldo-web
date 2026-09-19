@@ -15,6 +15,9 @@ import { DatePickerInput } from "@mantine/dates";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
+  getGetMyOvertimeRequestsQueryKey,
+  getGetOvertimeRequestsQueryKey,
+  getGetSubordinatesOvertimeRequestsQueryKey,
   useCreateOvertimeRequest,
   useGetMyOvertimeRequests,
   useUpdateOvertimeRequest,
@@ -59,10 +62,20 @@ function Page() {
     },
   });
 
+  const invalidateOvertimeRequests = () => {
+    queryClient.invalidateQueries({
+      queryKey: getGetMyOvertimeRequestsQueryKey(),
+    });
+    queryClient.invalidateQueries({ queryKey: getGetOvertimeRequestsQueryKey() });
+    queryClient.invalidateQueries({
+      queryKey: getGetSubordinatesOvertimeRequestsQueryKey(),
+    });
+  };
+
   const { mutate: submitRequest, isPending } = useCreateOvertimeRequest({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/overtime-requests"] });
+        invalidateOvertimeRequests();
         setIsModalOpen(false);
         setEditingId(null);
         setDate(null);
@@ -84,7 +97,7 @@ function Page() {
   const { mutate: updateRequest } = useUpdateOvertimeRequest({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/overtime-requests"] });
+        invalidateOvertimeRequests();
         setIsModalOpen(false);
         setEditingId(null);
         setDate(null);
@@ -105,7 +118,7 @@ function Page() {
     {
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/overtime-requests"] });
+          invalidateOvertimeRequests();
           setDeleteConfirmOpen(false);
           setDeletingId(null);
           notifications.show({

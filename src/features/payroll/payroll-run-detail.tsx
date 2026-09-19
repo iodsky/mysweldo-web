@@ -19,6 +19,7 @@ import {
 import { IconDotsVertical, IconTrash, IconDownload, IconFileExport } from "@tabler/icons-react";
 import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 import {
+  getGetAllPayrollRunsQueryKey,
   getGetPayrollItemsQueryKey,
   getGetPayrollRunByIdQueryKey,
   useDeletePayrollItem,
@@ -30,6 +31,7 @@ import {
   useUpdatePayrollRunStatus,
 } from "@/api/generated/endpoints/payroll-runs/payroll-runs";
 import {
+  getGetAllReportsQueryKey,
   useDeleteReport,
   useGeneratePayrollBankFile,
   useGetAllReports,
@@ -171,7 +173,7 @@ function Page() {
 
   const invalidateRun = () => {
     queryClient.invalidateQueries({ queryKey: getGetPayrollRunByIdQueryKey(id ?? "") });
-    queryClient.invalidateQueries({ queryKey: ["/payroll-runs"] });
+    queryClient.invalidateQueries({ queryKey: getGetAllPayrollRunsQueryKey() });
   };
 
   const invalidateItems = () => {
@@ -267,7 +269,7 @@ const { mutate: deleteItem, isPending: isDeleting } = useDeletePayrollItem({
   const [deleteReportTarget, setDeleteReportTarget] = useState<ReportDto | null>(null);
 
   const invalidateReports = () => {
-    queryClient.invalidateQueries({ queryKey: ["/reports"] });
+    queryClient.invalidateQueries({ queryKey: getGetAllReportsQueryKey() });
   };
 
   const { data: reportsData, isLoading: reportsLoading } = useGetAllReports(

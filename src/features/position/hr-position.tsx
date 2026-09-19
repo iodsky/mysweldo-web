@@ -18,6 +18,7 @@ import {
 } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconTrash, IconPencil } from "@tabler/icons-react";
 import {
+  getGetAllPositionsQueryKey,
   useCreatePosition,
   useDeletePosition,
   useGetAllPositions,
@@ -64,7 +65,12 @@ function Page() {
   );
 
   const { data: departmentsData } = useGetDepartmentOptions({
-    query: { queryKey: ["departments", "position-form"] as const },
+    query: {
+      staleTime: 1000 * 60 * 60,
+      gcTime: 1000 * 60 * 60 * 24,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
   });
 
   const departmentOptions = (unwrapData<DepartmentDto[]>(departmentsData) ?? [])
@@ -87,7 +93,7 @@ function Page() {
   const { mutate: createPos, isPending: isCreating } = useCreatePosition({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/positions"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllPositionsQueryKey() });
         setCreateModalOpen(false);
         resetCreateForm();
         notifications.show({
@@ -103,7 +109,7 @@ function Page() {
   const { mutate: updatePos, isPending: isUpdating } = useUpdatePosition({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/positions"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllPositionsQueryKey() });
         setEditModalOpen(false);
         setSelectedPosition(null);
         notifications.show({
@@ -119,7 +125,7 @@ function Page() {
   const { mutate: deletePos, isPending: isDeleting } = useDeletePosition({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/positions"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllPositionsQueryKey() });
         setDeleteModalOpen(false);
         setSelectedPosition(null);
         notifications.show({

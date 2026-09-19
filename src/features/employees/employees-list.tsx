@@ -18,6 +18,8 @@ import {
 } from "@tanstack/react-query";
 import { IconEye, IconPlus, IconDotsVertical, IconUserEdit } from "@tabler/icons-react";
 import {
+  getGetAllEmployeesQueryKey,
+  getGetEmployeeByIdQueryKey,
   useGetAllEmployees,
   useUpdateEmployeeStatus,
   useGetEmployeeById,
@@ -53,7 +55,6 @@ function Page() {
   const { data: departmentsData, isLoading: departmentsLoading } =
     useGetDepartmentOptions({
       query: {
-        queryKey: ["departments"] as const,
         staleTime: 1000 * 60 * 60, // 1 hour
         gcTime: 1000 * 60 * 60 * 24, // 24 hours
         refetchOnWindowFocus: false,
@@ -72,7 +73,6 @@ function Page() {
     },
     {
       query: {
-        queryKey: ["employees", page, pageSize, departmentFilter, statusFilter] as const,
         staleTime: 1000 * 60 * 5, // 5 minutes
         placeholderData: keepPreviousData,
       },
@@ -84,7 +84,6 @@ function Page() {
     editingEmployee?.id ?? 0,
     {
       query: {
-        queryKey: ["employee", editingEmployee?.id] as const,
         enabled: !!editingEmployee?.id,
       },
     },
@@ -93,8 +92,13 @@ function Page() {
   // Delete employee mutation
   const statusMutation = useUpdateEmployeeStatus({
     mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/employees"] });
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({
+          queryKey: getGetAllEmployeesQueryKey(),
+        });
+        queryClient.invalidateQueries({
+          queryKey: getGetEmployeeByIdQueryKey(variables.id),
+        });
         setDeleteOpened(false);
         setSelectedEmployee(null);
         setSelectedStatus(null);
