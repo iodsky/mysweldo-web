@@ -8,6 +8,4 @@ export type SalaryRequestPayFrequency = typeof SalaryRequestPayFrequency[keyof t
 export const SalaryRequestPayFrequency = {
   SEMI_MONTHLY: 'SEMI_MONTHLY',
   MONTHLY: 'MONTHLY',
-  WEEKLY: 'WEEKLY',
-  BI_WEEKLY: 'BI_WEEKLY',
 } as const;

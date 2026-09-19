@@ -8,6 +8,4 @@ export type PayrollRunDtoPayrollFrequency = typeof PayrollRunDtoPayrollFrequency
 export const PayrollRunDtoPayrollFrequency = {
   SEMI_MONTHLY: 'SEMI_MONTHLY',
   MONTHLY: 'MONTHLY',
-  WEEKLY: 'WEEKLY',
-  BI_WEEKLY: 'BI_WEEKLY',
 } as const;

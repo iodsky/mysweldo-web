@@ -8,6 +8,7 @@ import { EmployeeForm } from "@/features/employees/employee-form-modal";
 import ProfileHeaderCard from "@/features/employees/components/profile-header-card";
 import PersonalInfoCard from "@/features/employees/components/personal-info-card";
 import GovernmentIdsCard from "@/features/employees/components/government-ids-card";
+import BankDetailsCard from "@/features/employees/components/bank-details-card";
 import EmploymentCard from "@/features/employees/components/employment-card";
 import CompensationCard from "@/features/employees/components/compensation-card";
 import BenefitsCard from "@/features/employees/components/benefits-card";
@@ -88,7 +89,7 @@ function Page() {
         )}
       </Breadcrumbs>
 
-      <div className="flex flex-col flex-1 gap-5 overflow-y-auto">
+      <div className="flex-1 space-y-5 overflow-y-auto">
         <ProfileHeaderCard
           employee={employee}
           action={
@@ -97,13 +98,14 @@ function Page() {
             </Button>
           }
         />
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:flex-1 md:min-h-0 md:auto-rows-fr">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <PersonalInfoCard employee={employee} />
           <GovernmentIdsCard employee={employee} />
+          <BankDetailsCard employee={employee} />
           <EmploymentCard employee={employee} />
           <CompensationCard employee={employee} />
+          <BenefitsCard employee={employee} />
         </div>
-        <BenefitsCard employee={employee} />
       </div>
 
       <EmployeeForm

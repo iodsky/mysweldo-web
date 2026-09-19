@@ -16,8 +16,8 @@ import {
   TextInput,
   Table,
 } from "@mantine/core";
-import { IconDotsVertical, IconTrash } from "@tabler/icons-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { IconDotsVertical, IconTrash, IconDownload, IconFileExport } from "@tabler/icons-react";
+import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 import {
   getGetPayrollItemsQueryKey,
   getGetPayrollRunByIdQueryKey,
@@ -29,12 +29,20 @@ import {
   useUpdatePayrollDeductions,
   useUpdatePayrollRunStatus,
 } from "@/api/generated/endpoints/payroll-runs/payroll-runs";
+import {
+  useDeleteReport,
+  useGeneratePayrollBankFile,
+  useGetAllReports,
+} from "@/api/generated/endpoints/reports/reports";
+import { downloadReportFile } from "@/api/download";
 import { unwrapData, unwrapPage } from "@/api/helpers";
 import PaginatedTable from "@/components/paginated-table";
+import ReportHistoryTable from "@/components/report-history-table";
 import { ConfirmationModal } from "@/components/confirmation-modal";
-import type { LineItemRequest, PayrollItemDto } from "@/api/generated/model";
+import type { LineItemRequest, PayrollItemDto, ReportDto } from "@/api/generated/model";
 import type { PayrollRun } from "@/types";
 import { notifications } from "@mantine/notifications";
+import { handleApiError } from "@/utils/error-handler";
 
 interface LineItemRow {
   code: string;
@@ -239,7 +247,7 @@ function Page() {
       },
     });
 
-  const { mutate: deleteItem, isPending: isDeleting } = useDeletePayrollItem({
+const { mutate: deleteItem, isPending: isDeleting } = useDeletePayrollItem({
     mutation: {
       onSuccess: () => {
         invalidateItems();
@@ -252,6 +260,72 @@ function Page() {
           withBorder: true,
         });
       },
+      onError: handleApiError,
+    },
+  });
+
+  const [deleteReportTarget, setDeleteReportTarget] = useState<ReportDto | null>(null);
+
+  const invalidateReports = () => {
+    queryClient.invalidateQueries({ queryKey: ["/reports"] });
+  };
+
+  const { data: reportsData, isLoading: reportsLoading } = useGetAllReports(
+    { type: "PAYROLL_BANK_FILE", pageNo: 0, limit: 100 },
+    {
+      query: {
+        enabled: !!run,
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
+  const runReports = run
+    ? unwrapPage<ReportDto>(reportsData).content.filter(
+        (report) => report.payrollRunId === run.id,
+      )
+    : [];
+
+  const { mutate: exportBankFile, isPending: isExporting } =
+    useGeneratePayrollBankFile({
+      mutation: {
+        onSuccess: (data) => {
+          const report = unwrapData<ReportDto>(data);
+          invalidateReports();
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Payroll bank file generated",
+            withBorder: true,
+          });
+          if (report) {
+            downloadReportFile(report).catch(handleApiError);
+          }
+        },
+        onError: handleApiError,
+      },
+    });
+
+  const handleExport = (format: "CSV" | "XLSX") => {
+    exportBankFile({ runId: id ?? "", params: { format } });
+  };
+
+  const handleDownloadReport = (report: ReportDto) => {
+    downloadReportFile(report).catch(handleApiError);
+  };
+
+  const { mutate: deleteReport, isPending: isDeletingReport } = useDeleteReport({
+    mutation: {
+      onSuccess: () => {
+        invalidateReports();
+        setDeleteReportTarget(null);
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Report deleted",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
     },
   });
 
@@ -392,6 +466,33 @@ function Page() {
               <Button onClick={() => setGenerateModalOpen(true)} loading={isGenerating}>
                 Generate Payroll
               </Button>
+            )}
+            {!canGenerate && (
+              <Menu shadow="md" position="bottom-end">
+                <Menu.Target>
+                  <Button
+                    variant="light"
+                    leftSection={<IconFileExport size={16} />}
+                    loading={isExporting}
+                  >
+                    Export Bank File
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={<IconDownload size={14} />}
+                    onClick={() => handleExport("CSV")}
+                  >
+                    Export as CSV
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconDownload size={14} />}
+                    onClick={() => handleExport("XLSX")}
+                  >
+                    Export as XLSX
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
             )}
             {canApprove && (
               <Button
@@ -543,6 +644,20 @@ function Page() {
         )}
       </div>
 
+      <div>
+        <Text size="lg" fw={700} mb="xs">
+          Bank File Exports
+        </Text>
+        <ReportHistoryTable
+          reports={runReports}
+          isLoading={reportsLoading}
+          isDeleting={isDeletingReport}
+          onDownload={handleDownloadReport}
+          onDelete={setDeleteReportTarget}
+          emptyMessage="No bank file exports for this run yet"
+        />
+      </div>
+
       {/* Generate Payroll Modal */}
       <ConfirmationModal
         opened={generateModalOpen}
@@ -593,6 +708,18 @@ function Page() {
         onClose={() => setBenefitsEditorOpen(false)}
         onChange={setBenefitRows}
         onSave={saveBenefits}
+      />
+
+      {/* Delete Report Confirmation */}
+      <ConfirmationModal
+        opened={!!deleteReportTarget}
+        title="Delete Report"
+        message={`Are you sure you want to delete "${deleteReportTarget?.fileName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        isDangerous
+        isLoading={isDeletingReport}
+        onConfirm={() => deleteReport({ id: deleteReportTarget?.id ?? "" })}
+        onCancel={() => setDeleteReportTarget(null)}
       />
     </div>
   );

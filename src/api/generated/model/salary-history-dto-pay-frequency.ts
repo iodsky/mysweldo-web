@@ -8,6 +8,4 @@ export type SalaryHistoryDtoPayFrequency = typeof SalaryHistoryDtoPayFrequency[k
 export const SalaryHistoryDtoPayFrequency = {
   SEMI_MONTHLY: 'SEMI_MONTHLY',
   MONTHLY: 'MONTHLY',
-  WEEKLY: 'WEEKLY',
-  BI_WEEKLY: 'BI_WEEKLY',
 } as const;

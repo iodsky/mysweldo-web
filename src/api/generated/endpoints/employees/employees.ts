@@ -678,119 +678,6 @@ export function useGetSalaryHistory<TData = Awaited<ReturnType<typeof getSalaryH
 
 
 
-export type getAuthenticatedEmployeeResponse200 = {
-  data: EmployeeDto
-  status: 200
-}
-
-export type getAuthenticatedEmployeeResponseSuccess = (getAuthenticatedEmployeeResponse200) & {
-  headers: Headers;
-};
-;
-
-export type getAuthenticatedEmployeeResponse = (getAuthenticatedEmployeeResponseSuccess)
-
-export const getGetAuthenticatedEmployeeUrl = () => {
-
-
-
-
-  return `/employees/me`
-}
-
-/**
- * Retrieve the authenticated employee's information
- * @summary Get current employee
- */
-export const getAuthenticatedEmployee = async ( options?: Parameters<typeof customInstance>[1]): Promise<getAuthenticatedEmployeeResponse> => {
-
-  return customInstance<getAuthenticatedEmployeeResponse>(getGetAuthenticatedEmployeeUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetAuthenticatedEmployeeQueryKey = () => {
-    return [
-    `/employees/me`
-    ] as const;
-    }
-
-
-export const getGetAuthenticatedEmployeeQueryOptions = <TData = Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAuthenticatedEmployeeQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthenticatedEmployee>>> = ({ signal }) => getAuthenticatedEmployee({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAuthenticatedEmployeeQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthenticatedEmployee>>>
-export type GetAuthenticatedEmployeeQueryError = unknown
-
-
-export function useGetAuthenticatedEmployee<TData = Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAuthenticatedEmployee>>,
-          TError,
-          Awaited<ReturnType<typeof getAuthenticatedEmployee>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAuthenticatedEmployee<TData = Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAuthenticatedEmployee>>,
-          TError,
-          Awaited<ReturnType<typeof getAuthenticatedEmployee>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAuthenticatedEmployee<TData = Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get current employee
- */
-
-export function useGetAuthenticatedEmployee<TData = Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAuthenticatedEmployeeQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
 export type getSubordinatesResponse200 = {
   data: PageDtoEmployeeBasicDto
   status: 200
@@ -900,6 +787,119 @@ export function useGetSubordinates<TData = Awaited<ReturnType<typeof getSubordin
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetSubordinatesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type getAuthenticatedEmployeeResponse200 = {
+  data: EmployeeDto
+  status: 200
+}
+
+export type getAuthenticatedEmployeeResponseSuccess = (getAuthenticatedEmployeeResponse200) & {
+  headers: Headers;
+};
+;
+
+export type getAuthenticatedEmployeeResponse = (getAuthenticatedEmployeeResponseSuccess)
+
+export const getGetAuthenticatedEmployeeUrl = () => {
+
+
+
+
+  return `/employees/me`
+}
+
+/**
+ * Retrieve the authenticated employee's information
+ * @summary Get current employee
+ */
+export const getAuthenticatedEmployee = async ( options?: Parameters<typeof customInstance>[1]): Promise<getAuthenticatedEmployeeResponse> => {
+
+  return customInstance<getAuthenticatedEmployeeResponse>(getGetAuthenticatedEmployeeUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAuthenticatedEmployeeQueryKey = () => {
+    return [
+    `/employees/me`
+    ] as const;
+    }
+
+
+export const getGetAuthenticatedEmployeeQueryOptions = <TData = Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAuthenticatedEmployeeQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthenticatedEmployee>>> = ({ signal }) => getAuthenticatedEmployee({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAuthenticatedEmployeeQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthenticatedEmployee>>>
+export type GetAuthenticatedEmployeeQueryError = unknown
+
+
+export function useGetAuthenticatedEmployee<TData = Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthenticatedEmployee>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthenticatedEmployee>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthenticatedEmployee<TData = Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthenticatedEmployee>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthenticatedEmployee>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthenticatedEmployee<TData = Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get current employee
+ */
+
+export function useGetAuthenticatedEmployee<TData = Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthenticatedEmployee>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAuthenticatedEmployeeQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

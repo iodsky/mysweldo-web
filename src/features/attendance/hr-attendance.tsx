@@ -3,6 +3,7 @@ import {
   Anchor,
   Breadcrumbs,
   Button,
+  Group,
   Menu,
   Modal,
   Select,
@@ -14,17 +15,32 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import { IconPencil, IconPlus, IconDotsVertical } from "@tabler/icons-react";
+import {
+  IconFileExport,
+  IconDownload,
+  IconPencil,
+  IconPlus,
+  IconDotsVertical,
+} from "@tabler/icons-react";
 import {
   useCreateAttendance,
   useGetAllAttendances,
   useGetEmployeeAttendances,
   useUpdateAttendance,
 } from "@/api/generated/endpoints/attendance/attendance";
-import { unwrapPage } from "@/api/helpers";
+import {
+  useDeleteReport,
+  useGenerateAttendanceTimesheet,
+  useGetAllReports,
+} from "@/api/generated/endpoints/reports/reports";
+import { downloadReportFile } from "@/api/download";
+import { unwrapData, unwrapPage } from "@/api/helpers";
 import type { Attendance, AttendanceDto } from "@/types";
-import type { GetAllAttendancesParams } from "@/api/generated/model";
+import type { GetAllAttendancesParams, ReportDto } from "@/api/generated/model";
 import { notifications } from "@mantine/notifications";
+import { handleApiError } from "@/utils/error-handler";
+import ReportHistoryTable from "@/components/report-history-table";
+import { ConfirmationModal } from "@/components/confirmation-modal";
 import {
   formatDateTimePickerValue,
   toIsoDateTime,
@@ -149,6 +165,81 @@ function Page() {
     },
   });
 
+  const [deleteReportTarget, setDeleteReportTarget] = useState<ReportDto | null>(null);
+
+  const invalidateReports = () => {
+    queryClient.invalidateQueries({ queryKey: ["/reports"] });
+  };
+
+  const { data: reportsData, isLoading: reportsLoading } = useGetAllReports(
+    { type: "ATTENDANCE_TIMESHEET", pageNo: 0, limit: 100 },
+    {
+      query: {
+        placeholderData: keepPreviousData,
+      },
+    },
+  );
+  const reports = unwrapPage<ReportDto>(reportsData).content;
+
+  const { mutate: exportTimesheet, isPending: isExporting } =
+    useGenerateAttendanceTimesheet({
+      mutation: {
+        onSuccess: (data) => {
+          const report = unwrapData<ReportDto>(data);
+          invalidateReports();
+          notifications.show({
+            title: "Success",
+            color: "green",
+            message: "Attendance timesheet generated",
+            withBorder: true,
+          });
+          if (report) {
+            downloadReportFile(report).catch(handleApiError);
+          }
+        },
+        onError: handleApiError,
+      },
+    });
+
+  const handleExport = (format: "CSV" | "XLSX") => {
+    if (!filters.startDate || !filters.endDate) {
+      notifications.show({
+        title: "Error",
+        color: "red",
+        message: "Select a start and end date before exporting",
+        withBorder: true,
+      });
+      return;
+    }
+    exportTimesheet({
+      params: {
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        format,
+      },
+    });
+  };
+
+  const handleDownloadReport = (report: ReportDto) => {
+    downloadReportFile(report).catch(handleApiError);
+  };
+
+  const { mutate: deleteReport, isPending: isDeletingReport } = useDeleteReport({
+    mutation: {
+      onSuccess: () => {
+        invalidateReports();
+        setDeleteReportTarget(null);
+        notifications.show({
+          title: "Success",
+          color: "green",
+          message: "Report deleted",
+          withBorder: true,
+        });
+      },
+      onError: handleApiError,
+    },
+  });
+
   const handleUpdate = () => {
     if (!employeeId || !timeIn || !timeOut) return;
 
@@ -189,12 +280,39 @@ function Page() {
                 Track and manage employee attendances
               </Text>
             </div>
-            <Button
-              leftSection={<IconPlus size={14} />}
-              onClick={openCreateAttendance}
-            >
-              New attendance
-            </Button>
+            <Group gap="sm">
+              <Menu shadow="md" position="bottom-end">
+                <Menu.Target>
+                  <Button
+                    variant="light"
+                    leftSection={<IconFileExport size={14} />}
+                    loading={isExporting}
+                  >
+                    Export Timesheet
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={<IconDownload size={14} />}
+                    onClick={() => handleExport("CSV")}
+                  >
+                    Export as CSV
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconDownload size={14} />}
+                    onClick={() => handleExport("XLSX")}
+                  >
+                    Export as XLSX
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+              <Button
+                leftSection={<IconPlus size={14} />}
+                onClick={openCreateAttendance}
+              >
+                New attendance
+              </Button>
+            </Group>
           </div>
 
           <div className="flex items-end gap-2">
@@ -277,6 +395,20 @@ function Page() {
               )}
             />
           )}
+
+          <div>
+            <Text size="lg" fw={700} mb="xs">
+              Timesheet Exports
+            </Text>
+            <ReportHistoryTable
+              reports={reports}
+              isLoading={reportsLoading}
+              isDeleting={isDeletingReport}
+              onDownload={handleDownloadReport}
+              onDelete={setDeleteReportTarget}
+              emptyMessage="No timesheet exports yet"
+            />
+          </div>
       </div>
 
       <Modal
@@ -325,6 +457,17 @@ function Page() {
           </div>
         </div>
       </Modal>
+
+      <ConfirmationModal
+        opened={!!deleteReportTarget}
+        title="Delete Report"
+        message={`Are you sure you want to delete "${deleteReportTarget?.fileName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        isDangerous
+        isLoading={isDeletingReport}
+        onConfirm={() => deleteReport({ id: deleteReportTarget?.id ?? "" })}
+        onCancel={() => setDeleteReportTarget(null)}
+      />
     </>
   );
 }

@@ -27,4 +27,7 @@ export interface EmployeeDto {
   endShift: string;
   salary: SalaryDto;
   benefits: EmployeeBenefitDto[];
+  bankName?: string;
+  accountNumber?: string;
+  accountHolderName?: string;
 }

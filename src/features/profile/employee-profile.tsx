@@ -51,7 +51,7 @@ function Page() {
   return (
     <div className="flex flex-col flex-1 gap-5 overflow-y-auto">
       <ProfileHeaderCard employee={employee} />
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:flex-1 md:min-h-0 md:auto-rows-fr">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <PersonalInfoCard employee={employee} />
         <GovernmentIdsCard employee={employee} />
         <EmploymentCard employee={employee} />
