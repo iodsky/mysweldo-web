@@ -36,4 +36,19 @@ export interface EmployeeRequest {
   endShift: string;
   salaryRequest: SalaryRequest;
   benefits: EmployeeBenefitRequest[];
+  /**
+     * @minLength 0
+     * @maxLength 255
+     */
+  bankName?: string;
+  /**
+     * @minLength 0
+     * @maxLength 255
+     */
+  accountNumber?: string;
+  /**
+     * @minLength 0
+     * @maxLength 255
+     */
+  accountHolderName?: string;
 }

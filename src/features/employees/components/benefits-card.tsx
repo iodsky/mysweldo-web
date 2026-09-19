@@ -15,7 +15,7 @@ function BenefitsCard({ employee }: BenefitsCardProps) {
   return (
     <ProfileCard title="Benefits" icon={IconGift} fullHeight={false}>
       {benefits.length > 0 ? (
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
           {benefits.map((benefit, index) => (
             <ProfileField
               key={index}

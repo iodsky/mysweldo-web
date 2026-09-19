@@ -24,7 +24,7 @@ import type {
   EmployeeDto,
 } from "../../types";
 import { getFieldErrors } from "@/utils/error-handler";
-import type { DepartmentDto, PositionDto } from "@/api/generated/model";
+import type { DepartmentDto, PositionDto, SalaryRequestPayFrequency } from "@/api/generated/model";
 
 interface EmployeeFormProps {
   opened: boolean;
@@ -53,6 +53,9 @@ interface FormValues {
   salaryRate: number;
   salaryType: PayType;
   payrollFrequency: PayrollFrequency;
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
 }
 
 const EMPLOYMENT_STATUS_MAP: Record<EmploymentStatus, string> = {
@@ -172,6 +175,9 @@ export function EmployeeForm({
           salaryType: (employee.salary?.payType as PayType) ?? "MONTHLY",
           payrollFrequency: (employee.salary?.payFrequency as PayrollFrequency) ??
             "MONTHLY",
+          bankName: employee.bankName ?? "",
+          accountNumber: employee.accountNumber ?? "",
+          accountHolderName: employee.accountHolderName ?? "",
         }
       : {
           firstName: "",
@@ -193,6 +199,9 @@ export function EmployeeForm({
           salaryRate: 0,
           salaryType: "MONTHLY",
           payrollFrequency: "MONTHLY",
+          bankName: "",
+          accountNumber: "",
+          accountHolderName: "",
         },
     validate: {
       firstName: (value) => (!value ? "First name is required" : null),
@@ -227,6 +236,9 @@ export function EmployeeForm({
         salaryType: (employee.salary?.payType as PayType) ?? "MONTHLY",
         payrollFrequency: (employee.salary?.payFrequency as PayrollFrequency) ??
           "MONTHLY",
+        bankName: employee.bankName ?? "",
+        accountNumber: employee.accountNumber ?? "",
+        accountHolderName: employee.accountHolderName ?? "",
       });
     } else if (opened && !isEditing) {
       form.reset();
@@ -257,8 +269,11 @@ export function EmployeeForm({
       salaryRequest: {
         rate: formData.salaryRate,
         payType: formData.salaryType,
-        payFrequency: formData.payrollFrequency,
+        payFrequency: formData.payrollFrequency as SalaryRequestPayFrequency,
       },
+      bankName: formData.bankName.trim() || undefined,
+      accountNumber: formData.accountNumber.trim() || undefined,
+      accountHolderName: formData.accountHolderName.trim() || undefined,
     });
 
   const createMutation = useCreateEmployee({
@@ -423,6 +438,28 @@ export function EmployeeForm({
                 label="Pag-IBIG Number"
                 placeholder="xxxx-xxxx-xxxx-xxxx"
                 {...form.getInputProps("pagibigNumber")}
+              />
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Bank Name"
+                placeholder="e.g. BDO"
+                {...form.getInputProps("bankName")}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Account Number"
+                placeholder="Account number"
+                {...form.getInputProps("accountNumber")}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Account Holder Name"
+                placeholder="Name on the account"
+                {...form.getInputProps("accountHolderName")}
               />
             </Grid.Col>
 
