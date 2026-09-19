@@ -3,6 +3,9 @@ import { ActionIcon, Badge, Loader, Menu, Table, Text } from "@mantine/core";
 import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 import { IconCheck, IconDotsVertical, IconX } from "@tabler/icons-react";
 import {
+  getGetLeaveRequestsQueryKey,
+  getGetMyLeaveRequestsQueryKey,
+  getGetSubordinatesLeaveRequestsQueryKey,
   useGetSubordinatesLeaveRequests,
   useUpdateLeaveRequestStatus,
 } from "@/api/generated/endpoints/leave-requests/leave-requests";
@@ -35,7 +38,6 @@ function LeaveTab({ roster }: LeaveTabProps) {
     { pageNo: page, limit: pageSize },
     {
       query: {
-        queryKey: ["subordinates", "leave", page, pageSize] as const,
         staleTime: 1000 * 60 * 5,
         placeholderData: keepPreviousData,
       },
@@ -48,7 +50,15 @@ function LeaveTab({ roster }: LeaveTabProps) {
     useUpdateLeaveRequestStatus({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          queryClient.invalidateQueries({
+            queryKey: getGetSubordinatesLeaveRequestsQueryKey(),
+          });
+          queryClient.invalidateQueries({
+            queryKey: getGetLeaveRequestsQueryKey(),
+          });
+          queryClient.invalidateQueries({
+            queryKey: getGetMyLeaveRequestsQueryKey(),
+          });
           closeConfirm();
           notifications.show({
             title: "Success",

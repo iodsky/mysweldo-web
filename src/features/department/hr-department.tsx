@@ -17,6 +17,7 @@ import {
 } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconTrash, IconPencil } from "@tabler/icons-react";
 import {
+  getGetAllDepartmentsQueryKey,
   useCreateDepartment,
   useDeleteDepartment,
   useGetAllDepartments,
@@ -65,7 +66,7 @@ function Page() {
   const { mutate: createDept, isPending: isCreating } = useCreateDepartment({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/departments"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllDepartmentsQueryKey() });
         setCreateModalOpen(false);
         resetCreateForm();
         notifications.show({
@@ -81,7 +82,7 @@ function Page() {
   const { mutate: updateDept, isPending: isUpdating } = useUpdateDepartment({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/departments"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllDepartmentsQueryKey() });
         setEditModalOpen(false);
         setSelectedDepartment(null);
         notifications.show({
@@ -97,7 +98,7 @@ function Page() {
   const { mutate: deleteDept, isPending: isDeleting } = useDeleteDepartment({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/departments"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllDepartmentsQueryKey() });
         setDeleteModalOpen(false);
         setSelectedDepartment(null);
         notifications.show({

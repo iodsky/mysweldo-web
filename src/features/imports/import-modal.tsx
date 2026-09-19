@@ -11,6 +11,7 @@ import { Dropzone } from "@mantine/dropzone";
 import { IconDownload, IconFileText, IconUpload } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  getGetAllImportJobsQueryKey,
   useImportEmployees,
   useImportUsers,
   type importEmployeesResponse,
@@ -44,7 +45,7 @@ function ImportModal({ opened, onClose, allowedTypes }: ImportModalProps) {
 
   const handleImported = (res?: importEmployeesResponse | importUsersResponse) => {
     const message = unwrapData<ImportJobLaunchResponse>(res)?.message;
-    queryClient.invalidateQueries({ queryKey: ["/jobs"] });
+    queryClient.invalidateQueries({ queryKey: getGetAllImportJobsQueryKey() });
     onClose();
     notifications.show({
       title: "Success",

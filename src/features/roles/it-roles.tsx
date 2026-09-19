@@ -14,6 +14,7 @@ import {
 import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconTrash, IconPencil } from "@tabler/icons-react";
 import {
+  getGetAllRolesQueryKey,
   useCreateRole,
   useDeleteRole,
   useGetAllRoles,
@@ -62,7 +63,7 @@ function Page() {
   const { mutate: createRole, isPending: isCreating } = useCreateRole({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/roles"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllRolesQueryKey() });
         setCreateModalOpen(false);
         resetCreateForm();
         notifications.show({
@@ -78,7 +79,7 @@ function Page() {
   const { mutate: updateRole, isPending: isUpdating } = useUpdateRole({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/roles"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllRolesQueryKey() });
         setEditModalOpen(false);
         setSelectedRole(null);
         notifications.show({
@@ -94,7 +95,7 @@ function Page() {
   const { mutate: deleteRole, isPending: isDeleting } = useDeleteRole({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/roles"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllRolesQueryKey() });
         setDeleteModalOpen(false);
         setSelectedRole(null);
         notifications.show({

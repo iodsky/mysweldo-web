@@ -23,12 +23,16 @@ import {
   IconDotsVertical,
 } from "@tabler/icons-react";
 import {
+  getGetAllAttendancesQueryKey,
+  getGetEmployeeAttendancesQueryKey,
+  getGetSubordinatesAttendancesQueryKey,
   useCreateAttendance,
   useGetAllAttendances,
   useGetEmployeeAttendances,
   useUpdateAttendance,
 } from "@/api/generated/endpoints/attendance/attendance";
 import {
+  getGetAllReportsQueryKey,
   useDeleteReport,
   useGenerateAttendanceTimesheet,
   useGetAllReports,
@@ -73,9 +77,7 @@ function Page() {
     null,
   );
 
-  const { options: employeeOptions } = useEmployeeOptions({
-    queryKey: ["employees", "attendance-form"],
-  });
+  const { options: employeeOptions } = useEmployeeOptions();
 
   const { data: allData, isError, isFetching } = useGetAllAttendances(
     queryFilters,
@@ -133,10 +135,22 @@ function Page() {
     );
   };
 
+  const invalidateAttendances = (employeeId?: number) => {
+    queryClient.invalidateQueries({ queryKey: getGetAllAttendancesQueryKey() });
+    queryClient.invalidateQueries({
+      queryKey: getGetSubordinatesAttendancesQueryKey(),
+    });
+    if (employeeId != null) {
+      queryClient.invalidateQueries({
+        queryKey: getGetEmployeeAttendancesQueryKey(employeeId),
+      });
+    }
+  };
+
   const createMutation = useCreateAttendance({
     mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/attendances"] });
+      onSuccess: (_, variables) => {
+        invalidateAttendances(variables.data?.employeeId);
         notifications.show({
           color: "green",
           title: "Success",
@@ -151,8 +165,8 @@ function Page() {
 
   const updateMutation = useUpdateAttendance({
     mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/attendances"] });
+      onSuccess: (_, variables) => {
+        invalidateAttendances(variables.data?.employeeId);
         notifications.show({
           color: "green",
           title: "Success",
@@ -168,7 +182,7 @@ function Page() {
   const [deleteReportTarget, setDeleteReportTarget] = useState<ReportDto | null>(null);
 
   const invalidateReports = () => {
-    queryClient.invalidateQueries({ queryKey: ["/reports"] });
+    queryClient.invalidateQueries({ queryKey: getGetAllReportsQueryKey() });
   };
 
   const { data: reportsData, isLoading: reportsLoading } = useGetAllReports(

@@ -21,6 +21,9 @@ import {
 } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconCheck, IconX, IconTrash, IconPencil } from "@tabler/icons-react";
 import {
+  getGetMyOvertimeRequestsQueryKey,
+  getGetOvertimeRequestsQueryKey,
+  getGetSubordinatesOvertimeRequestsQueryKey,
   useCreateOvertimeRequest,
   useDeleteOvertimeRequest,
   useGetOvertimeRequests,
@@ -71,9 +74,7 @@ function Page() {
     null,
   );
 
-  const { options: employeeOptions } = useEmployeeOptions({
-    queryKey: ["employees", "attendance-form"],
-  });
+  const { options: employeeOptions } = useEmployeeOptions();
 
   const { data, isLoading, isFetching, isError } = useGetOvertimeRequests(
     {
@@ -84,7 +85,6 @@ function Page() {
     },
     {
       query: {
-        queryKey: ["overtimeRequests", "all", page, pageSize, startDate, endDate] as const,
         staleTime: 1000 * 60 * 5,
         placeholderData: keepPreviousData,
       },
@@ -95,8 +95,15 @@ function Page() {
   const requests = pageData.content;
   const meta = pageData.meta;
 
-  const invalidateList = () =>
-    queryClient.invalidateQueries({ queryKey: ["/overtime-requests"] });
+  const invalidateList = () => {
+    queryClient.invalidateQueries({ queryKey: getGetOvertimeRequestsQueryKey() });
+    queryClient.invalidateQueries({
+      queryKey: getGetMyOvertimeRequestsQueryKey(),
+    });
+    queryClient.invalidateQueries({
+      queryKey: getGetSubordinatesOvertimeRequestsQueryKey(),
+    });
+  };
 
   const { mutate: createRequest, isPending: isCreating } = useCreateOvertimeRequest(
     {

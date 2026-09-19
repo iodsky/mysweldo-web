@@ -15,6 +15,7 @@ import { DateInput } from "@mantine/dates";
 import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconPencil } from "@tabler/icons-react";
 import {
+  getGetAllPhilhealthRatesQueryKey,
   useCreatePhilhealthRate,
   useGetAllPhilhealthRates,
   useUpdatePhilhealthRate,
@@ -79,7 +80,7 @@ function Page() {
   const { mutate: createRate, isPending: isCreating } = useCreatePhilhealthRate({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/philhealth-rates"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllPhilhealthRatesQueryKey() });
         setCreateModalOpen(false);
         setCreateForm(emptyForm());
         notifications.show({
@@ -95,7 +96,7 @@ function Page() {
   const { mutate: updateRate, isPending: isUpdating } = useUpdatePhilhealthRate({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/philhealth-rates"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllPhilhealthRatesQueryKey() });
         setEditModalOpen(false);
         setSelectedRate(null);
         notifications.show({

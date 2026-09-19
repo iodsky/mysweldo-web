@@ -14,6 +14,8 @@ import {
 } from "@tanstack/react-query";
 import { IconPlus } from "@tabler/icons-react";
 import {
+  getGetAllLeaveCreditsQueryKey,
+  getGetMyLeaveCreditsQueryKey,
   useCreateLeaveCredits,
   useGetAllLeaveCredits,
 } from "@/api/generated/endpoints/leave-credits/leave-credits";
@@ -50,7 +52,6 @@ function LeaveCreditsTab() {
   );
 
   const { options: employeeOptions } = useEmployeeOptions({
-    queryKey: ["employees"],
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60,
   });
@@ -63,7 +64,12 @@ function LeaveCreditsTab() {
     {
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/leave-credits"] });
+          queryClient.invalidateQueries({
+            queryKey: getGetAllLeaveCreditsQueryKey(),
+          });
+          queryClient.invalidateQueries({
+            queryKey: getGetMyLeaveCreditsQueryKey(),
+          });
           setModalOpen(false);
           resetForm();
           notifications.show({

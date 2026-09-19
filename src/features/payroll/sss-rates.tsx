@@ -16,6 +16,7 @@ import { DateInput } from "@mantine/dates";
 import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconPencil, IconTrash } from "@tabler/icons-react";
 import {
+  getGetAllSssRatesQueryKey,
   useCreateSssRate,
   useGetAllSssRates,
   useUpdateSssRate,
@@ -94,7 +95,7 @@ function Page() {
   const { mutate: createRate, isPending: isCreating } = useCreateSssRate({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/sss-rates"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllSssRatesQueryKey() });
         setCreateModalOpen(false);
         setCreateForm(emptyForm());
         notifications.show({
@@ -110,7 +111,7 @@ function Page() {
   const { mutate: updateRate, isPending: isUpdating } = useUpdateSssRate({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/sss-rates"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllSssRatesQueryKey() });
         setEditModalOpen(false);
         setSelectedRate(null);
         notifications.show({

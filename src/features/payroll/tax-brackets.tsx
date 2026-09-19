@@ -15,6 +15,7 @@ import { DateInput } from "@mantine/dates";
 import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconPencil } from "@tabler/icons-react";
 import {
+  getGetAllIncomeTaxBracketsQueryKey,
   useCreateIncomeTaxBracket,
   useGetAllIncomeTaxBrackets,
   useUpdateIncomeTaxBracket,
@@ -65,7 +66,7 @@ function Page() {
     useCreateIncomeTaxBracket({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/tax-brackets"] });
+          queryClient.invalidateQueries({ queryKey: getGetAllIncomeTaxBracketsQueryKey() });
           setCreateModalOpen(false);
           setCreateForm(emptyForm());
           notifications.show({
@@ -82,7 +83,7 @@ function Page() {
     useUpdateIncomeTaxBracket({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/tax-brackets"] });
+          queryClient.invalidateQueries({ queryKey: getGetAllIncomeTaxBracketsQueryKey() });
           setEditModalOpen(false);
           setSelectedBracket(null);
           notifications.show({

@@ -14,6 +14,7 @@ import {
 import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconTrash, IconPencil } from "@tabler/icons-react";
 import {
+  getGetAllContributionsQueryKey,
   useCreateContribution,
   useDeleteContribution,
   useGetAllContributions,
@@ -63,7 +64,7 @@ function Page() {
     useCreateContribution({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/contributions"] });
+          queryClient.invalidateQueries({ queryKey: getGetAllContributionsQueryKey() });
           setCreateModalOpen(false);
           resetCreateForm();
           notifications.show({
@@ -80,7 +81,7 @@ function Page() {
     useUpdateContribution({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/contributions"] });
+          queryClient.invalidateQueries({ queryKey: getGetAllContributionsQueryKey() });
           setEditModalOpen(false);
           setSelectedContribution(null);
           notifications.show({
@@ -97,7 +98,7 @@ function Page() {
     useDeleteContribution({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/contributions"] });
+          queryClient.invalidateQueries({ queryKey: getGetAllContributionsQueryKey() });
           setDeleteModalOpen(false);
           setSelectedContribution(null);
           notifications.show({

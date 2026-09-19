@@ -14,12 +14,19 @@ import { DatePickerInput } from "@mantine/dates";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
+  getGetLeaveRequestsQueryKey,
+  getGetMyLeaveRequestsQueryKey,
+  getGetSubordinatesLeaveRequestsQueryKey,
   useCreateLeaveRequest,
   useGetMyLeaveRequests,
   useUpdateLeaveRequest,
   useDeleteLeaveRequest,
 } from "@/api/generated/endpoints/leave-requests/leave-requests";
-import { useGetMyLeaveCredits } from "@/api/generated/endpoints/leave-credits/leave-credits";
+import {
+  getGetAllLeaveCreditsQueryKey,
+  getGetMyLeaveCreditsQueryKey,
+  useGetMyLeaveCredits,
+} from "@/api/generated/endpoints/leave-credits/leave-credits";
 import { unwrapData, unwrapPage } from "@/api/helpers";
 import type { PaginationFilters, LeaveType, LeaveRequest } from "@/types";
 import type { LeaveCreditDto } from "@/api/generated/model";
@@ -69,6 +76,19 @@ function Page() {
     },
   });
 
+  const invalidateLeaveRequests = () => {
+    queryClient.invalidateQueries({ queryKey: getGetMyLeaveRequestsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetLeaveRequestsQueryKey() });
+    queryClient.invalidateQueries({
+      queryKey: getGetSubordinatesLeaveRequestsQueryKey(),
+    });
+  };
+
+  const invalidateLeaveCredits = () => {
+    queryClient.invalidateQueries({ queryKey: getGetMyLeaveCreditsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetAllLeaveCreditsQueryKey() });
+  };
+
   const {
     mutate: createLeave,
     isPending: isCreatePending,
@@ -76,8 +96,8 @@ function Page() {
   } = useCreateLeaveRequest({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
-        queryClient.invalidateQueries({ queryKey: ["/leave-credits"] });
+        invalidateLeaveRequests();
+        invalidateLeaveCredits();
         setIsModalOpen(false);
         setEditingId(null);
         setStartDate(null);
@@ -102,7 +122,7 @@ function Page() {
     useUpdateLeaveRequest({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          invalidateLeaveRequests();
           setIsModalOpen(false);
           setEditingId(null);
           setStartDate(null);
@@ -129,7 +149,7 @@ function Page() {
     {
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/leave-requests"] });
+          invalidateLeaveRequests();
           setDeleteConfirmOpen(false);
           setDeletingId(null);
           notifications.show({

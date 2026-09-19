@@ -15,6 +15,7 @@ import { DateInput } from "@mantine/dates";
 import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconPencil } from "@tabler/icons-react";
 import {
+  getGetAllPagibigRatesQueryKey,
   useCreatePagibigRate,
   useGetAllPagibigRates,
   useUpdatePagibigRate,
@@ -82,7 +83,7 @@ function Page() {
   const { mutate: createRate, isPending: isCreating } = useCreatePagibigRate({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/pagibig-rates"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllPagibigRatesQueryKey() });
         setCreateModalOpen(false);
         setCreateForm(emptyForm());
         notifications.show({
@@ -98,7 +99,7 @@ function Page() {
   const { mutate: updateRate, isPending: isUpdating } = useUpdatePagibigRate({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/pagibig-rates"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllPagibigRatesQueryKey() });
         setEditModalOpen(false);
         setSelectedRate(null);
         notifications.show({

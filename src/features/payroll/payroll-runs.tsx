@@ -18,6 +18,7 @@ import { DateInput } from "@mantine/dates";
 import { useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { IconPlus, IconDotsVertical, IconEye } from "@tabler/icons-react";
 import {
+  getGetAllPayrollRunsQueryKey,
   useCreatePayrollRun,
   useGetAllPayrollRuns,
 } from "@/api/generated/endpoints/payroll-runs/payroll-runs";
@@ -95,7 +96,7 @@ function Page() {
   const { mutate: createRun, isPending: isCreating } = useCreatePayrollRun({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/payroll-runs"] });
+        queryClient.invalidateQueries({ queryKey: getGetAllPayrollRunsQueryKey() });
         setCreateModalOpen(false);
         resetCreateForm();
         notifications.show({

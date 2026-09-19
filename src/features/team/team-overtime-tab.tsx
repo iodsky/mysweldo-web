@@ -3,6 +3,9 @@ import { ActionIcon, Badge, Loader, Menu, Table, Text } from "@mantine/core";
 import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 import { IconCheck, IconDotsVertical, IconX } from "@tabler/icons-react";
 import {
+  getGetMyOvertimeRequestsQueryKey,
+  getGetOvertimeRequestsQueryKey,
+  getGetSubordinatesOvertimeRequestsQueryKey,
   useGetSubordinatesOvertimeRequests,
   useUpdateOvertimeRequestStatus,
 } from "@/api/generated/endpoints/overtime-requests/overtime-requests";
@@ -35,7 +38,6 @@ function OvertimeTab({ roster }: OvertimeTabProps) {
       { pageNo: page, limit: pageSize },
       {
         query: {
-          queryKey: ["subordinates", "overtime", page, pageSize] as const,
           staleTime: 1000 * 60 * 5,
           placeholderData: keepPreviousData,
         },
@@ -48,7 +50,15 @@ function OvertimeTab({ roster }: OvertimeTabProps) {
     useUpdateOvertimeRequestStatus({
       mutation: {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["/overtime-requests"] });
+          queryClient.invalidateQueries({
+            queryKey: getGetSubordinatesOvertimeRequestsQueryKey(),
+          });
+          queryClient.invalidateQueries({
+            queryKey: getGetOvertimeRequestsQueryKey(),
+          });
+          queryClient.invalidateQueries({
+            queryKey: getGetMyOvertimeRequestsQueryKey(),
+          });
           closeConfirm();
           notifications.show({
             title: "Success",
