@@ -15,6 +15,7 @@ import type {
   DepartmentUpdateRequest,
   EmployeeBasicDto,
   EmployeeBenefitDto,
+  EmployeeBenefitRequest as EmployeeBenefitRequestRecord,
   EmployeeDto as EmployeeRecord,
   EmployeeLeaveCreditDto,
   EmployeeRequest,
@@ -67,6 +68,7 @@ export type Employee = EmployeeRecord;
 export type EmployeeBasic = EmployeeBasicDto;
 export type EmployeeDto = EmployeeRequest;
 export type EmployeeBenefit = EmployeeBenefitDto;
+export type EmployeeBenefitRequest = EmployeeBenefitRequestRecord;
 export type LeaveRequest = LeaveRequestRecord;
 export type LeaveRequestDto = LeaveRequestRecord;
 export type LeaveCredit = LeaveCreditRecord;

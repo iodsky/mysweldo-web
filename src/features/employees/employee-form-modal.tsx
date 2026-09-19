@@ -2,15 +2,12 @@ import {
   Drawer,
   Button,
   Stack,
-  TextInput,
-  Select,
-  Grid,
   Group,
-  Textarea,
+  Stepper,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetAllEmployeesQueryKey, getGetEmployeeByIdQueryKey, useCreateEmployee, useUpdateEmployee } from "@/api/generated/endpoints/employees/employees";
 import { useGetDepartmentOptions } from "@/api/generated/endpoints/departments/departments";
@@ -19,14 +16,15 @@ import { useEmployeeOptions } from "@/hooks/use-employee-options";
 import { unwrapData } from "@/api/helpers";
 import type {
   Employee,
-  EmploymentStatus,
-  EmploymentType,
-  PayType,
-  PayrollFrequency,
   EmployeeDto,
 } from "../../types";
 import { getFieldErrors } from "@/utils/error-handler";
 import type { DepartmentDto, PositionDto, SalaryRequestPayFrequency } from "@/api/generated/model";
+import PersonalStep from "./components/employee-form-steps/personal-step";
+import EmploymentBankStep from "./components/employee-form-steps/employment-bank-step";
+import CompensationStep from "./components/employee-form-steps/compensation-step";
+import BenefitsStep from "./components/employee-form-steps/benefits-step";
+import type { FormValues } from "./components/employee-form-steps/types";
 
 interface EmployeeFormProps {
   opened: boolean;
@@ -35,83 +33,13 @@ interface EmployeeFormProps {
   isEditing?: boolean;
 }
 
-interface FormValues {
-  firstName: string;
-  lastName: string;
-  birthday: string;
-  address: string;
-  phoneNumber: string;
-  sssNumber: string;
-  tinNumber: string;
-  philhealthNumber: string;
-  pagibigNumber: string;
-  supervisorId: string;
-  positionId: string;
-  departmetnId: string;
-  status: EmploymentStatus;
-  type: EmploymentType;
-  startShift: string;
-  endShift: string;
-  salaryRate: number;
-  salaryType: PayType;
-  payrollFrequency: PayrollFrequency;
-  bankName: string;
-  accountNumber: string;
-  accountHolderName: string;
-}
+const TOTAL_STEPS = 4;
 
-const EMPLOYMENT_STATUS_MAP: Record<EmploymentStatus, string> = {
-  PROBATIONARY: "Probationary",
-  REGULAR: "Regular",
-  TERMINATED: "Terminated",
-  RESIGNED: "Resigned",
-};
-
-const EMPLOYMENT_TYPE_MAP: Record<EmploymentType, string> = {
-  FULL_TIME: "Full Time",
-  PART_TIME: "Part Time",
-  CONTRACTUAL: "Contractual",
-  INTERN: "Intern",
-};
-
-const PAY_TYPE_MAP: Record<PayType, string> = {
-  MONTHLY: "Monthly",
-  DAILY: "Daily",
-  HOURLY: "Hourly",
-};
-
-const PAYROLL_FREQUENCY_MAP: Record<PayrollFrequency, string> = {
-  SEMI_MONTHLY: "Semi-Monthly",
-  MONTHLY: "Monthly",
-  WEEKLY: "Weekly",
-  BI_WEEKLY: "Bi-Weekly",
-};
-
-const employmentStatusOptions = (
-  Object.keys(EMPLOYMENT_STATUS_MAP) as EmploymentStatus[]
-).map((key) => ({
-  value: key,
-  label: EMPLOYMENT_STATUS_MAP[key],
-}));
-
-const employmentTypeOptions = (
-  Object.keys(EMPLOYMENT_TYPE_MAP) as EmploymentType[]
-).map((key) => ({
-  value: key,
-  label: EMPLOYMENT_TYPE_MAP[key],
-}));
-
-const payTypeOptions = (Object.keys(PAY_TYPE_MAP) as PayType[]).map((key) => ({
-  value: key,
-  label: PAY_TYPE_MAP[key],
-}));
-
-const payrollFrequencyOptions = (
-  Object.keys(PAYROLL_FREQUENCY_MAP) as PayrollFrequency[]
-).map((key) => ({
-  value: key,
-  label: PAYROLL_FREQUENCY_MAP[key],
-}));
+const STEP_FIELDS: (keyof FormValues)[][] = [
+  ["firstName", "lastName", "birthday", "phoneNumber", "address"],
+  ["positionId", "departmentId"],
+  ["salaryRate"],
+];
 
 export function EmployeeForm({
   opened,
@@ -120,6 +48,8 @@ export function EmployeeForm({
   isEditing = false,
 }: EmployeeFormProps) {
   const queryClient = useQueryClient();
+  const [active, setActive] = useState(0);
+  const [maxVisited, setMaxVisited] = useState(0);
 
   // Fetch departments
   const { data: departmentsResponse, isLoading: departmentsLoading } =
@@ -178,18 +108,23 @@ export function EmployeeForm({
           pagibigNumber: employee.pagIbigNumber ?? "",
           supervisorId: employee.supervisor?.id != null ? String(employee.supervisor.id) : "",
           positionId: employee.position?.id ?? "",
-          departmetnId: employee.department?.id ?? "",
-          status: (employee.status as EmploymentStatus) ?? "PROBATIONARY",
-          type: (employee.type as EmploymentType) ?? "FULL_TIME",
+          departmentId: employee.department?.id ?? "",
+          status: (employee.status as FormValues["status"]) ?? "PROBATIONARY",
+          type: (employee.type as FormValues["type"]) ?? "FULL_TIME",
           startShift: employee.startShift ?? "",
           endShift: employee.endShift ?? "",
           salaryRate: employee.salary?.rate ?? 0,
-          salaryType: (employee.salary?.payType as PayType) ?? "MONTHLY",
-          payrollFrequency: (employee.salary?.payFrequency as PayrollFrequency) ??
+          salaryType: (employee.salary?.payType as FormValues["salaryType"]) ?? "MONTHLY",
+          payrollFrequency: (employee.salary?.payFrequency as FormValues["payrollFrequency"]) ??
             "MONTHLY",
           bankName: employee.bankName ?? "",
           accountNumber: employee.accountNumber ?? "",
           accountHolderName: employee.accountHolderName ?? "",
+          benefits:
+            employee.benefits?.map((benefit) => ({
+              benefitCode: benefit.benefit,
+              amount: benefit.amount,
+            })) ?? [],
         }
       : {
           firstName: "",
@@ -203,7 +138,7 @@ export function EmployeeForm({
           pagibigNumber: "",
           supervisorId: "",
           positionId: "",
-          departmetnId: "",
+          departmentId: "",
           status: "PROBATIONARY",
           type: "FULL_TIME",
           startShift: "",
@@ -214,6 +149,7 @@ export function EmployeeForm({
           bankName: "",
           accountNumber: "",
           accountHolderName: "",
+          benefits: [],
         },
     validate: {
       firstName: (value) => (!value ? "First name is required" : null),
@@ -221,8 +157,19 @@ export function EmployeeForm({
       birthday: (value) => (!value ? "Birthday is required" : null),
       phoneNumber: (value) => (!value ? "Phone number is required" : null),
       address: (value) => (!value ? "Address is required" : null),
+      positionId: (value) => (!value ? "Position is required" : null),
+      departmentId: (value) => (!value ? "Department is required" : null),
+      salaryRate: (value) => (value <= 0 ? "Basic salary must be greater than 0" : null),
     },
   });
+
+  // Reset stepper when the drawer opens
+  useEffect(() => {
+    if (opened) {
+      setActive(0);
+      setMaxVisited(0);
+    }
+  }, [opened]);
 
   // Update form values when employee or modal opens
   useEffect(() => {
@@ -239,18 +186,23 @@ export function EmployeeForm({
         pagibigNumber: employee.pagIbigNumber ?? "",
         supervisorId: employee.supervisor?.id != null ? String(employee.supervisor.id) : "",
         positionId: employee.position?.id ?? "",
-        departmetnId: employee.department?.id ?? "",
-        status: (employee.status as EmploymentStatus) ?? "PROBATIONARY",
-        type: (employee.type as EmploymentType) ?? "FULL_TIME",
+        departmentId: employee.department?.id ?? "",
+        status: (employee.status as FormValues["status"]) ?? "PROBATIONARY",
+        type: (employee.type as FormValues["type"]) ?? "FULL_TIME",
         startShift: employee.startShift ?? "",
         endShift: employee.endShift ?? "",
         salaryRate: employee.salary?.rate ?? 0,
-        salaryType: (employee.salary?.payType as PayType) ?? "MONTHLY",
-        payrollFrequency: (employee.salary?.payFrequency as PayrollFrequency) ??
+        salaryType: (employee.salary?.payType as FormValues["salaryType"]) ?? "MONTHLY",
+        payrollFrequency: (employee.salary?.payFrequency as FormValues["payrollFrequency"]) ??
           "MONTHLY",
         bankName: employee.bankName ?? "",
         accountNumber: employee.accountNumber ?? "",
         accountHolderName: employee.accountHolderName ?? "",
+        benefits:
+          employee.benefits?.map((benefit) => ({
+            benefitCode: benefit.benefit,
+            amount: benefit.amount,
+          })) ?? [],
       });
     } else if (opened && !isEditing) {
       form.reset();
@@ -272,12 +224,12 @@ export function EmployeeForm({
       },
       supervisorId: formData.supervisorId ? Number(formData.supervisorId) : undefined,
       positionId: formData.positionId,
-      departmentId: formData.departmetnId,
+      departmentId: formData.departmentId,
       status: formData.status,
       type: formData.type,
       startShift: formData.startShift,
       endShift: formData.endShift,
-      benefits: [],
+      benefits: formData.benefits,
       salaryRequest: {
         rate: formData.salaryRate,
         payType: formData.salaryType,
@@ -336,8 +288,40 @@ export function EmployeeForm({
     }
   };
 
+  const validateStep = async (step: number): Promise<boolean> => {
+    if (step === TOTAL_STEPS - 1) {
+      let ok = true;
+      form.values.benefits.forEach((benefit, index) => {
+        if (!benefit.benefitCode) {
+          form.setFieldError(`benefits.${index}.benefitCode`, "Select a benefit");
+          ok = false;
+        }
+        if (benefit.amount < 100) {
+          form.setFieldError(`benefits.${index}.amount`, "Minimum is 100");
+          ok = false;
+        }
+      });
+      return ok;
+    }
+    const fields = STEP_FIELDS[step] ?? [];
+    const results = await Promise.all(
+      fields.map((field) => Promise.resolve(form.validateField(field))),
+    );
+    return results.every((result) => !result.hasError);
+  };
+
+  const handleNext = async () => {
+    const valid = await validateStep(active);
+    if (!valid) return;
+    const next = Math.min(active + 1, TOTAL_STEPS - 1);
+    setActive(next);
+    setMaxVisited((m) => Math.max(m, next));
+  };
+
   const handleClose = () => {
     form.reset();
+    setActive(0);
+    setMaxVisited(0);
     onClose();
   };
 
@@ -358,198 +342,67 @@ export function EmployeeForm({
       >
         <Stack gap="md" className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 min-h-0 overflow-y-auto">
-            <Grid>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="First Name"
-                placeholder="John"
-                {...form.getInputProps("firstName")}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Last Name"
-                placeholder="Doe"
-                {...form.getInputProps("lastName")}
-              />
-            </Grid.Col>
+            <Stepper
+              active={active}
+              onStepClick={(step) => {
+                if (isEditing || step <= maxVisited) {
+                  setActive(step);
+                }
+              }}
+              size="xs"
+              mb="lg"
+            >
+              <Stepper.Step label="Personal" />
+              <Stepper.Step label="Employment" />
+              <Stepper.Step label="Compensation" />
+              <Stepper.Step label="Benefits" />
+            </Stepper>
 
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Birthday"
-                type="date"
-                {...form.getInputProps("birthday")}
+            {active === 0 && <PersonalStep form={form} />}
+            {active === 1 && (
+              <EmploymentBankStep
+                form={form}
+                supervisorOptions={supervisorOptions}
+                positionOptions={positionOptions}
+                departmentOptions={departmentOptions}
+                positionsLoading={positionsLoading}
+                departmentsLoading={departmentsLoading}
               />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Phone Number"
-                placeholder="+1 234 567 8900"
-                {...form.getInputProps("phoneNumber")}
-              />
-            </Grid.Col>
-
-            <Grid.Col span={12}>
-              <Textarea
-                label="Address"
-                placeholder="123 Main Street..."
-                {...form.getInputProps("address")}
-              />
-            </Grid.Col>
-
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Select
-                label="Employment Status"
-                placeholder="Select status"
-                data={employmentStatusOptions}
-                {...form.getInputProps("status")}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Select
-                label="Employment Type"
-                placeholder="Select type"
-                data={employmentTypeOptions}
-                {...form.getInputProps("type")}
-              />
-            </Grid.Col>
-
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Start Shift"
-                type="time"
-                {...form.getInputProps("startShift")}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="End Shift"
-                type="time"
-                {...form.getInputProps("endShift")}
-              />
-            </Grid.Col>
-
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="SSS Number"
-                placeholder="xx-xxxxxxx-x"
-                {...form.getInputProps("sssNumber")}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="TIN Number"
-                placeholder="xxx-xxx-xxx-xxx"
-                {...form.getInputProps("tinNumber")}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="PhilHealth Number"
-                placeholder="xxxx-xxxx-xxx"
-                {...form.getInputProps("philhealthNumber")}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Pag-IBIG Number"
-                placeholder="xxxx-xxxx-xxxx-xxxx"
-                {...form.getInputProps("pagibigNumber")}
-              />
-            </Grid.Col>
-
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Bank Name"
-                placeholder="e.g. BDO"
-                {...form.getInputProps("bankName")}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Account Number"
-                placeholder="Account number"
-                {...form.getInputProps("accountNumber")}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Account Holder Name"
-                placeholder="Name on the account"
-                {...form.getInputProps("accountHolderName")}
-              />
-            </Grid.Col>
-
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Select
-                label="Supervisor"
-                placeholder="Select supervisor"
-                data={supervisorOptions}
-                {...form.getInputProps("supervisorId")}
-                searchable
-                clearable
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Select
-                label="Position"
-                placeholder="Select position"
-                data={positionOptions}
-                disabled={positionsLoading}
-                {...form.getInputProps("positionId")}
-                searchable
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Select
-                label="Department"
-                placeholder="Select department"
-                data={departmentOptions}
-                disabled={departmentsLoading}
-                {...form.getInputProps("departmetnId")}
-                searchable
-              />
-            </Grid.Col>
-
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Basic Salary"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                {...form.getInputProps("salaryRate")}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Select
-                label="Salary Type"
-                placeholder="Select salary type"
-                data={payTypeOptions}
-                {...form.getInputProps("salaryType")}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Select
-                label="Payroll Frequency"
-                placeholder="Select payroll frequency"
-                data={payrollFrequencyOptions}
-                {...form.getInputProps("payrollFrequency")}
-              />
-            </Grid.Col>
-          </Grid>
+            )}
+            {active === 2 && <CompensationStep form={form} />}
+            {active === 3 && <BenefitsStep form={form} />}
           </div>
 
           <Group justify="flex-end" mt="lg" className="border-t border-gray-200 pt-4">
             <Button
               variant="outline"
+              type="button"
               onClick={handleClose}
               disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button type="submit" loading={isLoading}>
-              {isEditing ? "Update Employee" : "Create Employee"}
-            </Button>
+            {active > 0 && (
+              <Button
+                variant="default"
+                type="button"
+                onClick={() => setActive((a) => a - 1)}
+                disabled={isLoading}
+              >
+                Back
+              </Button>
+            )}
+            {active < TOTAL_STEPS - 1 ? (
+              <Button type="button" onClick={handleNext}>Next</Button>
+            ) : (
+              <Button
+                type="button"
+                loading={isLoading}
+                onClick={() => form.onSubmit(handleSubmit)()}
+              >
+                {isEditing ? "Update Employee" : "Create Employee"}
+              </Button>
+            )}
           </Group>
         </Stack>
       </form>
