@@ -14,11 +14,13 @@ import type { AccessType, Role } from "@/types";
 import { useState } from "react";
 import { useAuth } from "../../hooks/use-auth";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { getRedirectPath } from "@/utils/redirect";
 
 function Page() {
   const { setAuth } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [accessType, setAccessType] = useState<AccessType>("EMPLOYEE");
 
   const form = useForm({
@@ -42,6 +44,10 @@ function Page() {
       onSuccess: (response) => {
         const auth = response.data;
         if (!auth) return;
+        // Purge any cached data from a previously logged-in user before
+        // switching identity — "me" query keys don't include the user, so
+        // without this the new session briefly sees the old user's data.
+        queryClient.clear();
         setAuth(auth);
         notifications.show({
           title: "Success",

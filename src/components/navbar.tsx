@@ -43,7 +43,10 @@ function Navbar() {
   const { mutate: logutFn } = useLogout({
     mutation: {
       onSuccess: () => {
-        queryClient.removeQueries({ queryKey: ["employee"] });
+        // All "me" queries (e.g. "/payroll-items/me") use user-agnostic keys,
+        // so drop the entire cache — otherwise the next login reuses the
+        // previous user's cached data until staleTime expires.
+        queryClient.clear();
         clearAuth();
         navigate("/login");
         notifications.show({
