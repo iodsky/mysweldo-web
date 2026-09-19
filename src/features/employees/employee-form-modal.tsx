@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCreateEmployee, useUpdateEmployee } from "@/api/generated/endpoints/employees/employees";
 import { useGetDepartmentOptions } from "@/api/generated/endpoints/departments/departments";
 import { useGetPositionOptions } from "@/api/generated/endpoints/positions/positions";
+import { useEmployeeOptions } from "@/hooks/use-employee-options";
 import { unwrapData } from "@/api/helpers";
 import type {
   Employee,
@@ -43,7 +44,7 @@ interface FormValues {
   tinNumber: string;
   philhealthNumber: string;
   pagibigNumber: string;
-  supervisorId: number;
+  supervisorId: string;
   positionId: string;
   departmetnId: string;
   status: EmploymentStatus;
@@ -152,6 +153,16 @@ export function EmployeeForm({
     }),
   );
 
+  const { options: employeeOptions } = useEmployeeOptions({
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+
+  // Exclude the employee being edited so they can't supervise themselves
+  const supervisorOptions = isEditing && employee?.id != null
+    ? employeeOptions.filter((opt) => opt.value !== String(employee.id))
+    : employeeOptions;
+
   const form = useForm<FormValues>({
     initialValues: employee
       ? {
@@ -164,7 +175,7 @@ export function EmployeeForm({
           tinNumber: employee.tinNumber ?? "",
           philhealthNumber: employee.philhealthNumber ?? "",
           pagibigNumber: employee.pagIbigNumber ?? "",
-          supervisorId: 0,
+          supervisorId: employee.supervisor?.id != null ? String(employee.supervisor.id) : "",
           positionId: employee.position?.id ?? "",
           departmetnId: employee.department?.id ?? "",
           status: (employee.status as EmploymentStatus) ?? "PROBATIONARY",
@@ -189,7 +200,7 @@ export function EmployeeForm({
           tinNumber: "",
           philhealthNumber: "",
           pagibigNumber: "",
-          supervisorId: 0,
+          supervisorId: "",
           positionId: "",
           departmetnId: "",
           status: "PROBATIONARY",
@@ -225,7 +236,7 @@ export function EmployeeForm({
         tinNumber: employee.tinNumber ?? "",
         philhealthNumber: employee.philhealthNumber ?? "",
         pagibigNumber: employee.pagIbigNumber ?? "",
-        supervisorId: employee.supervisor?.id || 0,
+        supervisorId: employee.supervisor?.id != null ? String(employee.supervisor.id) : "",
         positionId: employee.position?.id ?? "",
         departmetnId: employee.department?.id ?? "",
         status: (employee.status as EmploymentStatus) ?? "PROBATIONARY",
@@ -258,7 +269,7 @@ export function EmployeeForm({
         philhealthNumber: formData.philhealthNumber,
         pagIbigNumber: formData.pagibigNumber,
       },
-      supervisorId: formData.supervisorId || undefined,
+      supervisorId: formData.supervisorId ? Number(formData.supervisorId) : undefined,
       positionId: formData.positionId,
       departmentId: formData.departmetnId,
       status: formData.status,
@@ -464,11 +475,13 @@ export function EmployeeForm({
             </Grid.Col>
 
             <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Supervisor ID"
-                type="number"
-                placeholder="0"
+              <Select
+                label="Supervisor"
+                placeholder="Select supervisor"
+                data={supervisorOptions}
                 {...form.getInputProps("supervisorId")}
+                searchable
+                clearable
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
