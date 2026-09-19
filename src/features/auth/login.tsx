@@ -44,9 +44,6 @@ function Page() {
       onSuccess: (response) => {
         const auth = response.data;
         if (!auth) return;
-        // Purge any cached data from a previously logged-in user before
-        // switching identity — "me" query keys don't include the user, so
-        // without this the new session briefly sees the old user's data.
         queryClient.clear();
         setAuth(auth);
         notifications.show({
