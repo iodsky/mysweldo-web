@@ -12,7 +12,7 @@ import {
   Center,
   Pagination,
   Button,
-  Modal,
+  Drawer,
   Divider,
   Table,
 } from "@mantine/core";
@@ -31,7 +31,7 @@ function Page() {
   });
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [selectedPayslip, setSelectedPayslip] = useState<PayslipView | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const { data, isFetching, isError } = useGetMyPayrollRecords(filters, {
     query: {
@@ -79,11 +79,11 @@ function Page() {
 
   const handleViewDetails = (payslip: PayslipView) => {
     setSelectedPayslip(payslip);
-    setIsModalOpen(true);
+    setIsDrawerOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
     setSelectedPayslip(null);
   };
 
@@ -282,23 +282,13 @@ function Page() {
         )}
       </div>
 
-      {/* Payslip Details Modal */}
-      <Modal
-        opened={isModalOpen}
-        onClose={handleCloseModal}
+      {/* Payslip Details Drawer */}
+      <Drawer
+        opened={isDrawerOpen}
+        onClose={handleCloseDrawer}
         title={`Payslip Details - ${selectedPayslip?.periodStartDate || ""} to ${selectedPayslip?.periodEndDate || ""}`}
+        position="right"
         size="lg"
-        styles={{
-          body: {
-            maxHeight: "70vh",
-            overflowY: "auto",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            "&::-webkit-scrollbar": {
-              display: "none",
-            },
-          },
-        }}
       >
         {selectedPayslip && (
           <Stack gap="md">
@@ -502,7 +492,7 @@ function Page() {
             </div>
           </Stack>
         )}
-      </Modal>
+      </Drawer>
     </div>
   );
 }
