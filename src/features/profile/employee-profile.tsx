@@ -19,7 +19,7 @@ function Page() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <Loader size="xl" />
       </div>
     );
@@ -27,7 +27,7 @@ function Page() {
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <IconAlertCircle size={48} color="red" />
           <Text size="lg" fw={700} c="red">
@@ -42,14 +42,14 @@ function Page() {
 
   if (!employee) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <Text>No employee data found</Text>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col flex-1 gap-5 overflow-y-auto">
+    <div className="flex-1 min-h-0 space-y-5 overflow-y-auto">
       <ProfileHeaderCard employee={employee} />
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <PersonalInfoCard employee={employee} />
